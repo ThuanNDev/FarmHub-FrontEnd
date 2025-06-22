@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -190,6 +191,8 @@ export default function CustomersPage() {
         total_debt: 0,
         debt_due_date: null,
         last_purchase_date: null,
+        loyalty_points: 0,
+        loyalty_tier: 'Bronze',
         created_at: now,
         updated_at: now,
         is_deleted: false,

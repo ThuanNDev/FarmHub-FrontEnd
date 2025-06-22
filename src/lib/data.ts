@@ -561,6 +561,8 @@ export const mockCustomers = [
     total_debt: 15000000,
     debt_due_date: '2024-08-15T00:00:00Z',
     last_purchase_date: '2024-07-10T00:00:00Z',
+    loyalty_points: 15200,
+    loyalty_tier: 'Gold' as const,
     status: 'Active' as const,
     created_at: '2022-03-15T00:00:00Z',
     updated_at: '2024-07-10T00:00:00Z',
@@ -579,6 +581,8 @@ export const mockCustomers = [
     total_debt: 0,
     debt_due_date: null,
     last_purchase_date: '2024-07-20T00:00:00Z',
+    loyalty_points: 5800,
+    loyalty_tier: 'Silver' as const,
     status: 'Active' as const,
     created_at: '2023-05-20T00:00:00Z',
     updated_at: '2024-07-20T00:00:00Z',
@@ -597,6 +601,8 @@ export const mockCustomers = [
     total_debt: 5500000,
     debt_due_date: '2024-09-01T00:00:00Z',
     last_purchase_date: '2024-07-15T00:00:00Z',
+    loyalty_points: 8900,
+    loyalty_tier: 'Silver' as const,
     status: 'Active' as const,
     created_at: '2023-08-01T00:00:00Z',
     updated_at: '2024-07-15T00:00:00Z',
@@ -615,6 +621,8 @@ export const mockCustomers = [
     total_debt: 0,
     debt_due_date: null,
     last_purchase_date: '2024-06-30T00:00:00Z',
+    loyalty_points: 2300,
+    loyalty_tier: 'Bronze' as const,
     status: 'Active' as const,
     created_at: '2022-10-10T00:00:00Z',
     updated_at: '2024-06-30T00:00:00Z',
@@ -633,6 +641,8 @@ export const mockCustomers = [
     total_debt: 45800000,
     debt_due_date: '2024-08-20T00:00:00Z',
     last_purchase_date: '2024-07-22T00:00:00Z',
+    loyalty_points: 45000,
+    loyalty_tier: 'Diamond' as const,
     status: 'Active' as const,
     created_at: '2023-11-05T00:00:00Z',
     updated_at: '2024-07-22T00:00:00Z',
@@ -651,6 +661,8 @@ export const mockCustomers = [
     total_debt: 0,
     debt_due_date: null,
     last_purchase_date: '2024-05-18T00:00:00Z',
+    loyalty_points: 1200,
+    loyalty_tier: 'Bronze' as const,
     status: 'Active' as const,
     created_at: '2024-01-15T00:00:00Z',
     updated_at: '2024-05-18T00:00:00Z',
@@ -669,6 +681,8 @@ export const mockCustomers = [
     total_debt: 0,
     debt_due_date: null,
     last_purchase_date: '2024-07-05T00:00:00Z',
+    loyalty_points: 750,
+    loyalty_tier: 'Bronze' as const,
     status: 'Inactive' as const,
     created_at: '2023-06-25T00:00:00Z',
     updated_at: '2024-07-05T00:00:00Z',
@@ -1188,3 +1202,11 @@ const generateNotifications = () => {
 
 generateNotifications();
     
+export const mockVouchers = [
+  { id: 'v-001', name: 'Giảm giá 50.000đ', description: 'Áp dụng cho đơn hàng bất kỳ.', points_cost: 5000, value: 50000, type: 'fixed' },
+  { id: 'v-002', name: 'Giảm giá 100.000đ', description: 'Cho đơn hàng từ 1.000.000đ.', points_cost: 9500, value: 100000, type: 'fixed' },
+  { id: 'v-003', name: 'Giảm giá 10%', description: 'Giảm tối đa 200.000đ.', points_cost: 15000, value: 10, type: 'percentage' },
+  { id: 'v-004', name: 'Miễn phí vận chuyển', description: 'Hỗ trợ tối đa 50.000đ phí ship.', points_cost: 4000, value: 50000, type: 'shipping' },
+  { id: 'v-005', name: 'Giảm giá 500.000đ', description: 'Cho đơn hàng từ 5.000.000đ.', points_cost: 48000, value: 500000, type: 'fixed' }
+];
+

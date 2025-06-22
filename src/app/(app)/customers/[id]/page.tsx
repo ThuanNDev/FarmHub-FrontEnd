@@ -1,10 +1,11 @@
+
 'use client';
 
 import * as React from 'react';
 import Link from 'next/link';
 import { notFound, useRouter, useParams } from 'next/navigation';
-import { ArrowLeft, Edit, Mail, MapPin, Phone, Trash2 } from 'lucide-react';
-import { mockCustomers, mockOrders } from '@/lib/data';
+import { ArrowLeft, Edit, Mail, MapPin, Phone, Trash2, Award, Gift } from 'lucide-react';
+import { mockCustomers, mockOrders, mockVouchers } from '@/lib/data';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -24,12 +25,25 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { useLanguage } from '@/contexts/LanguageContext';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { useToast } from '@/hooks/use-toast';
+import { cn } from '@/lib/utils';
 
 export default function CustomerDetailPage() {
   const router = useRouter();
   const params = useParams<{ id: string }>();
-  const customer = mockCustomers.find((c) => c.id === params.id && !c.is_deleted);
   const { t } = useLanguage();
+  const { toast } = useToast();
+
+  const [customer, setCustomer] = React.useState(mockCustomers.find((c) => c.id === params.id && !c.is_deleted));
+  const [isRedeemDialogOpen, setRedeemDialogOpen] = React.useState(false);
+
 
   if (!customer) {
     notFound();
@@ -60,7 +74,28 @@ export default function CustomerDetailPage() {
     }
   };
 
+  const handleRedeemVoucher = (voucher: typeof mockVouchers[0]) => {
+    if (!customer) return;
+
+    const newPoints = customer.loyalty_points - voucher.points_cost;
+
+    const customerInDb = mockCustomers.find(c => c.id === customer.id);
+    if (customerInDb) {
+      customerInDb.loyalty_points = newPoints;
+    }
+    
+    setCustomer(prev => prev ? { ...prev, loyalty_points: newPoints } : undefined);
+
+    toast({
+      title: "Đổi voucher thành công!",
+      description: `Bạn đã đổi voucher "${voucher.name}".`,
+    });
+
+    setRedeemDialogOpen(false);
+  };
+
   return (
+    <>
     <div className="flex flex-col gap-4">
       <div className="flex justify-start">
         <Button asChild variant="outline" size="sm">
@@ -119,6 +154,29 @@ export default function CustomerDetailPage() {
                     </div>
                 </CardContent>
             </Card>
+            <Card>
+              <CardHeader>
+                  <CardTitle className="font-headline text-lg flex items-center gap-2">
+                      <Award className="h-5 w-5 text-primary"/>
+                      Khách hàng thân thiết
+                  </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                  <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+                      <div className="space-y-1">
+                          <p className="text-sm text-muted-foreground">Điểm tích lũy</p>
+                          <p className="text-2xl font-bold text-primary">{customer.loyalty_points.toLocaleString()}</p>
+                      </div>
+                      <div className="text-right">
+                          <p className="text-sm text-muted-foreground">Hạng</p>
+                          <Badge variant="default" className="text-base">{customer.loyalty_tier}</Badge>
+                      </div>
+                  </div>
+                  <Button className="w-full" onClick={() => setRedeemDialogOpen(true)}>
+                      <Gift className="mr-2 h-4 w-4" /> Đổi điểm lấy voucher
+                  </Button>
+              </CardContent>
+            </Card>
         </div>
         <div className="md:col-span-2">
             <Card>
@@ -160,5 +218,39 @@ export default function CustomerDetailPage() {
         </div>
       </div>
     </div>
+
+    <Dialog open={isRedeemDialogOpen} onOpenChange={setRedeemDialogOpen}>
+      <DialogContent className="sm:max-w-2xl">
+        <DialogHeader>
+          <DialogTitle className="font-headline">Đổi điểm thưởng</DialogTitle>
+          <DialogDescription>
+            Chọn voucher bạn muốn đổi. Điểm của bạn: {customer.loyalty_points.toLocaleString()}
+          </DialogDescription>
+        </DialogHeader>
+        <div className="py-4 max-h-[60vh] overflow-y-auto">
+          <div className="space-y-4">
+            {mockVouchers.map((voucher) => (
+              <Card key={voucher.id} className={cn(customer.loyalty_points < voucher.points_cost && "bg-muted/50 opacity-60")}>
+                <CardContent className="p-4 flex items-center justify-between">
+                  <div>
+                    <h4 className="font-semibold">{voucher.name}</h4>
+                    <p className="text-sm text-muted-foreground">{voucher.description}</p>
+                    <p className="text-sm font-bold text-primary mt-1">{voucher.points_cost.toLocaleString()} điểm</p>
+                  </div>
+                  <Button
+                    size="sm"
+                    onClick={() => handleRedeemVoucher(voucher)}
+                    disabled={customer.loyalty_points < voucher.points_cost}
+                  >
+                    Đổi
+                  </Button>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+    </>
   );
 }
