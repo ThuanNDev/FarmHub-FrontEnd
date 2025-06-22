@@ -16,6 +16,7 @@ import {
   BarChart3,
   UsersRound,
   Truck,
+  PackagePlus,
 } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
@@ -42,6 +43,7 @@ const navItems = [
   { href: '/products', label: 'Sản phẩm', icon: Package },
   { href: '/customers', label: 'Khách hàng', icon: Users },
   { href: '/suppliers', label: 'Nhà cung cấp', icon: Truck },
+  { href: '/purchases', label: 'Nhập hàng', icon: PackagePlus },
   { href: '/categories', label: 'Thể loại', icon: Tags },
   { href: '/debts', label: 'Công nợ', icon: CreditCard },
   { href: '/reports', label: 'Báo cáo', icon: BarChart3 },
