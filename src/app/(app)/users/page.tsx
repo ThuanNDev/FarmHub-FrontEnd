@@ -8,6 +8,7 @@ import {
   PlusCircle,
   MoreHorizontal,
 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -104,6 +105,7 @@ export default function UsersPage() {
   const [isDeleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   
+  const router = useRouter();
   const { toast } = useToast();
 
   const form = useForm<UserFormValues>({
@@ -196,17 +198,19 @@ export default function UsersPage() {
       const newUser: User = {
         id: `user-${Math.floor(1000 + Math.random() * 9000)}`,
         username: values.username,
+        password_hash: `hashed_${values.password}`, // Mock hashing
         full_name: values.full_name,
         email: values.email,
         phone: values.phone || '',
         role: values.role,
-        is_active: values.is_active,
-        password_hash: `hashed_${values.password}`, // Mock hashing
         associated_store_ids: ['store-001'],
+        is_active: values.is_active,
         is_superadmin: values.role === 'Admin',
         last_login_at: null,
         created_at: now,
         updated_at: now,
+        password_reset_token: null,
+        token_expiry_at: null,
       };
       setUsers([newUser, ...users]);
       toast({ title: "Thành công", description: "Người dùng mới đã được thêm." });
@@ -273,6 +277,7 @@ export default function UsersPage() {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => router.push(`/users/${user.id}`)}>Xem chi tiết</DropdownMenuItem>
                         <DropdownMenuItem onClick={() => handleEdit(user)}>Sửa</DropdownMenuItem>
                         <DropdownMenuItem onClick={() => handleDelete(user)} className="text-destructive">Xóa</DropdownMenuItem>
                       </DropdownMenuContent>

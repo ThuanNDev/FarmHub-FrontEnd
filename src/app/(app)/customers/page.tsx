@@ -9,6 +9,7 @@ import {
   MoreHorizontal,
   Search,
 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -96,6 +97,7 @@ export default function CustomersPage() {
   const [isDeleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
   
+  const router = useRouter();
   const { toast } = useToast();
 
   const form = useForm<CustomerFormValues>({
@@ -278,6 +280,7 @@ export default function CustomersPage() {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => router.push(`/customers/${customer.id}`)}>Xem chi tiết</DropdownMenuItem>
                         <DropdownMenuItem onClick={() => handleEdit(customer)}>Sửa</DropdownMenuItem>
                         <DropdownMenuItem onClick={() => handleDelete(customer)} className="text-destructive">
                           Xóa

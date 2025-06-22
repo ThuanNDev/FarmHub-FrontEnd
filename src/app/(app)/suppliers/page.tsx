@@ -8,6 +8,7 @@ import {
   PlusCircle,
   MoreHorizontal,
 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -83,6 +84,7 @@ export default function SuppliersPage() {
   const [isDeleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedSupplier, setSelectedSupplier] = useState<Supplier | null>(null);
   
+  const router = useRouter();
   const { toast } = useToast();
 
   const form = useForm<SupplierFormValues>({
@@ -208,6 +210,7 @@ export default function SuppliersPage() {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => router.push(`/suppliers/${supplier.id}`)}>Xem chi tiết</DropdownMenuItem>
                         <DropdownMenuItem onClick={() => handleEdit(supplier)}>Sửa</DropdownMenuItem>
                         <DropdownMenuItem onClick={() => handleDelete(supplier)} className="text-destructive">Xóa</DropdownMenuItem>
                       </DropdownMenuContent>

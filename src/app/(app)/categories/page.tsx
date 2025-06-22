@@ -9,6 +9,7 @@ import {
   PlusCircle,
   MoreHorizontal,
 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -83,6 +84,7 @@ export default function CategoriesPage() {
   const [isDeleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
   
+  const router = useRouter();
   const { toast } = useToast();
 
   const form = useForm<CategoryFormValues>({
@@ -153,6 +155,9 @@ export default function CategoriesPage() {
         image: 'https://placehold.co/100x100.png',
         order: categories.length + 1,
         is_active: values.is_active,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        is_deleted: false
       };
       setCategories([newCategory, ...categories]);
       toast({ title: "Thành công", description: "Thể loại mới đã được thêm." });
@@ -222,6 +227,7 @@ export default function CategoriesPage() {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => router.push(`/categories/${category.slug}`)}>Xem chi tiết</DropdownMenuItem>
                         <DropdownMenuItem onClick={() => handleEdit(category)}>Sửa</DropdownMenuItem>
                         <DropdownMenuItem onClick={() => handleDelete(category)} className="text-destructive">Xóa</DropdownMenuItem>
                       </DropdownMenuContent>

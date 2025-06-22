@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { MoreHorizontal } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -32,6 +33,7 @@ type Debtor = (typeof mockCustomers)[0];
 
 export default function DebtsPage() {
   const [debtors, setDebtors] = useState<Debtor[]>([]);
+  const router = useRouter();
 
   useEffect(() => {
     const customersWithDebt = mockCustomers.filter(
@@ -114,7 +116,7 @@ export default function DebtsPage() {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                          <DropdownMenuItem>Xem chi tiết</DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => router.push(`/customers/${debtor.id}`)}>Xem chi tiết</DropdownMenuItem>
                           <DropdownMenuItem>Ghi nhận thanh toán</DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>

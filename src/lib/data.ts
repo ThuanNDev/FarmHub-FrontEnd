@@ -31,7 +31,9 @@ export const mockUsers = [
       is_superadmin: true,
       last_login_at: '2024-07-25T10:00:00Z',
       created_at: '2023-01-01T00:00:00Z',
-      updated_at: '2024-07-25T10:00:00Z'
+      updated_at: '2024-07-25T10:00:00Z',
+      password_reset_token: null,
+      token_expiry_at: null,
     },
     {
       id: 'user-002',
@@ -46,7 +48,9 @@ export const mockUsers = [
       is_superadmin: false,
       last_login_at: '2024-07-24T15:00:00Z',
       created_at: '2023-02-10T00:00:00Z',
-      updated_at: '2024-07-24T15:00:00Z'
+      updated_at: '2024-07-24T15:00:00Z',
+      password_reset_token: null,
+      token_expiry_at: null,
     },
     {
       id: 'user-003',
@@ -61,7 +65,9 @@ export const mockUsers = [
       is_superadmin: false,
       last_login_at: '2024-06-30T11:00:00Z',
       created_at: '2023-03-05T00:00:00Z',
-      updated_at: '2024-06-30T11:00:00Z'
+      updated_at: '2024-06-30T11:00:00Z',
+      password_reset_token: null,
+      token_expiry_at: null,
     }
   ];
 
@@ -420,5 +426,62 @@ export const mockOrders = [
     processed_by_user_id: 'user-002',
     created_at: '2024-07-22T11:45:00Z',
     updated_at: '2024-07-22T16:00:00Z'
+  },
+];
+
+export const mockOrderItems = [
+  // Order ord-001
+  {
+    id: 'item-001',
+    order_id: 'ord-001',
+    product_id: 'prod-001',
+    product_name: 'Máy xới đất Kubota',
+    product_unit: 'chiếc',
+    quantity: 1,
+    unit_price: 15000000,
+    total_price: 15000000,
+  },
+  // Order ord-002
+  {
+    id: 'item-002',
+    order_id: 'ord-002',
+    product_id: 'prod-004',
+    product_name: 'Máy phun thuốc STIHL',
+    product_unit: 'chiếc',
+    quantity: 1,
+    unit_price: 5500000,
+    total_price: 5500000,
+  },
+  // Order ord-003
+  {
+    id: 'item-003',
+    order_id: 'ord-003',
+    product_id: 'prod-002',
+    product_name: 'Máy cày Yanmar',
+    product_unit: 'chiếc',
+    quantity: 1,
+    unit_price: 350000000,
+    total_price: 350000000,
+  },
+   // Order ord-004
+   {
+    id: 'item-004',
+    order_id: 'ord-004',
+    product_id: 'prod-005',
+    product_name: 'Máy cắt cỏ Honda',
+    product_unit: 'chiếc',
+    quantity: 1,
+    unit_price: 3500000,
+    total_price: 3500000,
+  },
+  {
+    id: 'item-005',
+    order_id: 'ord-004',
+    product_id: 'prod-004',
+    product_name: 'Máy phun thuốc STIHL',
+    product_unit: 'chiếc',
+    quantity: 1,
+    unit_price: 4000000,
+    total_price: 4000000,
   },
 ];

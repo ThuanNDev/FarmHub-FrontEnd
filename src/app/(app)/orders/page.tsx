@@ -1,6 +1,7 @@
 'use client';
 
-import { File, ListFilter } from 'lucide-react';
+import { File, ListFilter, MoreHorizontal } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -14,6 +15,7 @@ import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
+  DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
@@ -35,6 +37,8 @@ import {
 import { mockOrders, mockCustomers } from '@/lib/data';
 
 export default function OrdersPage() {
+  const router = useRouter();
+  
   const getStatusVariant = (status: string) => {
     switch (status) {
       case 'Delivered':
@@ -116,6 +120,9 @@ export default function OrdersPage() {
                   <TableHead className="hidden md:table-cell">Ngày</TableHead>
                   <TableHead>Trạng thái</TableHead>
                   <TableHead className="text-right">Tổng tiền</TableHead>
+                  <TableHead>
+                    <span className="sr-only">Hành động</span>
+                  </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -133,6 +140,19 @@ export default function OrdersPage() {
                     </TableCell>
                     <TableCell className="text-right">
                       {formatCurrency(order.total_amount)}
+                    </TableCell>
+                    <TableCell>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button aria-haspopup="true" size="icon" variant="ghost">
+                            <MoreHorizontal className="h-4 w-4" />
+                            <span className="sr-only">Toggle menu</span>
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={() => router.push(`/orders/${order.id}`)}>Xem chi tiết</DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </TableCell>
                   </TableRow>
                 ))}

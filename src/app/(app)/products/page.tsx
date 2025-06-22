@@ -4,6 +4,7 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -117,6 +118,7 @@ export default function ProductsPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [productsPerPage] = useState(7);
 
+  const router = useRouter();
   const { toast } = useToast();
 
   const form = useForm<ProductFormValues>({
@@ -380,6 +382,7 @@ export default function ProductsPage() {
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => router.push(`/products/${product.slug}`)}>Xem chi tiết</DropdownMenuItem>
                             <DropdownMenuItem onClick={() => handleEdit(product)}>Sửa</DropdownMenuItem>
                             <DropdownMenuItem onClick={() => handleDelete(product)} className="text-destructive">
                               Xóa
