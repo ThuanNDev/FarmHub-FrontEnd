@@ -63,6 +63,13 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { mockCategories } from '@/lib/data';
@@ -73,13 +80,16 @@ type Category = typeof mockCategories[0];
 const categorySchema = z.object({
   name: z.string().min(1, { message: "Tên thể loại không được để trống." }),
   description: z.string().optional(),
+  parent_id: z.string().optional(), // Will treat empty string as null in submission
+  image: z.string().url({ message: "Vui lòng nhập URL hình ảnh hợp lệ." }).or(z.literal('')).optional(),
+  order: z.coerce.number().int().optional(),
   is_active: z.boolean().default(true),
 });
 
 type CategoryFormValues = z.infer<typeof categorySchema>;
 
 export default function CategoriesPage() {
-  const [categories, setCategories] = useState<Category[]>(mockCategories);
+  const [categories, setCategories] = useState<Category[]>(mockCategories.filter(c => !c.is_deleted));
   const [isAddEditDialogOpen, setAddEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
@@ -92,6 +102,9 @@ export default function CategoriesPage() {
     defaultValues: {
       name: '',
       description: '',
+      parent_id: '',
+      image: '',
+      order: 0,
       is_active: true,
     },
   });
@@ -102,17 +115,23 @@ export default function CategoriesPage() {
             form.reset({
                 name: selectedCategory.name,
                 description: selectedCategory.description,
+                parent_id: selectedCategory.parent_id || '',
+                image: selectedCategory.image,
+                order: selectedCategory.order,
                 is_active: selectedCategory.is_active,
             });
         } else {
             form.reset({
                 name: '',
                 description: '',
+                parent_id: '',
+                image: '',
+                order: categories.length + 1,
                 is_active: true,
             });
         }
     }
-  }, [isAddEditDialogOpen, selectedCategory, form]);
+  }, [isAddEditDialogOpen, selectedCategory, form, categories]);
 
   const handleAddNew = () => {
     setSelectedCategory(null);
@@ -131,7 +150,7 @@ export default function CategoriesPage() {
 
   const confirmDelete = () => {
     if (selectedCategory) {
-      setCategories(categories.filter(c => c.id !== selectedCategory.id));
+      setCategories(categories.map(c => c.id === selectedCategory.id ? { ...c, is_deleted: true } : c).filter(c => !c.is_deleted));
       toast({ title: "Thành công", description: "Thể loại đã được xóa." });
     }
     setDeleteDialogOpen(false);
@@ -139,9 +158,19 @@ export default function CategoriesPage() {
   };
 
   const onSubmit = (values: CategoryFormValues) => {
+    const slug = values.name.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, '');
     if (selectedCategory) {
       const updatedCategories = categories.map(c => 
-        c.id === selectedCategory.id ? { ...c, ...values } : c
+        c.id === selectedCategory.id ? { 
+            ...c, 
+            ...values,
+            slug,
+            parent_id: values.parent_id || null,
+            image: values.image || 'https://placehold.co/100x100.png',
+            order: values.order ?? c.order,
+            description: values.description || '',
+            updated_at: new Date().toISOString(),
+        } : c
       );
       setCategories(updatedCategories);
       toast({ title: "Thành công", description: "Thể loại đã được cập nhật." });
@@ -149,11 +178,11 @@ export default function CategoriesPage() {
       const newCategory: Category = {
         id: `cate-${Math.floor(1000 + Math.random() * 9000)}`,
         name: values.name,
-        slug: values.name.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, ''),
+        slug,
         description: values.description || '',
-        parent_id: null,
-        image: 'https://placehold.co/100x100.png',
-        order: categories.length + 1,
+        parent_id: values.parent_id || null,
+        image: values.image || 'https://placehold.co/100x100.png',
+        order: values.order ?? categories.length + 1,
         is_active: values.is_active,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
@@ -164,6 +193,12 @@ export default function CategoriesPage() {
     }
     setAddEditDialogOpen(false);
     setSelectedCategory(null);
+  };
+  
+  const getParentCategoryName = (parentId: string | null): string => {
+    if (!parentId) return '—';
+    const parent = categories.find(c => c.id === parentId);
+    return parent ? parent.name : 'Không tìm thấy';
   };
 
   return (
@@ -190,9 +225,11 @@ export default function CategoriesPage() {
             <TableHeader>
               <TableRow>
                 <TableHead className="hidden w-[64px] sm:table-cell">
-                    <span className="sr-only">Ảnh</span>
+                    Ảnh
                 </TableHead>
                 <TableHead>Tên</TableHead>
+                <TableHead className="hidden md:table-cell">Mô tả</TableHead>
+                <TableHead className="hidden lg:table-cell">Danh mục cha</TableHead>
                 <TableHead>Trạng thái</TableHead>
                 <TableHead>
                   <span className="sr-only">Hành động</span>
@@ -213,6 +250,10 @@ export default function CategoriesPage() {
                     />
                   </TableCell>
                   <TableCell className="font-medium">{category.name}</TableCell>
+                  <TableCell className="hidden md:table-cell max-w-[200px] truncate" title={category.description}>
+                    {category.description || '—'}
+                  </TableCell>
+                  <TableCell className="hidden lg:table-cell">{getParentCategoryName(category.parent_id)}</TableCell>
                   <TableCell>
                       <Badge variant={category.is_active ? 'default' : 'secondary'}>
                         {category.is_active ? 'Hoạt động' : 'Không hoạt động'}
@@ -246,7 +287,7 @@ export default function CategoriesPage() {
       </Card>
 
       <Dialog open={isAddEditDialogOpen} onOpenChange={setAddEditDialogOpen}>
-        <DialogContent>
+        <DialogContent className="sm:max-w-2xl">
           <DialogHeader>
             <DialogTitle className="font-headline">{selectedCategory ? 'Sửa thể loại' : 'Thêm thể loại mới'}</DialogTitle>
             <DialogDescription>
@@ -254,19 +295,44 @@ export default function CategoriesPage() {
             </DialogDescription>
           </DialogHeader>
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-4 py-4">
+            <form onSubmit={form.handleSubmit(onSubmit)} className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4 max-h-[70vh] overflow-y-auto pr-6">
               <FormField
                 control={form.control}
                 name="name"
                 render={({ field }) => (
-                  <FormItem className="grid grid-cols-4 items-center gap-4">
-                    <FormLabel className="text-right">Tên</FormLabel>
-                    <div className="col-span-3">
+                  <FormItem>
+                    <FormLabel>Tên thể loại</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Ví dụ: Máy làm đất" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="parent_id"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Danh mục cha</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value || ''}>
                       <FormControl>
-                        <Input placeholder="Ví dụ: Máy làm đất" {...field} />
+                        <SelectTrigger>
+                          <SelectValue placeholder="Không có (danh mục gốc)" />
+                        </SelectTrigger>
                       </FormControl>
-                      <FormMessage className="mt-1 text-xs" />
-                    </div>
+                      <SelectContent>
+                        <SelectItem value="">Không có (danh mục gốc)</SelectItem>
+                        {categories
+                          .filter(c => c.id !== selectedCategory?.id)
+                          .map(category => (
+                            <SelectItem key={category.id} value={category.id}>
+                              {category.name}
+                            </SelectItem>
+                          ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
                   </FormItem>
                 )}
               />
@@ -274,14 +340,38 @@ export default function CategoriesPage() {
                 control={form.control}
                 name="description"
                 render={({ field }) => (
-                  <FormItem className="grid grid-cols-4 items-center gap-4">
-                    <FormLabel className="text-right">Mô tả</FormLabel>
-                     <div className="col-span-3">
-                      <FormControl>
-                        <Textarea placeholder="Mô tả ngắn về thể loại..." {...field} />
-                      </FormControl>
-                      <FormMessage className="mt-1 text-xs" />
-                    </div>
+                  <FormItem className="md:col-span-2">
+                    <FormLabel>Mô tả</FormLabel>
+                    <FormControl>
+                      <Textarea placeholder="Mô tả ngắn về thể loại..." {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="image"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>URL Hình ảnh</FormLabel>
+                    <FormControl>
+                      <Input placeholder="https://placehold.co/100x100.png" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="order"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Thứ tự hiển thị</FormLabel>
+                    <FormControl>
+                      <Input type="number" placeholder="1" {...field} />
+                    </FormControl>
+                    <FormMessage />
                   </FormItem>
                 )}
               />
@@ -289,24 +379,21 @@ export default function CategoriesPage() {
                 control={form.control}
                 name="is_active"
                 render={({ field }) => (
-                  <FormItem className="grid grid-cols-4 items-center gap-4">
-                    <FormLabel className="text-right">Trạng thái</FormLabel>
-                    <div className="col-span-3 flex items-center space-x-2">
-                      <FormControl>
-                        <Switch
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                          id="is_active"
-                        />
-                      </FormControl>
-                       <Label htmlFor="is_active" className="font-normal cursor-pointer">
-                         {field.value ? "Hoạt động" : "Không hoạt động"}
-                      </Label>
-                    </div>
+                  <FormItem className="md:col-span-2 flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm mt-4">
+                    <div className="space-y-0.5">
+                        <FormLabel>Trạng thái</FormLabel>
+                        <p className="text-sm text-muted-foreground">Hiển thị thể loại này trong hệ thống.</p>
+                      </div>
+                    <FormControl>
+                      <Switch
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
                   </FormItem>
                 )}
               />
-              <DialogFooter>
+              <DialogFooter className="md:col-span-2">
                 <Button type="submit" className="bg-primary hover:bg-primary/90">Lưu</Button>
               </DialogFooter>
             </form>
