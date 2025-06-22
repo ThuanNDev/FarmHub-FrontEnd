@@ -7,7 +7,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { Plus, Minus, X, Search, ArrowLeft, UserPlus, Printer, Leaf, User, ChevronsUpDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -17,8 +17,6 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
@@ -38,6 +36,7 @@ import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { useStore } from '@/contexts/StoreContext';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { DialogDescription, DialogFooter } from '@/components/ui/dialog';
 
 type Product = typeof mockProducts[0];
 type PriceTier = 'retail' | 'wholesale' | 'credit';
@@ -345,6 +344,24 @@ export default function POSPage() {
     setSelectedCustomerId('guest');
   };
 
+  const subtotal = useMemo(() => {
+    return cart.reduce((total, item) => total + item.appliedPrice * item.quantity, 0);
+  }, [cart]);
+
+  const total = useMemo(() => {
+    const finalTotal = subtotal - discount;
+    return finalTotal > 0 ? finalTotal : 0;
+  }, [subtotal, discount]);
+
+  const vatAmount = useMemo(() => {
+    if (!store.is_vat_enabled || !store.vat_rate) return 0;
+    return total * (store.vat_rate / 100);
+  }, [total, store.is_vat_enabled, store.vat_rate]);
+
+  const totalWithVat = useMemo(() => {
+    return total + vatAmount;
+  }, [total, vatAmount]);
+
   const handleQuickPrint = useCallback(() => {
     if (cart.length === 0) {
       toast({
@@ -576,25 +593,6 @@ export default function POSPage() {
       printWindow.close();
     }, 250);
   }, [cart, t, toast, store, selectedCustomer, currentUser, paymentMethod, subtotal, vatAmount, totalWithVat, discount]);
-
-
-  const subtotal = useMemo(() => {
-    return cart.reduce((total, item) => total + item.appliedPrice * item.quantity, 0);
-  }, [cart]);
-
-  const total = useMemo(() => {
-    const finalTotal = subtotal - discount;
-    return finalTotal > 0 ? finalTotal : 0;
-  }, [subtotal, discount]);
-
-  const vatAmount = useMemo(() => {
-    if (!store.is_vat_enabled || !store.vat_rate) return 0;
-    return total * (store.vat_rate / 100);
-  }, [total, store.is_vat_enabled, store.vat_rate]);
-
-  const totalWithVat = useMemo(() => {
-    return total + vatAmount;
-  }, [total, vatAmount]);
 
   const remainingAmountInDialog = useMemo(() => {
     if (!isPaymentDialogOpen) return 0;
