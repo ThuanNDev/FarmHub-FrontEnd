@@ -1,3 +1,4 @@
+
 'use client';
 import {
   DollarSign,
@@ -34,6 +35,7 @@ import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from 'recharts';
 import { mockOrders, mockCustomers, mockProducts, mockOrderItems, mockChartData } from '@/lib/data';
 import { useMemo, useState, useEffect } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { format } from 'date-fns';
 
 export default function Dashboard() {
   const { t } = useLanguage();
@@ -227,7 +229,7 @@ export default function Dashboard() {
                       <div className="font-medium">{getCustomerName(order.customer_id)}</div>
                     </TableCell>
                     <TableCell className="hidden sm:table-cell">
-                      {new Date(order.created_at).toLocaleDateString('vi-VN')}
+                      {format(new Date(order.created_at), 'dd/MM/yyyy')}
                     </TableCell>
                     <TableCell>
                         <Badge variant={order.status === 'Delivered' ? 'default' : order.status === 'Cancelled' ? 'destructive' : 'secondary'}>

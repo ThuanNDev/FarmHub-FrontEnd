@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useMemo } from 'react';
@@ -59,6 +60,7 @@ import {
 import { mockReturnOrders, mockReturnOrderItems, mockOrders, mockOrderItems, mockCustomers, mockProducts, mockUsers } from '@/lib/data';
 import { useToast } from '@/hooks/use-toast';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { format } from 'date-fns';
 
 type ReturnOrder = typeof mockReturnOrders[0];
 type Order = typeof mockOrders[0];
@@ -184,7 +186,7 @@ export default function ReturnsPage() {
   };
   
   const formatCurrency = (amount: number) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
-  const formatDate = (dateString: string | null) => dateString ? new Date(dateString).toLocaleDateString('vi-VN') : 'N/A';
+  const formatDate = (dateString: string | null) => dateString ? format(new Date(dateString), 'dd/MM/yyyy') : 'N/A';
   
   const getStatusVariant = (status: string): 'default' | 'secondary' | 'destructive' | 'outline' => {
     switch (status) {

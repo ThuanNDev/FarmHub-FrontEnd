@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -36,6 +37,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { format } from 'date-fns';
 
 type ReturnOrder = typeof mockReturnOrders[0];
 
@@ -110,8 +112,7 @@ export default function ReturnOrderDetailPage() {
   
   const formatDate = (dateString: string | null) => {
     if (!dateString) return '-';
-    const options: Intl.DateTimeFormatOptions = { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' };
-    return new Date(dateString).toLocaleDateString('vi-VN', options);
+    return format(new Date(dateString), 'dd/MM/yyyy HH:mm');
   }
 
   const getStatusVariant = (status: string): 'default' | 'secondary' | 'destructive' | 'outline' => {

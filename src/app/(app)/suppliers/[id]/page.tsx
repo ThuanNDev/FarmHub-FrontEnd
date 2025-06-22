@@ -25,6 +25,7 @@ import {
   } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import { format } from 'date-fns';
 
 export default function SupplierDetailPage() {
   const router = useRouter();
@@ -44,7 +45,7 @@ export default function SupplierDetailPage() {
   
   const formatDate = (dateString: string | null) => {
     if (!dateString) return '-';
-    return new Date(dateString).toLocaleDateString('vi-VN');
+    return format(new Date(dateString), 'dd/MM/yyyy');
   }
 
   const getImageUrl = (imagesJson: string) => {

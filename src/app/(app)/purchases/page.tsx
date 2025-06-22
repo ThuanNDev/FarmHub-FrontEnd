@@ -273,7 +273,7 @@ export default function PurchasesPage() {
   };
   
   const formatCurrency = (amount: number) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
-  const formatDate = (dateString: string | null) => dateString ? new Date(dateString).toLocaleDateString('vi-VN') : 'N/A';
+  const formatDate = (dateString: string | null) => dateString ? format(new Date(dateString), 'dd/MM/yyyy') : 'N/A';
   
   const getStatusVariant = (status: string): 'default' | 'secondary' | 'destructive' | 'outline' => {
     switch (status) {

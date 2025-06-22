@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useState, useMemo } from 'react';
@@ -48,6 +49,7 @@ import { Input } from '@/components/ui/input';
 import { mockOrders, mockCustomers, mockOrderItems } from '@/lib/data';
 import { useToast } from '@/hooks/use-toast';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { format } from 'date-fns';
 
 type Order = typeof mockOrders[0];
 
@@ -101,7 +103,7 @@ export default function OrdersPage() {
   }
   
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('vi-VN');
+    return format(new Date(dateString), 'dd/MM/yyyy');
   }
 
   const handlePrint = (order: Order) => {

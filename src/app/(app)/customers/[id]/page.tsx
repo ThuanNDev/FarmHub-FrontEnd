@@ -34,6 +34,7 @@ import {
 } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
+import { format } from 'date-fns';
 
 export default function CustomerDetailPage() {
   const router = useRouter();
@@ -58,7 +59,7 @@ export default function CustomerDetailPage() {
   
   const formatDate = (dateString: string | null) => {
     if (!dateString) return '-';
-    return new Date(dateString).toLocaleDateString('vi-VN');
+    return format(new Date(dateString), 'dd/MM/yyyy');
   }
 
   const getStatusVariant = (status: string) => {

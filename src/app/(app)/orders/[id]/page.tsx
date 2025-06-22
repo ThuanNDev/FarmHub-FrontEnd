@@ -38,6 +38,7 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { useStore } from '@/contexts/StoreContext';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { format } from 'date-fns';
 
 type Order = typeof mockOrders[0];
 
@@ -85,8 +86,7 @@ export default function OrderDetailPage() {
   
   const formatDate = (dateString: string | null) => {
     if (!dateString) return '-';
-    const options: Intl.DateTimeFormatOptions = { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' };
-    return new Date(dateString).toLocaleDateString('vi-VN', options);
+    return format(new Date(dateString), 'dd/MM/yyyy HH:mm');
   }
 
   const handlePrintOrder = () => {

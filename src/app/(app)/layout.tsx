@@ -1,3 +1,4 @@
+
 'use client';
 import * as React from 'react';
 import Link from 'next/link';
@@ -71,6 +72,7 @@ import { StoreProvider, useStore } from '@/contexts/StoreContext';
 import { useToast } from '@/hooks/use-toast';
 import { mockUsers, mockNotifications as initialNotifications } from '@/lib/data';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { RelativeTime } from '@/components/RelativeTime';
 
 const navItems = [
   { href: '/', labelKey: 'nav.dashboard', icon: LayoutDashboard },
@@ -293,7 +295,9 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
                                 <div className={cn('flex-1 space-y-1', notification.is_read && 'pl-5')}>
                                   <p className="font-medium">{notification.title}</p>
                                   <p className="text-muted-foreground">{notification.description}</p>
-                                  <p className="text-xs text-muted-foreground/80">{formatDistanceToNow(new Date(notification.created_at), { addSuffix: true, locale: viLocale })}</p>
+                                  <p className="text-xs text-muted-foreground/80">
+                                    <RelativeTime date={notification.created_at} />
+                                  </p>
                                 </div>
                               </div>
                            </a>
