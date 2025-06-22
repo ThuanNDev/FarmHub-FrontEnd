@@ -160,7 +160,7 @@ export default function POSPage() {
   };
   
   const handleConfirmPayment = () => {
-    const remaining = total - amountPaid;
+    const remaining = totalWithVat - amountPaid;
     let description = `Đơn hàng đã được tạo.`;
     if (remaining > 0 && selectedCustomer) {
         description += ` Ghi nợ ${formatCurrency(remaining)} cho khách hàng ${selectedCustomer.name}.`;
@@ -399,13 +399,22 @@ export default function POSPage() {
     return finalTotal > 0 ? finalTotal : 0;
   }, [subtotal, discount]);
 
+  const vatAmount = useMemo(() => {
+    return total * ((store.vat_rate || 0) / 100);
+  }, [total, store.vat_rate]);
+
+  const totalWithVat = useMemo(() => {
+    return total + vatAmount;
+  }, [total, vatAmount]);
+
+
   // Effect to initialize payment dialog state
   useEffect(() => {
     if (isPaymentDialogOpen) {
-      setAmountPaid(total);
+      setAmountPaid(totalWithVat);
       setPaymentMethod('Cash');
     }
-  }, [isPaymentDialogOpen, total]);
+  }, [isPaymentDialogOpen, totalWithVat]);
 
   // Effect to handle payment method changes (e.g., Debt)
   useEffect(() => {
@@ -604,10 +613,16 @@ export default function POSPage() {
                           placeholder="0"
                       />
                   </div>
+                  {store.vat_rate > 0 && (
+                    <div className="flex justify-between">
+                        <span>VAT ({store.vat_rate}%)</span>
+                        <span className="font-medium">{formatCurrency(vatAmount)}</span>
+                    </div>
+                  )}
                   <Separator />
                   <div className="flex justify-between font-bold text-lg">
                       <span>Khách phải trả</span>
-                      <span>{formatCurrency(total)}</span>
+                      <span>{formatCurrency(totalWithVat)}</span>
                   </div>
               </div>
               <Button className="w-full bg-accent hover:bg-accent/90" size="lg" disabled={cart.length === 0} onClick={() => setPaymentDialogOpen(true)}>
@@ -768,7 +783,7 @@ export default function POSPage() {
                     </div>
                     <div className="flex justify-between font-bold text-lg">
                         <span>Tổng cộng</span>
-                        <span>{formatCurrency(total)}</span>
+                        <span>{formatCurrency(totalWithVat)}</span>
                     </div>
                 </div>
                 <Separator />
@@ -783,10 +798,10 @@ export default function POSPage() {
                             className="text-right text-lg font-bold"
                         />
                     </div>
-                    {(total - amountPaid) > 0 && (
+                    {(totalWithVat - amountPaid) > 0 && (
                         <div className="flex justify-between text-sm text-destructive font-semibold text-right">
                             <span>Còn lại (ghi nợ)</span>
-                            <span>{formatCurrency(total - amountPaid)}</span>
+                            <span>{formatCurrency(totalWithVat - amountPaid)}</span>
                         </div>
                     )}
                 </div>
