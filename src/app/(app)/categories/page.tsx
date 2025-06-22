@@ -81,7 +81,7 @@ type Category = typeof mockCategories[0];
 const categorySchema = z.object({
   name: z.string().min(1, { message: "Tên thể loại không được để trống." }),
   description: z.string().optional(),
-  parent_id: z.string().optional(), // Will treat empty string as null in submission
+  parent_id: z.string().optional(), // Will treat special value as null in submission
   image: z.string().url({ message: "Vui lòng nhập URL hình ảnh hợp lệ." }).or(z.literal('')).optional(),
   order: z.coerce.number().int().optional(),
   is_active: z.boolean().default(true),
@@ -239,7 +239,7 @@ export default function CategoriesPage() {
             </TableHeader>
             <TableBody>
               {categories.map((category) => (
-                <TableRow key={category.id}>
+                <TableRow key={category.id} onClick={() => router.push(`/categories/${category.slug}`)} className="cursor-pointer">
                   <TableCell className="hidden sm:table-cell">
                     <Image
                         alt={category.name}
@@ -260,7 +260,7 @@ export default function CategoriesPage() {
                         {category.is_active ? 'Hoạt động' : 'Không hoạt động'}
                       </Badge>
                   </TableCell>
-                  <TableCell>
+                  <TableCell onClick={(e) => e.stopPropagation()}>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button aria-haspopup="true" size="icon" variant="ghost">
@@ -269,9 +269,8 @@ export default function CategoriesPage() {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => router.push(`/categories/${category.slug}`)}>Xem chi tiết</DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleEdit(category)}>Sửa</DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleDelete(category)} className="text-destructive">Xóa</DropdownMenuItem>
+                        <DropdownMenuItem onSelect={() => handleEdit(category)}>Sửa</DropdownMenuItem>
+                        <DropdownMenuItem onSelect={() => handleDelete(category)} className="text-destructive">Xóa</DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </TableCell>

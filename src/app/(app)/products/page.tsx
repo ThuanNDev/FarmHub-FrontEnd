@@ -366,23 +366,19 @@ export default function ProductsPage() {
                 </TableHeader>
                 <TableBody>
                   {paginatedProducts.map((product) => (
-                    <TableRow key={product.id}>
+                    <TableRow key={product.id} onClick={() => router.push(`/products/${product.slug}`)} className="cursor-pointer">
                       <TableCell className="hidden sm:table-cell">
-                        <Link href={`/products/${product.slug}`}>
-                          <Image
-                            alt={product.name}
-                            className="aspect-square rounded-md object-cover"
-                            height="64"
-                            src={getImageUrl(product.images)}
-                            width="64"
-                            data-ai-hint={product.hint}
-                          />
-                        </Link>
+                        <Image
+                          alt={product.name}
+                          className="aspect-square rounded-md object-cover"
+                          height="64"
+                          src={getImageUrl(product.images)}
+                          width="64"
+                          data-ai-hint={product.hint}
+                        />
                       </TableCell>
                       <TableCell className="font-medium">
-                        <Link href={`/products/${product.slug}`} className="hover:underline">
-                          {product.name}
-                        </Link>
+                        {product.name}
                       </TableCell>
                       <TableCell className="hidden lg:table-cell">{formatCurrency(product.import_price)}</TableCell>
                       <TableCell>{formatCurrency(product.price)}</TableCell>
@@ -390,7 +386,7 @@ export default function ProductsPage() {
                       <TableCell className="hidden md:table-cell">{product.stock}</TableCell>
                       <TableCell className="hidden md:table-cell">{product.unit}</TableCell>
                       <TableCell className="hidden md:table-cell">{getCategoryName(product.category_id)}</TableCell>
-                      <TableCell>
+                      <TableCell onClick={(e) => e.stopPropagation()}>
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
                             <Button aria-haspopup="true" size="icon" variant="ghost">
@@ -399,9 +395,8 @@ export default function ProductsPage() {
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => router.push(`/products/${product.slug}`)}>Xem chi tiết</DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => handleEdit(product)}>Sửa</DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => handleDelete(product)} className="text-destructive">
+                            <DropdownMenuItem onSelect={() => handleEdit(product)}>Sửa</DropdownMenuItem>
+                            <DropdownMenuItem onSelect={() => handleDelete(product)} className="text-destructive">
                               Xóa
                             </DropdownMenuItem>
                           </DropdownMenuContent>

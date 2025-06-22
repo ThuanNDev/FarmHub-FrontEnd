@@ -219,7 +219,7 @@ export default function ReturnsPage() {
             </TableHeader>
             <TableBody>
               {returnOrders.map((ro) => (
-                <TableRow key={ro.id}>
+                <TableRow key={ro.id} onClick={() => router.push(`/returns/${ro.id}`)} className="cursor-pointer">
                   <TableCell className="font-medium">#{ro.id.slice(-6)}</TableCell>
                   <TableCell>{mockOrders.find(o => o.id === ro.order_id)?.order_code || 'N/A'}</TableCell>
                   <TableCell>{getCustomerName(ro.customer_id)}</TableCell>
@@ -228,7 +228,7 @@ export default function ReturnsPage() {
                     <Badge variant={getStatusVariant(ro.status)}>{ro.status}</Badge>
                   </TableCell>
                   <TableCell className="text-right">{formatCurrency(ro.total_refund_amount)}</TableCell>
-                  <TableCell>
+                  <TableCell onClick={(e) => e.stopPropagation()}>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button aria-haspopup="true" size="icon" variant="ghost">
@@ -237,7 +237,7 @@ export default function ReturnsPage() {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => router.push(`/returns/${ro.id}`)}>
+                        <DropdownMenuItem onSelect={() => router.push(`/returns/${ro.id}`)}>
                           Xem chi tiết & Xử lý
                         </DropdownMenuItem>
                       </DropdownMenuContent>

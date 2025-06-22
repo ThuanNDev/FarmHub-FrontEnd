@@ -254,7 +254,7 @@ export default function CustomersPage() {
             </TableHeader>
             <TableBody>
               {filteredCustomers.map((customer) => (
-                <TableRow key={customer.id}>
+                <TableRow key={customer.id} onClick={() => router.push(`/customers/${customer.id}`)} className="cursor-pointer">
                   <TableCell className="font-medium">{customer.name}</TableCell>
                   <TableCell>
                     <div className="font-medium">{customer.phone}</div>
@@ -271,7 +271,7 @@ export default function CustomersPage() {
                   <TableCell>
                     <Badge variant={customer.status === 'Active' ? 'default' : 'secondary'}>{customer.status}</Badge>
                   </TableCell>
-                  <TableCell>
+                  <TableCell onClick={(e) => e.stopPropagation()}>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button aria-haspopup="true" size="icon" variant="ghost">
@@ -280,9 +280,8 @@ export default function CustomersPage() {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => router.push(`/customers/${customer.id}`)}>Xem chi tiết</DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleEdit(customer)}>Sửa</DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleDelete(customer)} className="text-destructive">
+                        <DropdownMenuItem onSelect={() => handleEdit(customer)}>Sửa</DropdownMenuItem>
+                        <DropdownMenuItem onSelect={() => handleDelete(customer)} className="text-destructive">
                           Xóa
                         </DropdownMenuItem>
                       </DropdownMenuContent>

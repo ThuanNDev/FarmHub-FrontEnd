@@ -186,6 +186,7 @@ export default function PurchasesPage() {
                 updated_at: now,
             };
             
+            // This is a more robust way to update an array of objects in memory without reassigning an imported binding
             const otherItems = mockPurchaseOrderItems.filter(item => item.purchase_order_id !== selectedPO.id);
             const newItemsForThisPO = items.map((item, index) => ({
                 id: `poi-${selectedPO.id}-${index}`,
@@ -433,7 +434,7 @@ export default function PurchasesPage() {
             </TableHeader>
             <TableBody>
               {purchaseOrders.map((po) => (
-                <TableRow key={po.id}>
+                <TableRow key={po.id} onClick={() => router.push(`/purchases/${po.id}`)} className="cursor-pointer">
                   <TableCell className="font-medium">{po.order_code}</TableCell>
                   <TableCell>{getSupplierName(po.supplier_id)}</TableCell>
                   <TableCell>{formatDate(po.created_at)}</TableCell>
@@ -441,7 +442,7 @@ export default function PurchasesPage() {
                     <Badge variant={getStatusVariant(po.status)}>{po.status}</Badge>
                   </TableCell>
                   <TableCell className="text-right">{formatCurrency(po.total_amount)}</TableCell>
-                  <TableCell>
+                  <TableCell onClick={(e) => e.stopPropagation()}>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button aria-haspopup="true" size="icon" variant="ghost">
@@ -450,14 +451,11 @@ export default function PurchasesPage() {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => router.push(`/purchases/${po.id}`)}>
-                          Xem chi tiết
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handlePrint(po)}>
+                        <DropdownMenuItem onSelect={() => handlePrint(po)}>
                           <Printer className="mr-2 h-4 w-4" /> In đơn nhập hàng
                         </DropdownMenuItem>
-                        {po.status === 'pending' && <DropdownMenuItem onClick={() => handleEdit(po)}>Sửa</DropdownMenuItem>}
-                        {po.status !== 'received' && po.status !== 'cancelled' && <DropdownMenuItem onClick={() => handleCancel(po)} className="text-destructive">Hủy</DropdownMenuItem>}
+                        {po.status === 'pending' && <DropdownMenuItem onSelect={() => handleEdit(po)}>Sửa</DropdownMenuItem>}
+                        {po.status !== 'received' && po.status !== 'cancelled' && <DropdownMenuItem onSelect={() => handleCancel(po)} className="text-destructive">Hủy</DropdownMenuItem>}
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </TableCell>
@@ -629,6 +627,7 @@ function AddProductForm({ onAddItem, currentItems }: { onAddItem: (item: Purchas
     const [unitPrice, setUnitPrice] = useState('0');
     const [open, setOpen] = useState(false);
     const [search, setSearch] = useState("");
+    const { toast } = useToast();
 
     const availableProducts = useMemo(() => {
         return mockProducts.filter(p => p.is_active && !p.is_deleted && !currentItems.some(item => item.productId === p.id));

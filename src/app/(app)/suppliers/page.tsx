@@ -192,7 +192,7 @@ export default function SuppliersPage() {
             </TableHeader>
             <TableBody>
               {suppliers.map((supplier) => (
-                <TableRow key={supplier.id}>
+                <TableRow key={supplier.id} onClick={() => router.push(`/suppliers/${supplier.id}`)} className="cursor-pointer">
                   <TableCell className="font-medium">{supplier.name}</TableCell>
                   <TableCell>
                     <div className="font-medium">{supplier.phone}</div>
@@ -201,7 +201,7 @@ export default function SuppliersPage() {
                     </div>
                   </TableCell>
                   <TableCell className="hidden md:table-cell">{supplier.contact_person || '-'}</TableCell>
-                  <TableCell>
+                  <TableCell onClick={(e) => e.stopPropagation()}>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button aria-haspopup="true" size="icon" variant="ghost">
@@ -210,9 +210,8 @@ export default function SuppliersPage() {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => router.push(`/suppliers/${supplier.id}`)}>Xem chi tiết</DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleEdit(supplier)}>Sửa</DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleDelete(supplier)} className="text-destructive">Xóa</DropdownMenuItem>
+                        <DropdownMenuItem onSelect={() => handleEdit(supplier)}>Sửa</DropdownMenuItem>
+                        <DropdownMenuItem onSelect={() => handleDelete(supplier)} className="text-destructive">Xóa</DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </TableCell>

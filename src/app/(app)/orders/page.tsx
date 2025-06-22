@@ -196,7 +196,7 @@ export default function OrdersPage() {
                 </TableHeader>
                 <TableBody>
                   {filteredOrders.map((order) => (
-                    <TableRow key={order.id}>
+                    <TableRow key={order.id} onClick={() => router.push(`/orders/${order.id}`)} className="cursor-pointer">
                       <TableCell className="font-medium">{order.order_code}</TableCell>
                       <TableCell>{getCustomerName(order.customer_id)}</TableCell>
                       <TableCell className="hidden md:table-cell">
@@ -210,7 +210,7 @@ export default function OrdersPage() {
                       <TableCell className="text-right">
                         {formatCurrency(order.total_amount)}
                       </TableCell>
-                      <TableCell>
+                      <TableCell onClick={(e) => e.stopPropagation()}>
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
                             <Button aria-haspopup="true" size="icon" variant="ghost">
@@ -219,19 +219,18 @@ export default function OrdersPage() {
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => router.push(`/orders/${order.id}`)}>Xem chi tiết</DropdownMenuItem>
                             {order.status === 'Cancelled' ? (
-                                <DropdownMenuItem onClick={() => handleRecreateOrder(order)}>
+                                <DropdownMenuItem onSelect={() => handleRecreateOrder(order)}>
                                     <RefreshCw className="mr-2 h-4 w-4" />
                                     <span>Tái tạo đơn</span>
                                 </DropdownMenuItem>
                             ) : (
                                 <>
-                                    <DropdownMenuItem onClick={() => handlePrint(order)}>In đơn</DropdownMenuItem>
-                                    <DropdownMenuItem onClick={() => handleEdit(order)} disabled={order.status !== 'Pending'}>Sửa</DropdownMenuItem>
+                                    <DropdownMenuItem onSelect={() => handlePrint(order)}>In đơn</DropdownMenuItem>
+                                    <DropdownMenuItem onSelect={() => handleEdit(order)} disabled={order.status !== 'Pending'}>Sửa</DropdownMenuItem>
                                     <DropdownMenuSeparator />
                                     <DropdownMenuItem 
-                                        onClick={() => handleOpenCancelDialog(order)} 
+                                        onSelect={() => handleOpenCancelDialog(order)} 
                                         className="text-destructive" 
                                         disabled={order.status === 'Delivered' || order.status === 'Cancelled'}
                                     >

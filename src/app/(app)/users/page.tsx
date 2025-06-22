@@ -328,7 +328,7 @@ export default function UsersPage() {
             </TableHeader>
             <TableBody>
               {users.map((user) => (
-                <TableRow key={user.id}>
+                <TableRow key={user.id} onClick={() => router.push(`/users/${user.id}`)} className="cursor-pointer">
                   <TableCell>
                     <div className="font-medium">{user.full_name}</div>
                     <div className="text-sm text-muted-foreground">@{user.username}</div>
@@ -343,7 +343,7 @@ export default function UsersPage() {
                         {user.is_active ? 'Hoạt động' : 'Vô hiệu hóa'}
                       </Badge>
                   </TableCell>
-                  <TableCell>
+                  <TableCell onClick={(e) => e.stopPropagation()}>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button aria-haspopup="true" size="icon" variant="ghost">
@@ -352,9 +352,8 @@ export default function UsersPage() {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => router.push(`/users/${user.id}`)}>Xem chi tiết</DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleEdit(user)}>Sửa</DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleDelete(user)} className="text-destructive">Xóa</DropdownMenuItem>
+                        <DropdownMenuItem onSelect={() => handleEdit(user)}>Sửa</DropdownMenuItem>
+                        <DropdownMenuItem onSelect={() => handleDelete(user)} className="text-destructive">Xóa</DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </TableCell>
