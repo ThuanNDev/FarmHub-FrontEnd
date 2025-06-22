@@ -25,7 +25,10 @@ import {
   Mail,
   Phone,
   Printer,
+  Bell,
 } from 'lucide-react';
+import { formatDistanceToNow } from 'date-fns';
+import { vi as viLocale } from 'date-fns/locale';
 
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -43,6 +46,14 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from '@/components/ui/tabs';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Separator } from '@/components/ui/separator';
+import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
@@ -56,7 +67,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { StoreProvider, useStore } from '@/contexts/StoreContext';
 import { useToast } from '@/hooks/use-toast';
-import { mockUsers } from '@/lib/data';
+import { mockUsers, mockNotifications as initialNotifications } from '@/lib/data';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 const navItems = [
@@ -112,6 +123,25 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
   const { locale, setLocale, t } = useLanguage();
 
   const appCreator = mockUsers.find(u => u.is_superadmin);
+  
+  const [notifications, setNotifications] = React.useState(initialNotifications);
+  const [notifActiveTab, setNotifActiveTab] = React.useState('all');
+
+  const unreadCount = React.useMemo(() => notifications.filter(n => !n.is_read).length, [notifications]);
+  
+  const handleMarkAsRead = (notificationId: string) => {
+    setNotifications(prev => prev.map(n => n.id === notificationId ? { ...n, is_read: true } : n));
+  };
+  
+  const handleMarkAllAsRead = () => {
+    setNotifications(prev => prev.map(n => ({...n, is_read: true})));
+  };
+
+  const filteredNotifications = React.useMemo(() => {
+    if (notifActiveTab === 'all') return notifications;
+    return notifications.filter(n => n.type === notifActiveTab);
+  }, [notifications, notifActiveTab]);
+
 
   const handleLogout = () => {
     localStorage.removeItem('loggedInUserId');
@@ -177,6 +207,64 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
              {/* Can add a global search here if needed */}
           </div>
           <div className="flex items-center gap-2">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="icon" className="relative h-10 w-10">
+                  <Bell className="h-5 w-5" />
+                  {unreadCount > 0 && (
+                    <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-destructive text-xs text-destructive-foreground">
+                      {unreadCount}
+                    </span>
+                  )}
+                  <span className="sr-only">Mở thông báo</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-[400px] p-2">
+                <div className="flex items-center justify-between px-2 py-1">
+                  <DropdownMenuLabel className="p-0">Thông báo</DropdownMenuLabel>
+                  {unreadCount > 0 && (
+                    <Button variant="link" size="sm" className="h-auto p-0" onClick={handleMarkAllAsRead}>
+                      Đánh dấu tất cả đã đọc
+                    </Button>
+                  )}
+                </div>
+                <Separator className="my-2" />
+                <Tabs defaultValue="all" onValueChange={setNotifActiveTab}>
+                  <TabsList className="grid w-full grid-cols-4">
+                    <TabsTrigger value="all">Tất cả</TabsTrigger>
+                    <TabsTrigger value="order">Đơn hàng</TabsTrigger>
+                    <TabsTrigger value="inventory">Kho</TabsTrigger>
+                    <TabsTrigger value="system">Hệ thống</TabsTrigger>
+                  </TabsList>
+                  <ScrollArea className="h-80 mt-2">
+                    {filteredNotifications.length > 0 ? (
+                      filteredNotifications.map((notification) => (
+                        <Link href={notification.link || '#'} key={notification.id} passHref legacyBehavior>
+                           <a onClick={() => handleMarkAsRead(notification.id)} className="block">
+                              <div className={cn(
+                                'flex items-start gap-3 rounded-lg p-3 text-sm transition-colors hover:bg-muted',
+                                !notification.is_read && 'bg-primary/5'
+                              )}>
+                                {!notification.is_read && <div className="mt-1 h-2 w-2 rounded-full bg-primary" />}
+                                <div className={cn('flex-1 space-y-1', notification.is_read && 'pl-5')}>
+                                  <p className="font-medium">{notification.title}</p>
+                                  <p className="text-muted-foreground">{notification.description}</p>
+                                  <p className="text-xs text-muted-foreground/80">{formatDistanceToNow(new Date(notification.created_at), { addSuffix: true, locale: viLocale })}</p>
+                                </div>
+                              </div>
+                           </a>
+                        </Link>
+                      ))
+                    ) : (
+                      <div className="flex h-full items-center justify-center p-8">
+                        <p className="text-muted-foreground">Không có thông báo mới.</p>
+                      </div>
+                    )}
+                  </ScrollArea>
+                </Tabs>
+              </DropdownMenuContent>
+            </DropdownMenu>
+
             <div className="flex items-center border rounded-md h-10">
                 <Button variant={locale === 'vi' ? 'secondary' : 'ghost'} size="sm" className="rounded-r-none border-r h-full px-3" onClick={() => setLocale('vi')}>VI</Button>
                 <Button variant={locale === 'en' ? 'secondary' : 'ghost'} size="sm" className="rounded-l-none h-full px-3" onClick={() => setLocale('en')}>EN</Button>

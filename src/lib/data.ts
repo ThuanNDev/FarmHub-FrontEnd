@@ -1115,5 +1115,76 @@ export const mockReturnOrderItems: {
     }
 ];
 
+export const mockNotifications: {
+    id: string;
+    type: 'order' | 'inventory' | 'system';
+    title: string;
+    description: string;
+    link?: string;
+    is_read: boolean;
+    created_at: string;
+}[] = [];
 
+// Dynamically generate some notifications
+const generateNotifications = () => {
+    if (mockNotifications.length > 0) return; // Only generate once
+
+    // Inventory warnings
+    const lowStockProducts = mockProducts.filter(p => p.stock > 0 && p.stock <= p.min_stock_level);
+    lowStockProducts.slice(0, 2).forEach(p => {
+        mockNotifications.push({
+            id: `notif-inv-${p.id}`,
+            type: 'inventory',
+            title: 'Sản phẩm sắp hết hàng',
+            description: `${p.name} chỉ còn ${p.stock} sản phẩm.`,
+            link: `/products/${p.slug}`,
+            is_read: false,
+            created_at: new Date(Date.now() - Math.random() * 86400000).toISOString() // within last 24h
+        });
+    });
+
+    // Pending orders
+    const pendingOrders = mockOrders.filter(o => o.status === 'Pending');
+    if (pendingOrders.length > 0) {
+        mockNotifications.push({
+            id: `notif-ord-pending`,
+            type: 'order',
+            title: 'Đơn hàng chờ xử lý',
+            description: `Bạn có ${pendingOrders.length} đơn hàng đang chờ xử lý.`,
+            link: '/orders',
+            is_read: false,
+            created_at: new Date(Date.now() - Math.random() * 3600000).toISOString() // within last hour
+        });
+    }
+
+    // System notifications
+    mockNotifications.push({
+        id: `notif-sys-update`,
+        type: 'system',
+        title: 'Cập nhật hệ thống',
+        description: 'Phiên bản mới v1.2.0 đã được cài đặt thành công.',
+        link: undefined,
+        is_read: true,
+        created_at: new Date(Date.now() - 86400000 * 2).toISOString() // 2 days ago
+    });
+
+    // Payment notification
+    const paidOrder = mockOrders.find(o => o.status === 'Delivered');
+    if (paidOrder) {
+        mockNotifications.push({
+            id: `notif-ord-paid-${paidOrder.id}`,
+            type: 'order',
+            title: 'Thanh toán thành công',
+            description: `Đơn hàng ${paidOrder.order_code} đã được thanh toán.`,
+            link: `/orders/${paidOrder.id}`,
+            is_read: true,
+            created_at: new Date(Date.now() - 86400000 * 3).toISOString() // 3 days ago
+        });
+    }
+
+    // Sort by date
+    mockNotifications.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+}
+
+generateNotifications();
     
