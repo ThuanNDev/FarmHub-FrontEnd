@@ -35,6 +35,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { mockProducts, mockCustomers, mockCategories, mockStores } from '@/lib/data';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
+import { useStore } from '@/contexts/StoreContext';
 
 type Product = typeof mockProducts[0];
 type CartItem = Product & { quantity: number };
@@ -69,6 +70,7 @@ export default function POSPage() {
   const [qrCodeUrl, setQrCodeUrl] = useState('');
   
   const { toast } = useToast();
+  const { store } = useStore();
 
   const form = useForm<CustomerFormValues>({
     resolver: zodResolver(customerSchema),
@@ -174,11 +176,129 @@ export default function POSPage() {
   };
 
   const handleQuickPrint = () => {
-    toast({
-      title: 'Tính năng đang phát triển',
-      description: 'Chức năng in nhanh hóa đơn sẽ sớm được ra mắt.',
-    });
+    if (cart.length === 0) {
+      toast({
+        variant: "destructive",
+        title: "Giỏ hàng trống",
+        description: "Vui lòng thêm sản phẩm vào giỏ hàng trước khi in.",
+      });
+      return;
+    }
+
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) {
+      toast({
+        variant: "destructive",
+        title: "Lỗi",
+        description: "Không thể mở cửa sổ in. Vui lòng cho phép pop-up.",
+      });
+      return;
+    }
+    
+    const invoiceDate = new Date().toLocaleDateString('vi-VN');
+    const orderCode = `HD${Date.now().toString().slice(-6)}`;
+
+    const itemsHtml = cart.map(item => `
+      <tr class="item">
+        <td>${item.name}<br/><small>SL: ${item.quantity} x ${formatCurrency(item.price)}</small></td>
+        <td class="text-right">${formatCurrency(item.price * item.quantity)}</td>
+      </tr>
+    `).join('');
+
+    const invoiceHtml = `
+      <html>
+        <head>
+          <title>Hóa đơn ${orderCode}</title>
+          <style>
+            @media print {
+              @page { margin: 0; }
+              body { margin: 0; }
+            }
+            body { font-family: 'Helvetica Neue', 'Helvetica', Helvetica, Arial, sans-serif; font-size: 12px; line-height: 1.4; color: #000; background: #fff; }
+            .invoice-wrapper { max-width: 300px; width: 100%; margin: 0 auto; padding: 20px; }
+            .header { text-align: center; margin-bottom: 10px; }
+            .header h1 { font-size: 18px; margin: 0; font-weight: bold; text-transform: uppercase; }
+            .header p { margin: 2px 0; font-size: 12px; }
+            .info { margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px dashed #000;}
+            .info p { margin: 2px 0; }
+            .items-table { width: 100%; border-collapse: collapse; margin-bottom: 10px; }
+            .items-table th, .items-table td { text-align: left; padding: 4px 0; vertical-align: top; }
+            .items-table th { border-bottom: 1px solid #000; }
+            .items-table td { border-bottom: 1px dotted #ccc; }
+            .items-table .item td { padding-top: 8px; }
+            .items-table .item:last-child td { border-bottom: none; }
+            .items-table th:last-child, .items-table td:last-child { text-align: right; }
+            .totals { width: 100%; margin-top: 10px; padding-top: 10px; border-top: 1px dashed #000; }
+            .totals td { padding: 3px 0; }
+            .totals .label { text-align: left; }
+            .totals .value { text-align: right; }
+            .totals .total .value { font-weight: bold; font-size: 14px; }
+            .footer { text-align: center; margin-top: 20px; font-size: 11px; }
+            .text-right { text-align: right; }
+          </style>
+        </head>
+        <body>
+          <div class="invoice-wrapper">
+            <div class="header">
+              <h1>${store.name}</h1>
+              <p>${store.address}</p>
+              <p>SĐT: ${store.phone}</p>
+            </div>
+
+            <div class="info">
+              <p><strong>Hóa đơn bán lẻ:</strong> ${orderCode}</p>
+              <p><strong>Ngày:</strong> ${invoiceDate}</p>
+              <p><strong>Khách hàng:</strong> ${selectedCustomer?.name || 'Khách lẻ'}</p>
+              ${selectedCustomer ? `<p><strong>SĐT:</strong> ${selectedCustomer.phone}</p>` : ''}
+            </div>
+
+            <table class="items-table">
+              <thead>
+                <tr>
+                  <th>Sản phẩm</th>
+                  <th>Thành tiền</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${itemsHtml}
+              </tbody>
+            </table>
+
+            <table class="totals">
+              <tbody>
+                <tr>
+                  <td class="label">Tạm tính:</td>
+                  <td class="value">${formatCurrency(subtotal)}</td>
+                </tr>
+                <tr>
+                  <td class="label">Giảm giá:</td>
+                  <td class="value">-${formatCurrency(discount)}</td>
+                </tr>
+                <tr class="total">
+                  <td class="label"><strong>Tổng cộng:</strong></td>
+                  <td class="value">${formatCurrency(total)}</td>
+                </tr>
+              </tbody>
+            </table>
+
+            <div class="footer">
+              <p>Cảm ơn quý khách và hẹn gặp lại!</p>
+              <p>${store.email}</p>
+            </div>
+          </div>
+        </body>
+      </html>
+    `;
+
+    printWindow.document.write(invoiceHtml);
+    printWindow.document.close();
+    printWindow.focus();
+    setTimeout(() => {
+      printWindow.print();
+      printWindow.close();
+    }, 250);
   };
+
 
   const subtotal = useMemo(() => {
     return cart.reduce((total, item) => total + item.price * item.quantity, 0);
