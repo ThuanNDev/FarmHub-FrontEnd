@@ -78,6 +78,7 @@ export default function POSPage() {
   const [isCustomerPopoverOpen, setCustomerPopoverOpen] = useState(false);
   const [customerSearch, setCustomerSearch] = useState("");
   const [showQrCode, setShowQrCode] = useState(false);
+  const [customerTender, setCustomerTender] = useState(0);
   
   const { toast } = useToast();
   const { store } = useStore();
@@ -238,6 +239,8 @@ export default function POSPage() {
     const newOrderCode = `DH${now.toISOString().slice(2, 10).replace(/-/g, '')}${Math.floor(100 + Math.random() * 900)}`;
     const deliveryAddress = (document.getElementById('delivery-address') as HTMLTextAreaElement)?.value || selectedCustomer?.address || '';
 
+    const finalAmountPaid = paymentMethod === 'Cash' ? totalWithVat : amountPaid;
+
     const newOrder: (typeof mockOrders)[0] = {
       id: `ord-${now.getTime()}`,
       order_code: newOrderCode,
@@ -245,7 +248,7 @@ export default function POSPage() {
       total_amount: totalWithVat,
       discount_amount: discount,
       shipping_fee: 0, 
-      total_paid: amountPaid,
+      total_paid: finalAmountPaid,
       payment_type: paymentMethod as any,
       payment_details: `Thanh toán tại POS bằng ${paymentMethod}`,
       status: 'Delivered' as const,
@@ -279,7 +282,7 @@ export default function POSPage() {
       }
     });
 
-    const remaining = totalWithVat - amountPaid;
+    const remaining = totalWithVat - finalAmountPaid;
     let description = t('pos.success_order_created', { code: newOrderCode });
     
     if (remaining > 0 && selectedCustomer) {
@@ -584,6 +587,7 @@ export default function POSPage() {
       setAmountPaid(totalWithVat);
       setPaymentMethod('Cash');
       setShowQrCode(false);
+      setCustomerTender(totalWithVat);
     }
   }, [isPaymentDialogOpen, totalWithVat]);
 
@@ -591,17 +595,19 @@ export default function POSPage() {
   useEffect(() => {
     if (paymentMethod === 'Debt') {
       setAmountPaid(0);
+    } else {
+      setAmountPaid(totalWithVat);
     }
-  }, [paymentMethod]);
+  }, [paymentMethod, totalWithVat]);
 
   // Effect to generate QR code URL
   useEffect(() => {
     if (isPaymentDialogOpen) {
       const storeInfo = mockStores[0];
-      if (paymentMethod === 'Transfer' && storeInfo?.bank_info && amountPaid > 0) {
+      if (paymentMethod === 'Transfer' && storeInfo?.bank_info && totalWithVat > 0) {
         const orderCode = `DH${Date.now().toString().slice(-6)}`;
         const params = new URLSearchParams({
-          amount: amountPaid.toString(),
+          amount: totalWithVat.toString(),
           addInfo: `Thanh toan don hang ${orderCode}`,
           accountName: storeInfo.bank_info.account_name,
         });
@@ -611,7 +617,7 @@ export default function POSPage() {
         setQrCodeUrl('');
       }
     }
-  }, [isPaymentDialogOpen, amountPaid, paymentMethod]);
+  }, [isPaymentDialogOpen, totalWithVat, paymentMethod]);
 
 
   const categories = mockCategories.filter(c => !c.is_deleted && c.is_active);
@@ -981,46 +987,16 @@ export default function POSPage() {
       </Dialog>
 
       <Dialog open={isPaymentDialogOpen} onOpenChange={setPaymentDialogOpen}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-4xl">
             <DialogHeader>
                 <DialogTitle className="font-headline">{t('pos.payment_dialog_title')}</DialogTitle>
                 <DialogDescription>
                     {t('pos.payment_dialog_description')}
                 </DialogDescription>
             </DialogHeader>
-            <div className="space-y-4">
-                <div className="space-y-2 text-sm">
-                    <div className="flex justify-between">
-                        <span>{t('pos.customer')}</span>
-                        <span className="font-medium">{selectedCustomer?.name || t('pos.guest')}</span>
-                    </div>
-                    <div className="flex justify-between font-bold text-lg">
-                        <span>{t('pages.order_details.grand_total')}</span>
-                        <span>{formatCurrency(totalWithVat)}</span>
-                    </div>
-                </div>
-                <Separator />
-                <div className="grid gap-2">
-                     <div>
-                        <Label htmlFor="amount-paid">{t('pos.amount_to_pay')}</Label>
-                        <Input
-                            id="amount-paid"
-                            type="number"
-                            value={amountPaid}
-                            onChange={(e) => setAmountPaid(Number(e.target.value) || 0)}
-                            className="text-right text-lg font-bold"
-                        />
-                    </div>
-                    {(totalWithVat - amountPaid) > 0 && (
-                        <div className="flex justify-between text-sm text-destructive font-semibold text-right">
-                            <span>{t('pos.remaining_amount')}</span>
-                            <span>{formatCurrency(totalWithVat - amountPaid)}</span>
-                        </div>
-                    )}
-                </div>
-
-                <div className="space-y-4">
-                    <div>
+            <div className="grid md:grid-cols-2 gap-8 py-4">
+                <div className="space-y-6">
+                    <div className="space-y-2">
                         <Label>{t('pos.payment_method')}</Label>
                         <RadioGroup value={paymentMethod} onValueChange={setPaymentMethod} className="mt-2 grid grid-cols-3 gap-2">
                             <div>
@@ -1067,6 +1043,7 @@ export default function POSPage() {
                             </div>
                         </RadioGroup>
                     </div>
+
                     {paymentMethod === 'Transfer' && (
                         <div className="flex flex-col items-center gap-2 pt-4">
                             {!showQrCode && (
@@ -1090,7 +1067,7 @@ export default function POSPage() {
                             {showQrCode && <p className="text-sm text-muted-foreground">{t('pos.qr_code_scan')}</p>}
                         </div>
                     )}
-                    <div>
+                     <div className="space-y-2">
                         <Label htmlFor="delivery-address">{t('pos.shipping_address')}</Label>
                         <Textarea 
                             id="delivery-address" 
@@ -1098,6 +1075,68 @@ export default function POSPage() {
                             defaultValue={selectedCustomer?.address || ''}
                         />
                     </div>
+                </div>
+
+                <div className="space-y-4 rounded-lg bg-muted p-4">
+                    <h3 className="font-headline text-lg">{t('pos.order_summary')}</h3>
+                    <div className="space-y-2 text-sm">
+                        <div className="flex justify-between">
+                            <span>{t('pos.customer')}</span>
+                            <span className="font-medium">{selectedCustomer?.name || t('pos.guest')}</span>
+                        </div>
+                        <div className="flex justify-between font-bold text-lg">
+                            <span>{t('pages.order_details.grand_total')}</span>
+                            <span>{formatCurrency(totalWithVat)}</span>
+                        </div>
+                    </div>
+                    <Separator />
+                    
+                    {paymentMethod === 'Cash' && (
+                        <div className="space-y-4">
+                             <div className="grid gap-2">
+                                <Label htmlFor="customer-tender">{t('pos.customer_tender')}</Label>
+                                <Input
+                                    id="customer-tender"
+                                    type="number"
+                                    value={customerTender}
+                                    onFocus={e => e.target.select()}
+                                    onChange={(e) => setCustomerTender(Number(e.target.value) || 0)}
+                                    className="text-right text-2xl font-bold h-12"
+                                />
+                            </div>
+                             <div className="grid grid-cols-3 gap-2">
+                                <Button type="button" variant="outline" onClick={() => setCustomerTender(totalWithVat)}>{t('pos.exact_amount')}</Button>
+                                <Button type="button" variant="outline" onClick={() => setCustomerTender(500000)}>500.000</Button>
+                                <Button type="button" variant="outline" onClick={() => setCustomerTender(1000000)}>1.000.000</Button>
+                            </div>
+                             <Separator />
+                            <div className="flex justify-between font-bold text-xl text-primary p-2 rounded-md bg-background">
+                                <span>{t('pos.change_due')}:</span>
+                                <span>{formatCurrency(Math.max(0, customerTender - totalWithVat))}</span>
+                            </div>
+                        </div>
+                    )}
+                    
+                    {paymentMethod !== 'Cash' && (
+                        <div className="space-y-2">
+                            <div>
+                                <Label htmlFor="amount-paid">{t('pos.amount_to_pay')}</Label>
+                                <Input
+                                    id="amount-paid"
+                                    type="number"
+                                    value={amountPaid}
+                                    onChange={(e) => setAmountPaid(Number(e.target.value) || 0)}
+                                    className="text-right text-lg font-bold"
+                                />
+                            </div>
+                            {(totalWithVat - amountPaid) > 0 && (
+                                <div className="flex justify-between text-sm text-destructive font-semibold text-right">
+                                    <span>{t('pos.remaining_amount')}</span>
+                                    <span>{formatCurrency(totalWithVat - amountPaid)}</span>
+                                </div>
+                            )}
+                        </div>
+                    )}
                 </div>
             </div>
             <DialogFooter className="flex-col sm:flex-row sm:justify-between gap-2 mt-4">

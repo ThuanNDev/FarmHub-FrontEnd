@@ -301,6 +301,10 @@
     "select_price_tier": "Select price tier",
     "price_tier_retail": "Retail Price",
     "price_tier_wholesale": "Wholesale Price",
-    "price_tier_credit": "Credit Price"
+    "price_tier_credit": "Credit Price",
+    "order_summary": "Order Summary",
+    "customer_tender": "Amount Tendered",
+    "change_due": "Change Due",
+    "exact_amount": "Exact Amount"
   }
 }

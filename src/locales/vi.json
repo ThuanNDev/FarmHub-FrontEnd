@@ -301,6 +301,10 @@
     "select_price_tier": "Chọn mức giá",
     "price_tier_retail": "Giá bán lẻ",
     "price_tier_wholesale": "Giá bán sỉ",
-    "price_tier_credit": "Giá ghi nợ"
+    "price_tier_credit": "Giá ghi nợ",
+    "order_summary": "Tóm tắt đơn hàng",
+    "customer_tender": "Số tiền khách đưa",
+    "change_due": "Tiền thối lại",
+    "exact_amount": "Tiền đủ"
   }
 }
