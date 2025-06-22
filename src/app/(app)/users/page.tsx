@@ -19,7 +19,6 @@ import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
@@ -35,7 +34,6 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
@@ -115,8 +113,8 @@ export default function UsersPage() {
   const { toast } = useToast();
 
   // For demonstration: Mock the currently logged-in user.
-  // Change to mockUsers[1] (Staff) to see the non-admin view.
-  const currentUser = mockUsers[0];
+  // In a real app, this would come from an authentication context.
+  const currentUser = mockUsers[1]; // Changed to 'Staff' user to demonstrate non-admin view.
 
   const form = useForm<UserFormValues>({
     resolver: zodResolver(userSchema),
@@ -514,3 +512,5 @@ export default function UsersPage() {
     </>
   );
 }
+
+    
