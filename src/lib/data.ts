@@ -117,3 +117,9 @@ export const mockOrders = [
   { id: 'ORD005', customerName: 'Chris Lee', date: '2024-07-23', status: 'Pending', total: 30.00 },
   { id: 'ORD006', customerName: 'John Doe', date: '2024-07-23', status: 'Cancelled', total: 55.00 },
 ];
+
+export const mockCategories = [
+  { id: 'cate-001', name: 'Máy làm đất', description: 'Các loại máy xới, máy cày phục vụ công tác làm đất.' },
+  { id: 'cate-002', name: 'Máy thu hoạch', description: 'Máy gặt đập, máy tuốt lúa và các thiết bị thu hoạch khác.' },
+  { id: 'cate-003', name: 'Dụng cụ & Thiết bị', description: 'Các loại máy móc, dụng cụ cầm tay hỗ trợ nông nghiệp.' },
+];

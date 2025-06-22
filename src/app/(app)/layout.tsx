@@ -11,6 +11,7 @@ import {
   Leaf,
   Settings,
   DollarSign,
+  Tags,
 } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
@@ -36,6 +37,7 @@ const navItems = [
   { href: '/orders', label: 'Orders', icon: ShoppingCart },
   { href: '/products', label: 'Products', icon: Package },
   { href: '/customers', label: 'Customers', icon: Users },
+  { href: '/categories', label: 'Categories', icon: Tags },
   { href: '/pos', label: 'POS', icon: DollarSign },
 ];
 
