@@ -18,6 +18,7 @@ import {
   Card,
   CardContent,
   CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
@@ -92,6 +93,9 @@ export default function ProductsPage() {
   const [isAddEditDialogOpen, setAddEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const [productsPerPage] = useState(7);
   
   const { toast } = useToast();
 
@@ -127,6 +131,10 @@ export default function ProductsPage() {
         }
     }
   }, [isAddEditDialogOpen, selectedProduct, form]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [activeTab, searchTerm]);
 
   const handleAddNew = () => {
     setSelectedProduct(null);
@@ -205,6 +213,12 @@ export default function ProductsPage() {
     }
   }
 
+  const productsForCurrentTab = getProductsForTab(activeTab);
+  const totalPages = Math.ceil(productsForCurrentTab.length / productsPerPage);
+  
+  const firstItem = productsForCurrentTab.length > 0 ? (currentPage - 1) * productsPerPage + 1 : 0;
+  const lastItem = Math.min(currentPage * productsPerPage, productsForCurrentTab.length);
+
   return (
     <>
       <Tabs value={activeTab} onValueChange={setActiveTab}>
@@ -241,67 +255,97 @@ export default function ProductsPage() {
             </TabsList>
           </CardHeader>
           <CardContent>
-            {categories.map(cat => (
-              <TabsContent key={cat} value={cat}>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="hidden w-[100px] sm:table-cell">
-                        <span className="sr-only">Ảnh</span>
-                      </TableHead>
-                      <TableHead>Tên</TableHead>
-                      <TableHead>Thương hiệu</TableHead>
-                      <TableHead className="hidden md:table-cell">Giá</TableHead>
-                      <TableHead className="hidden md:table-cell">Tồn kho</TableHead>
-                      <TableHead>
-                        <span className="sr-only">Hành động</span>
-                      </TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {getProductsForTab(cat).map((product) => (
-                      <TableRow key={product.productCode}>
-                        <TableCell className="hidden sm:table-cell">
-                           <Link href={`/products/${product.slug}`}>
-                            <Image
-                              alt={product.name}
-                              className="aspect-square rounded-md object-cover"
-                              height="64"
-                              src={getImageUrl(product.images)}
-                              width="64"
-                              data-ai-hint={product.hint}
-                            />
-                          </Link>
-                        </TableCell>
-                        <TableCell className="font-medium">
-                          <Link href={`/products/${product.slug}`} className="hover:underline">
-                            {product.name}
-                          </Link>
-                        </TableCell>
-                        <TableCell>{product.brand}</TableCell>
-                        <TableCell className="hidden md:table-cell">{formatCurrency(product.price)}</TableCell>
-                        <TableCell className="hidden md:table-cell">{product.stock}</TableCell>
-                        <TableCell>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button aria-haspopup="true" size="icon" variant="ghost">
-                                <MoreHorizontal className="h-4 w-4" />
-                                <span className="sr-only">Toggle menu</span>
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuItem onClick={() => handleEdit(product)}>Sửa</DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => handleDelete(product)} className="text-destructive">Xóa</DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </TabsContent>
-            ))}
+            {categories.map(cat => {
+                 const productsForThisTab = getProductsForTab(cat);
+                 const paginatedProducts = productsForThisTab.slice(
+                   (currentPage - 1) * productsPerPage,
+                   currentPage * productsPerPage
+                 );
+                 return (
+                    <TabsContent key={cat} value={cat}>
+                        <Table>
+                        <TableHeader>
+                            <TableRow>
+                            <TableHead className="hidden w-[100px] sm:table-cell">
+                                <span className="sr-only">Ảnh</span>
+                            </TableHead>
+                            <TableHead>Tên</TableHead>
+                            <TableHead>Thương hiệu</TableHead>
+                            <TableHead className="hidden md:table-cell">Giá</TableHead>
+                            <TableHead className="hidden md:table-cell">Tồn kho</TableHead>
+                            <TableHead>
+                                <span className="sr-only">Hành động</span>
+                            </TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {paginatedProducts.map((product) => (
+                            <TableRow key={product.productCode}>
+                                <TableCell className="hidden sm:table-cell">
+                                <Link href={`/products/${product.slug}`}>
+                                    <Image
+                                    alt={product.name}
+                                    className="aspect-square rounded-md object-cover"
+                                    height="64"
+                                    src={getImageUrl(product.images)}
+                                    width="64"
+                                    data-ai-hint={product.hint}
+                                    />
+                                </Link>
+                                </TableCell>
+                                <TableCell className="font-medium">
+                                <Link href={`/products/${product.slug}`} className="hover:underline">
+                                    {product.name}
+                                </Link>
+                                </TableCell>
+                                <TableCell>{product.brand}</TableCell>
+                                <TableCell className="hidden md:table-cell">{formatCurrency(product.price)}</TableCell>
+                                <TableCell className="hidden md:table-cell">{product.stock}</TableCell>
+                                <TableCell>
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                    <Button aria-haspopup="true" size="icon" variant="ghost">
+                                        <MoreHorizontal className="h-4 w-4" />
+                                        <span className="sr-only">Toggle menu</span>
+                                    </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="end">
+                                    <DropdownMenuItem onClick={() => handleEdit(product)}>Sửa</DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => handleDelete(product)} className="text-destructive">Xóa</DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
+                                </TableCell>
+                            </TableRow>
+                            ))}
+                        </TableBody>
+                        </Table>
+                    </TabsContent>
+                )
+            })}
           </CardContent>
+          <CardFooter>
+            <div className="text-xs text-muted-foreground">
+                Hiển thị <strong>{firstItem}-{lastItem}</strong> trên <strong>{productsForCurrentTab.length}</strong> sản phẩm
+            </div>
+            <div className="ml-auto flex items-center gap-2">
+                <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={() => setCurrentPage(prev => prev - 1)}
+                    disabled={currentPage === 1}
+                >
+                    Trước
+                </Button>
+                <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={() => setCurrentPage(prev => prev + 1)}
+                    disabled={currentPage >= totalPages}
+                >
+                    Sau
+                </Button>
+            </div>
+          </CardFooter>
        </Card>
       </Tabs>
 
