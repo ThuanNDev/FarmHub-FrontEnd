@@ -32,6 +32,7 @@ import { Input } from '@/components/ui/input';
 import { mockOrders, mockCustomers, mockInstallmentTerms } from '@/lib/data';
 import { useToast } from '@/hooks/use-toast';
 import { RecordPaymentDialog, type PaymentFormValues } from '@/components/RecordPaymentDialog';
+import { useStore } from '@/contexts/StoreContext';
 
 type InstallmentOrder = (typeof mockOrders)[0];
 
@@ -40,6 +41,7 @@ export default function InstallmentsPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const router = useRouter();
   const { toast } = useToast();
+  const { store } = useStore();
 
   const [isPaymentDialogOpen, setPaymentDialogOpen] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<InstallmentOrder | null>(null);
@@ -66,6 +68,123 @@ export default function InstallmentsPage() {
   const handleOpenPaymentDialog = (order: InstallmentOrder) => {
     setSelectedOrder(order);
     setPaymentDialogOpen(true);
+  };
+
+  const handlePrintInstallmentReceipt = (order: InstallmentOrder, paymentValues: PaymentFormValues) => {
+    const customer = mockCustomers.find(c => c.id === order.customer_id);
+    const updatedOrderInDb = mockOrders.find(o => o.id === order.id);
+
+    if (!customer || !updatedOrderInDb) {
+      toast({ variant: 'destructive', title: 'Lỗi', description: 'Không tìm thấy thông tin để in.' });
+      return;
+    }
+
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) {
+      toast({
+        variant: 'destructive',
+        title: 'Lỗi',
+        description: 'Không thể mở cửa sổ in. Vui lòng cho phép pop-up.',
+      });
+      return;
+    }
+
+    const terms = mockInstallmentTerms.filter(t => t.order_id === order.id);
+    const paidTerms = terms.filter(t => t.paid_at !== null).length;
+    const totalTerms = terms.length;
+    const remainingAmount = updatedOrderInDb.total_amount - updatedOrderInDb.total_paid;
+    
+    let installmentStatus = `Đã trả ${paidTerms}/${totalTerms} kỳ`;
+    if (remainingAmount <= 0) {
+        installmentStatus = "ĐÃ TẤT TOÁN HỢP ĐỒNG";
+    }
+
+    const receiptHtml = `
+      <html>
+        <head>
+          <title>Biên nhận thanh toán ${order.order_code}</title>
+          <style>
+            @page { margin: 0mm; }
+            @media print { body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
+            * { box-sizing: border-box; }
+            body { font-family: 'Courier New', Courier, monospace; font-size: 10pt; color: #000; background: #fff; line-height: 1.4; margin: 0; padding: 0; }
+            .receipt-wrapper { width: 280px; margin: 0 auto; padding: 10px 5px; }
+            .header { text-align: center; margin-bottom: 10px; }
+            .header h1 { font-size: 14pt; margin: 0; font-weight: bold; }
+            .header h2 { font-size: 12pt; margin: 5px 0; text-transform: uppercase; }
+            .header p { margin: 2px 0; font-size: 9pt; }
+            .info { margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px dashed #000; }
+            .info p { margin: 3px 0; font-size: 9pt; }
+            .summary { margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px dashed #000; }
+            .summary .row { display: flex; justify-content: space-between; padding: 3px 0; font-size: 9pt; }
+            .summary .row.total { font-weight: bold; font-size: 11pt; padding-top: 5px; }
+            .footer { text-align: center; margin-top: 20px; font-size: 9pt; }
+            .footer p { margin: 5px 0; }
+          </style>
+        </head>
+        <body>
+          <div class="receipt-wrapper">
+            <div class="header">
+              <h1>${store.name}</h1>
+              <p>${store.address}</p>
+              <p>SĐT: ${store.phone}</p>
+              <h2>Biên nhận thanh toán trả góp</h2>
+            </div>
+            <div class="info">
+              <p><strong>Ngày:</strong> ${new Date().toLocaleString('vi-VN')}</p>
+              <p><strong>Đơn hàng gốc:</strong> ${order.order_code}</p>
+              <p><strong>Khách hàng:</strong> ${customer.name}</p>
+              <p><strong>Điện thoại:</strong> ${customer.phone}</p>
+            </div>
+            <div class="summary">
+                <div class="row total">
+                    <span>THANH TOÁN KỲ NÀY:</span>
+                    <span>${formatCurrency(paymentValues.amount)}</span>
+                </div>
+                 <div class="row">
+                    <span>Hình thức:</span>
+                    <span>${paymentValues.paymentMethod}</span>
+                </div>
+                 <div class="row">
+                    <span>Ghi chú:</span>
+                    <span>${paymentValues.note || 'Không có'}</span>
+                </div>
+            </div>
+             <div class="summary">
+                <div class="row">
+                    <span>Tổng HĐ:</span>
+                    <span>${formatCurrency(order.total_amount)}</span>
+                </div>
+                <div class="row">
+                    <span>Đã thanh toán:</span>
+                    <span>${formatCurrency(updatedOrderInDb.total_paid)}</span>
+                </div>
+                 <div class="row total">
+                    <span>CÒN LẠI:</span>
+                    <span>${formatCurrency(remainingAmount)}</span>
+                </div>
+                 <div class="row" style="font-weight: bold; justify-content: center; margin-top: 5px;">
+                    <span colspan="2">${installmentStatus}</span>
+                </div>
+            </div>
+            <div class="footer">
+                <p>${store.invoice_footer || 'Cảm ơn quý khách!'}</p>
+                <p>---</p>
+                <p>Khách hàng ký</p>
+                <br/><br/><br/>
+                 <p>Người lập phiếu</p>
+            </div>
+          </div>
+        </body>
+      </html>
+    `;
+    printWindow.document.write(receiptHtml);
+    printWindow.document.close();
+    printWindow.focus();
+    setTimeout(() => {
+      printWindow.print();
+      printWindow.close();
+    }, 250);
   };
   
   const handleConfirmPayment = (values: PaymentFormValues) => {
@@ -96,6 +215,8 @@ export default function InstallmentsPage() {
         description: `Ghi nhận thanh toán ${formatCurrency(values.amount)} cho đơn hàng ${selectedOrder.order_code}.`,
     });
     
+    handlePrintInstallmentReceipt(selectedOrder, values);
+
     setPaymentDialogOpen(false);
     setSelectedOrder(null);
   };
