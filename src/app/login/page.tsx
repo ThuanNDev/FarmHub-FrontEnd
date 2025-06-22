@@ -83,7 +83,7 @@ export default function LoginPage() {
       <CardHeader className="text-center p-6">
         <div className="flex justify-center items-center gap-2 mb-4">
             <Leaf className="h-8 w-8 text-primary" />
-            <span className="font-headline text-3xl">AgriTrack</span>
+            <span className="font-headline text-3xl">FarmHub</span>
         </div>
         <CardTitle className="font-headline text-2xl">Đăng nhập</CardTitle>
         <CardDescription>Nhập thông tin tài khoản của bạn để tiếp tục.</CardDescription>

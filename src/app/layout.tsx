@@ -19,7 +19,7 @@ const ptSans = PT_Sans({
 });
 
 export const metadata: Metadata = {
-  title: 'AgriTrack',
+  title: 'FarmHub',
   description: 'Modern Farm Equipment Management',
 };
 

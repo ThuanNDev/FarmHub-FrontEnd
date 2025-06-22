@@ -4,20 +4,20 @@
 export const mockStores = [
   {
     id: 'store-001',
-    name: 'AgriTrack - Chi nhánh chính',
+    name: 'FarmHub - Chi nhánh chính',
     address: '123 Đường Nông Sản, Huyện Cần Giờ, TP.HCM',
     phone: '02839998888',
-    email: 'contact.hcm@agritrack.vn',
-    database_name: 'agritrack_main_db',
+    email: 'contact.hcm@farmhub.vn',
+    database_name: 'farmhub_main_db',
     manager_id: 'user-001',
     opening_hours: 'Thứ 2 - Chủ Nhật: 7:00 - 18:00',
     is_active: true,
     created_at: '2023-01-01T00:00:00Z',
     updated_at: '2024-07-25T11:00:00Z',
     bank_info: {
-      bank_id: 'SACOMBANK',
-      account_no: '050109114755',
-      account_name: 'NGUYEN TRAN VAN THUAN'
+      bank_id: 'TPBANK',
+      account_no: 'mynamebvh',
+      account_name: 'BUI VIET HOANG'
     }
   }
 ];
@@ -28,7 +28,7 @@ export const mockUsers = [
       username: 'admin',
       password_hash: '$2b$12$D.p.a.S.s.W.o.r.d.P.l.a.c.e.h.o.l.d.e.r',
       full_name: 'Lê Minh Quản',
-      email: 'admin@agritrack.com',
+      email: 'admin@farmhub.com',
       phone: '0909090909',
       role: 'Admin' as const,
       associated_store_ids: ['store-001'],
@@ -45,7 +45,7 @@ export const mockUsers = [
       username: 'nhanvien1',
       password_hash: '$2b$12$D.p.a.S.s.W.o.r.d.P.l.a.c.e.h.o.l.d.e.r',
       full_name: 'Nguyễn Thị Bích',
-      email: 'bich.nguyen@agritrack.com',
+      email: 'bich.nguyen@farmhub.com',
       phone: '0912345678',
       role: 'Staff' as const,
       associated_store_ids: ['store-001'],
@@ -62,7 +62,7 @@ export const mockUsers = [
       username: 'nhanvien2',
       password_hash: '$2b$12$D.p.a.S.s.W.o.r.d.P.l.a.c.e.h.o.l.d.e.r',
       full_name: 'Trần Văn An',
-      email: 'an.tran@agritrack.com',
+      email: 'an.tran@farmhub.com',
       phone: '0988776655',
       role: 'Staff' as const,
       associated_store_ids: ['store-001'],
