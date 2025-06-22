@@ -32,7 +32,7 @@ import {
 } from '@/components/ui/form';
 import { Textarea } from '@/components/ui/textarea';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { mockProducts, mockCustomers, mockCategories } from '@/lib/data';
+import { mockProducts, mockCustomers, mockCategories, mockStores } from '@/lib/data';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 
@@ -66,6 +66,7 @@ export default function POSPage() {
   const [selectedCustomerId, setSelectedCustomerId] = useState('guest');
   const [paymentMethod, setPaymentMethod] = useState('Cash');
   const [amountPaid, setAmountPaid] = useState(0);
+  const [qrCodeUrl, setQrCodeUrl] = useState('');
   
   const { toast } = useToast();
 
@@ -181,6 +182,7 @@ export default function POSPage() {
     return finalTotal > 0 ? finalTotal : 0;
   }, [subtotal, discount]);
 
+  // Effect to initialize payment dialog state
   useEffect(() => {
     if (isPaymentDialogOpen) {
       setAmountPaid(total);
@@ -188,11 +190,31 @@ export default function POSPage() {
     }
   }, [isPaymentDialogOpen, total]);
 
+  // Effect to handle payment method changes (e.g., Debt)
   useEffect(() => {
     if (paymentMethod === 'Debt') {
       setAmountPaid(0);
     }
   }, [paymentMethod]);
+
+  // Effect to generate QR code URL
+  useEffect(() => {
+    if (isPaymentDialogOpen) {
+      const storeInfo = mockStores[0];
+      if (paymentMethod === 'Transfer' && storeInfo?.bank_info && amountPaid > 0) {
+        const orderCode = `DH${Date.now().toString().slice(-6)}`;
+        const params = new URLSearchParams({
+          amount: amountPaid.toString(),
+          addInfo: `Thanh toan don hang ${orderCode}`,
+          accountName: storeInfo.bank_info.account_name,
+        });
+        const url = `https://img.vietqr.io/image/${storeInfo.bank_info.bank_id}-${storeInfo.bank_info.account_no}-compact2.jpg?${params.toString()}`;
+        setQrCodeUrl(url);
+      } else {
+        setQrCodeUrl('');
+      }
+    }
+  }, [isPaymentDialogOpen, amountPaid, paymentMethod]);
 
 
   const categories = mockCategories.filter(c => !c.is_deleted && c.is_active);
@@ -590,13 +612,19 @@ export default function POSPage() {
                     </div>
                     {paymentMethod === 'Transfer' && (
                         <div className="flex flex-col items-center gap-2 pt-4">
+                           {qrCodeUrl ? (
                             <Image
-                                src="https://placehold.co/250x250.png"
+                                src={qrCodeUrl}
                                 width={250}
                                 height={250}
                                 alt="QR Code"
                                 data-ai-hint="payment qr code"
                             />
+                           ) : (
+                            <div className="flex h-[250px] w-[250px] items-center justify-center rounded-md bg-muted">
+                                <p className="text-center text-sm text-muted-foreground">Không thể tạo mã QR.</p>
+                            </div>
+                           )}
                             <p className="text-sm text-muted-foreground">Quét mã để thanh toán</p>
                         </div>
                     )}

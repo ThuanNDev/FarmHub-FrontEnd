@@ -13,7 +13,12 @@ export const mockStores = [
     opening_hours: 'Thứ 2 - Chủ Nhật: 7:00 - 18:00',
     is_active: true,
     created_at: '2023-01-01T00:00:00Z',
-    updated_at: '2024-07-25T11:00:00Z'
+    updated_at: '2024-07-25T11:00:00Z',
+    bank_info: {
+      bank_id: 'TPBANK',
+      account_no: 'mynamebvh',
+      account_name: 'BUI VIET HOANG'
+    }
   }
 ];
 
