@@ -49,6 +49,13 @@ const settingsSchema = z.object({
     account_no: z.string().min(1, "Số tài khoản không được để trống."),
     account_name: z.string().min(1, "Tên chủ tài khoản không được để trống."),
   }).optional(),
+  vat_rate: z.coerce.number().min(0, "VAT không được âm.").max(100, "VAT không thể lớn hơn 100%").optional(),
+  invoice_footer: z.string().optional(),
+  defaults: z.object({
+    unit: z.string().optional(),
+    discount: z.coerce.number().min(0, "Chiết khấu không thể âm.").optional(),
+    shipping_fee: z.coerce.number().min(0, "Phí vận chuyển không thể âm.").optional(),
+  }).optional(),
 });
 
 type SettingsFormValues = z.infer<typeof settingsSchema>;
@@ -73,20 +80,21 @@ export default function SettingsPage() {
   const form = useForm<SettingsFormValues>({
     resolver: zodResolver(settingsSchema),
     defaultValues: {
-      name: store.name,
-      address: store.address,
-      phone: store.phone,
-      email: store.email,
-      opening_hours: store.opening_hours,
-      is_active: store.is_active,
+      ...store,
       bank_info: store.bank_info || { bank_id: '', account_no: '', account_name: ''},
+      vat_rate: store.vat_rate || 0,
+      invoice_footer: store.invoice_footer || '',
+      defaults: store.defaults || { unit: 'cái', discount: 0, shipping_fee: 0 },
     },
   });
 
   useEffect(() => {
     form.reset({
         ...store,
-        bank_info: store.bank_info || { bank_id: '', account_no: '', account_name: ''}
+        bank_info: store.bank_info || { bank_id: '', account_no: '', account_name: ''},
+        vat_rate: store.vat_rate || 0,
+        invoice_footer: store.invoice_footer || '',
+        defaults: store.defaults || { unit: 'cái', discount: 0, shipping_fee: 0 },
     });
   }, [store, form]);
 
@@ -180,9 +188,102 @@ export default function SettingsPage() {
                 </FormItem>
               )}
             />
-            
-            <Separator />
 
+            <Separator />
+            
+            <div>
+                <h3 className="text-lg font-medium font-headline">Cấu hình Hoá đơn &amp; VAT</h3>
+                <p className="text-sm text-muted-foreground">
+                    Thiết lập thuế suất và thông tin chân trang cho hóa đơn.
+                </p>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <FormField
+                    control={form.control}
+                    name="vat_rate"
+                    render={({ field }) => (
+                        <FormItem>
+                        <FormLabel>Thuế suất VAT (%)</FormLabel>
+                        <FormControl>
+                            <Input type="number" placeholder="8" {...field} />
+                        </FormControl>
+                        <FormDescription>
+                            Nhập thuế suất VAT. Ví dụ: 8 cho 8%.
+                        </FormDescription>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                />
+            </div>
+            
+            <FormField
+                control={form.control}
+                name="invoice_footer"
+                render={({ field }) => (
+                    <FormItem>
+                    <FormLabel>Chân trang hoá đơn</FormLabel>
+                    <FormControl>
+                        <Textarea placeholder="Cảm ơn quý khách và hẹn gặp lại!" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                    </FormItem>
+                )}
+            />
+
+            <Separator />
+            
+            <div>
+                <h3 className="text-lg font-medium font-headline">Giá trị Mặc định</h3>
+                <p className="text-sm text-muted-foreground">
+                    Cấu hình các giá trị mặc định cho việc tạo đơn hàng.
+                </p>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <FormField
+                    control={form.control}
+                    name="defaults.unit"
+                    render={({ field }) => (
+                        <FormItem>
+                        <FormLabel>Đơn vị mặc định</FormLabel>
+                        <FormControl>
+                            <Input placeholder="cái" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                />
+                <FormField
+                    control={form.control}
+                    name="defaults.discount"
+                    render={({ field }) => (
+                        <FormItem>
+                        <FormLabel>Chiết khấu mặc định (VND)</FormLabel>
+                        <FormControl>
+                            <Input type="number" placeholder="0" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                />
+                <FormField
+                    control={form.control}
+                    name="defaults.shipping_fee"
+                    render={({ field }) => (
+                        <FormItem>
+                        <FormLabel>Phí vận chuyển mặc định (VND)</FormLabel>
+                        <FormControl>
+                            <Input type="number" placeholder="0" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                />
+            </div>
+
+            <Separator />
+            
             <div>
                 <h3 className="text-lg font-medium font-headline">Thông tin thanh toán</h3>
                 <p className="text-sm text-muted-foreground">
