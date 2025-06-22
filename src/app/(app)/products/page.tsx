@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -77,6 +78,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
+import { Switch } from '@/components/ui/switch';
 import { mockProducts, mockCategories } from '@/lib/data';
 import { useToast } from '@/hooks/use-toast';
 
@@ -84,10 +87,16 @@ type Product = (typeof mockProducts)[0];
 
 const productSchema = z.object({
   name: z.string().min(1, { message: 'Tên sản phẩm không được để trống.' }),
-  brand: z.string().min(1, { message: 'Thương hiệu không được để trống.' }),
-  price: z.coerce.number().positive({ message: 'Giá phải là một số dương.' }),
-  stock: z.coerce.number().int().min(0, { message: 'Tồn kho phải là số nguyên không âm.' }),
+  description: z.string().optional(),
   category_id: z.string().min(1, { message: 'Vui lòng chọn thể loại.' }),
+  brand: z.string().min(1, { message: 'Thương hiệu không được để trống.' }),
+  unit: z.string().min(1, { message: 'Đơn vị không được để trống.' }),
+  price: z.coerce.number().positive({ message: 'Giá phải là một số dương.' }),
+  credit_price: z.coerce.number().positive({ message: 'Giá trả góp phải là số dương.' }).optional(),
+  stock: z.coerce.number().int().min(0, { message: 'Tồn kho phải là số nguyên không âm.' }),
+  min_stock_level: z.coerce.number().int().min(0, { message: 'Ngưỡng tồn kho phải là số nguyên không âm.' }),
+  warranty_info: z.string().optional(),
+  is_active: z.boolean().default(true),
 });
 
 type ProductFormValues = z.infer<typeof productSchema>;
@@ -110,10 +119,16 @@ export default function ProductsPage() {
     resolver: zodResolver(productSchema),
     defaultValues: {
       name: '',
-      brand: '',
-      price: 0,
-      stock: 0,
+      description: '',
       category_id: '',
+      brand: '',
+      unit: 'chiếc',
+      price: 0,
+      credit_price: 0,
+      stock: 0,
+      min_stock_level: 5,
+      warranty_info: 'Bảo hành 12 tháng',
+      is_active: true,
     },
   });
 
@@ -122,18 +137,30 @@ export default function ProductsPage() {
       if (selectedProduct) {
         form.reset({
           name: selectedProduct.name,
-          brand: selectedProduct.brand,
-          price: selectedProduct.price,
-          stock: selectedProduct.stock,
+          description: selectedProduct.description,
           category_id: selectedProduct.category_id,
+          brand: selectedProduct.brand,
+          unit: selectedProduct.unit,
+          price: selectedProduct.price,
+          credit_price: selectedProduct.credit_price,
+          stock: selectedProduct.stock,
+          min_stock_level: selectedProduct.min_stock_level,
+          warranty_info: selectedProduct.warranty_info,
+          is_active: selectedProduct.is_active,
         });
       } else {
         form.reset({
           name: '',
-          brand: '',
-          price: 0,
-          stock: 0,
+          description: '',
           category_id: '',
+          brand: '',
+          unit: 'chiếc',
+          price: 0,
+          credit_price: 0,
+          stock: 0,
+          min_stock_level: 5,
+          warranty_info: 'Bảo hành 12 tháng',
+          is_active: true,
         });
       }
     }
@@ -170,7 +197,16 @@ export default function ProductsPage() {
   const onSubmit = (values: ProductFormValues) => {
     if (selectedProduct) {
       const updatedProducts = products.map((p) =>
-        p.product_code === selectedProduct.product_code ? { ...p, ...values } : p
+        p.product_code === selectedProduct.product_code 
+          ? { 
+              ...p, 
+              ...values,
+              slug: values.name.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, ''),
+              credit_price: values.credit_price || values.price,
+              description: values.description || '',
+              warranty_info: values.warranty_info || 'Không có',
+            } 
+          : p
       );
       setProducts(updatedProducts);
       toast({ title: 'Thành công', description: 'Sản phẩm đã được cập nhật.' });
@@ -179,17 +215,14 @@ export default function ProductsPage() {
         ...values,
         product_code: `P${Math.floor(1000 + Math.random() * 9000)}`,
         slug: values.name.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, ''),
-        description: '',
-        unit: 'chiếc',
-        credit_price: values.price,
-        min_stock_level: 5,
+        credit_price: values.credit_price || values.price,
         images: '["https://placehold.co/600x600.png"]',
         specs: '{}',
-        warranty_info: 'Bảo hành 12 tháng',
         supplier_id: 'supp-new',
-        is_active: true,
         is_deleted: false,
         hint: 'product',
+        description: values.description || '',
+        warranty_info: values.warranty_info || 'Không có',
       };
       setProducts([newProduct, ...products]);
       toast({ title: 'Thành công', description: 'Sản phẩm mới đã được thêm.' });
@@ -360,7 +393,7 @@ export default function ProductsPage() {
       </Tabs>
 
       <Dialog open={isAddEditDialogOpen} onOpenChange={setAddEditDialogOpen}>
-        <DialogContent>
+        <DialogContent className="sm:max-w-3xl">
           <DialogHeader>
             <DialogTitle className="font-headline">{selectedProduct ? 'Sửa sản phẩm' : 'Thêm sản phẩm mới'}</DialogTitle>
             <DialogDescription>
@@ -368,93 +401,176 @@ export default function ProductsPage() {
             </DialogDescription>
           </DialogHeader>
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-4 py-4">
-              <FormField
-                control={form.control}
-                name="name"
-                render={({ field }) => (
-                  <FormItem className="grid grid-cols-4 items-center gap-4">
-                    <FormLabel className="text-right">Tên</FormLabel>
-                    <div className="col-span-3">
-                      <FormControl>
-                        <Input placeholder="Máy xới đất Kubota" {...field} />
-                      </FormControl>
-                      <FormMessage className="mt-1 text-xs" />
-                    </div>
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="brand"
-                render={({ field }) => (
-                  <FormItem className="grid grid-cols-4 items-center gap-4">
-                    <FormLabel className="text-right">Thương hiệu</FormLabel>
-                    <div className="col-span-3">
-                      <FormControl>
-                        <Input placeholder="Kubota" {...field} />
-                      </FormControl>
-                      <FormMessage className="mt-1 text-xs" />
-                    </div>
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="category_id"
-                render={({ field }) => (
-                  <FormItem className="grid grid-cols-4 items-center gap-4">
-                    <FormLabel className="text-right">Thể loại</FormLabel>
-                    <div className="col-span-3">
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-4 py-4 max-h-[70vh] overflow-y-auto pr-6">
+               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="name"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Tên sản phẩm</FormLabel>
                         <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Chọn một thể loại" />
-                          </SelectTrigger>
+                          <Input placeholder="Máy xới đất Kubota" {...field} />
                         </FormControl>
-                        <SelectContent>
-                          {mockCategories.map((category) => (
-                            <SelectItem key={category.id} value={category.id}>
-                              {category.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage className="mt-1 text-xs" />
-                    </div>
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="price"
-                render={({ field }) => (
-                  <FormItem className="grid grid-cols-4 items-center gap-4">
-                    <FormLabel className="text-right">Giá</FormLabel>
-                    <div className="col-span-3">
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                   <FormField
+                    control={form.control}
+                    name="brand"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Thương hiệu</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Kubota" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+               </div>
+               <FormField
+                  control={form.control}
+                  name="description"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Mô tả</FormLabel>
                       <FormControl>
-                        <Input type="number" placeholder="15000000" {...field} />
+                        <Textarea placeholder="Mô tả chi tiết về sản phẩm..." {...field} />
                       </FormControl>
-                      <FormMessage className="mt-1 text-xs" />
-                    </div>
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="stock"
-                render={({ field }) => (
-                  <FormItem className="grid grid-cols-4 items-center gap-4">
-                    <FormLabel className="text-right">Tồn kho</FormLabel>
-                    <div className="col-span-3">
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="category_id"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Thể loại</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Chọn một thể loại" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {mockCategories.map((category) => (
+                              <SelectItem key={category.id} value={category.id}>
+                                {category.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="unit"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Đơn vị</FormLabel>
+                        <FormControl>
+                          <Input placeholder="chiếc, kg, lít..." {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                 <FormField
+                    control={form.control}
+                    name="price"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Giá</FormLabel>
+                        <FormControl>
+                          <Input type="number" placeholder="15000000" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="credit_price"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Giá trả góp (tùy chọn)</FormLabel>
+                        <FormControl>
+                          <Input type="number" placeholder="16000000" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+              </div>
+               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                 <FormField
+                    control={form.control}
+                    name="stock"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Tồn kho</FormLabel>
+                        <FormControl>
+                          <Input type="number" placeholder="25" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="min_stock_level"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Tồn kho tối thiểu</FormLabel>
+                        <FormControl>
+                          <Input type="number" placeholder="5" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+              </div>
+               <FormField
+                  control={form.control}
+                  name="warranty_info"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Thông tin bảo hành</FormLabel>
                       <FormControl>
-                        <Input type="number" placeholder="25" {...field} />
+                        <Input placeholder="Bảo hành 12 tháng" {...field} />
                       </FormControl>
-                      <FormMessage className="mt-1 text-xs" />
-                    </div>
-                  </FormItem>
-                )}
-              />
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="is_active"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
+                       <div className="space-y-0.5">
+                        <FormLabel>Trạng thái</FormLabel>
+                        <FormDescription>
+                          Sản phẩm này sẽ hiển thị trong cửa hàng.
+                        </FormDescription>
+                      </div>
+                      <FormControl>
+                        <Switch
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                        />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
               <DialogFooter>
                 <Button type="submit" className="bg-primary hover:bg-primary/90">
                   Lưu sản phẩm
@@ -485,3 +601,5 @@ export default function ProductsPage() {
     </>
   );
 }
+
+    
