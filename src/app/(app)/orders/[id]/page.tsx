@@ -3,7 +3,7 @@
 import * as React from 'react';
 import Link from 'next/link';
 import { notFound, useRouter, useParams } from 'next/navigation';
-import { ArrowLeft, User, MapPin, Truck, Calendar, Hash, CreditCard, StickyNote, Package } from 'lucide-react';
+import { ArrowLeft, User, MapPin, Truck, Calendar, Hash, CreditCard, StickyNote, Package, Printer, Edit, XCircle } from 'lucide-react';
 import { mockOrders, mockCustomers, mockUsers, mockOrderItems, mockProducts } from '@/lib/data';
 import { Button } from '@/components/ui/button';
 import {
@@ -23,11 +23,33 @@ import {
   } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
+import { useToast } from '@/hooks/use-toast';
+
+type Order = typeof mockOrders[0];
 
 export default function OrderDetailPage() {
   const router = useRouter();
   const params = useParams<{ id: string }>();
-  const order = mockOrders.find((o) => o.id === params.id);
+  
+  const initialOrder = React.useMemo(() => mockOrders.find((o) => o.id === params.id), [params.id]);
+  
+  const [order, setOrder] = React.useState<Order | undefined>(initialOrder);
+  const { toast } = useToast();
+
+  React.useEffect(() => {
+    setOrder(mockOrders.find((o) => o.id === params.id));
+  }, [params.id]);
 
   if (!order) {
     notFound();
@@ -36,6 +58,38 @@ export default function OrderDetailPage() {
   const customer = mockCustomers.find(c => c.id === order.customer_id);
   const processor = mockUsers.find(u => u.id === order.processed_by_user_id);
   const items = mockOrderItems.filter(item => item.order_id === order.id);
+
+  const handleCancelOrder = () => {
+    const orderInMock = mockOrders.find(o => o.id === order.id);
+    if (orderInMock) {
+      orderInMock.status = 'Cancelled';
+      orderInMock.delivery_status = 'Cancelled';
+      orderInMock.updated_at = new Date().toISOString();
+    }
+    setOrder({ ...order, status: 'Cancelled' });
+    toast({
+      title: 'Thành công',
+      description: `Đơn hàng ${order.order_code} đã được hủy.`,
+    });
+  };
+
+  const handlePrintOrder = () => {
+    toast({
+      title: 'Tính năng đang phát triển',
+      description: 'Chức năng in đơn hàng sẽ sớm được ra mắt.',
+    });
+  };
+
+  const handleEditOrder = () => {
+     if (order.status !== 'Pending') {
+        toast({ variant: 'destructive', title: 'Không thể sửa', description: 'Chỉ có thể sửa đơn hàng đang chờ xử lý.'});
+        return;
+    }
+    toast({
+      title: 'Tính năng đang phát triển',
+      description: 'Chức năng sửa đơn hàng sẽ sớm được ra mắt.',
+    });
+  }
 
   const formatCurrency = (amount: number | null) => {
     if (amount === null || amount === undefined) return '-';
@@ -63,13 +117,42 @@ export default function OrderDetailPage() {
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex justify-start">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
         <Button asChild variant="outline" size="sm">
           <Link href="/orders">
             <ArrowLeft className="mr-2 h-4 w-4" />
             Quay lại danh sách đơn hàng
           </Link>
         </Button>
+         <div className="flex gap-2">
+           <Button variant="outline" size="sm" onClick={handlePrintOrder}>
+             <Printer className="mr-2 h-4 w-4"/> In đơn
+           </Button>
+           <Button variant="outline" size="sm" onClick={handleEditOrder} disabled={order.status !== 'Pending'}>
+             <Edit className="mr-2 h-4 w-4"/> Sửa
+           </Button>
+           <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="destructive" size="sm" disabled={order.status === 'Cancelled' || order.status === 'Delivered'}>
+                  <XCircle className="mr-2 h-4 w-4"/> Hủy đơn
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Bạn có chắc chắn muốn hủy đơn hàng?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Hành động này không thể hoàn tác. Đơn hàng <strong>{order.order_code}</strong> sẽ được chuyển sang trạng thái "Đã hủy".
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Không</AlertDialogCancel>
+                  <AlertDialogAction onClick={handleCancelOrder} className="bg-destructive hover:bg-destructive/90">
+                    Xác nhận hủy
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+        </div>
       </div>
 
       <Card>
