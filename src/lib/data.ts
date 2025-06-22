@@ -450,10 +450,10 @@ export const mockOrders = [
     id: 'ord-005', 
     order_code: 'DH20241215001',
     customer_id: 'cust-002',
-    total_amount: 58980000,
-    discount_amount: 1000000,
-    shipping_fee: 50000,
-    total_paid: 57980000,
+    total_amount: 58980000.00,
+    discount_amount: 1000000.00,
+    shipping_fee: 50000.00,
+    total_paid: 57980000.00,
     payment_type: 'Card' as const,
     payment_details: 'Visa **** 1234 - Đã thanh toán',
     status: 'Pending' as const,
@@ -529,9 +529,9 @@ export const mockOrderItems = [
     product_id: 'prod-005',
     product_name: 'Máy cắt cỏ Honda GX35',
     product_unit: 'cái',
-    quantity: 10,
-    unit_price: 2900000,
-    total_price: 29000000
+    quantity: 1,
+    unit_price: 2900000.00,
+    total_price: 2900000.00
   },
   {
     id: 'item-007',
@@ -539,9 +539,9 @@ export const mockOrderItems = [
     product_id: 'prod-004',
     product_name: 'Máy phun thuốc STIHL',
     product_unit: 'cái',
-    quantity: 5,
-    unit_price: 5996000,
-    total_price: 29980000
+    quantity: 1,
+    unit_price: 2900000.00,
+    total_price: 2900000.00
   }
 ];
 
@@ -639,3 +639,110 @@ export const mockBanks = [
     { id: 'VPBANK', name: 'VPBank' },
     { id: 'SACOMBANK', name: 'Sacombank' },
 ];
+
+export const mockPurchaseOrders = [
+    {
+      id: 'po-001',
+      order_code: 'PN20240726001',
+      supplier_id: 'supp-001',
+      total_amount: 120000000,
+      status: 'received' as const,
+      expected_delivery_date: '2024-07-30T00:00:00Z',
+      received_date: '2024-07-29T00:00:00Z',
+      note: 'Nhập hàng đợt 1 tháng 7.',
+      created_by_user_id: 'user-001',
+      created_at: '2024-07-26T09:00:00Z',
+      updated_at: '2024-07-29T10:00:00Z',
+    },
+    {
+      id: 'po-002',
+      order_code: 'PN20240728001',
+      supplier_id: 'supp-002',
+      total_amount: 147500000,
+      status: 'ordered' as const,
+      expected_delivery_date: '2024-08-05T00:00:00Z',
+      received_date: null,
+      note: 'Hàng gấp cho mùa vụ mới.',
+      created_by_user_id: 'user-001',
+      created_at: '2024-07-28T14:00:00Z',
+      updated_at: '2024-07-28T14:00:00Z',
+    },
+    {
+      id: 'po-003',
+      order_code: 'PN20240729001',
+      supplier_id: 'supp-001',
+      total_amount: 280000000,
+      status: 'pending' as const,
+      expected_delivery_date: '2024-08-10T00:00:00Z',
+      received_date: null,
+      note: 'Đơn hàng dự trữ kho.',
+      created_by_user_id: 'user-002',
+      created_at: '2024-07-29T11:00:00Z',
+      updated_at: '2024-07-29T11:00:00Z',
+    },
+     {
+      id: 'po-004',
+      order_code: 'PN20240720001',
+      supplier_id: 'supp-002',
+      total_amount: 28000000,
+      status: 'cancelled' as const,
+      expected_delivery_date: '2024-07-25T00:00:00Z',
+      received_date: null,
+      note: 'Hủy do thay đổi kế hoạch.',
+      created_by_user_id: 'user-002',
+      created_at: '2024-07-20T11:00:00Z',
+      updated_at: '2024-07-21T11:00:00Z',
+    }
+  ];
+  
+  export const mockPurchaseOrderItems = [
+    // PO-001
+    {
+      id: 'poi-001',
+      purchase_order_id: 'po-001',
+      product_id: 'prod-001',
+      quantity: 10,
+      unit_price: 12000000,
+      total_price: 120000000,
+      received_quantity: 10,
+    },
+    // PO-002
+    {
+      id: 'poi-002',
+      purchase_order_id: 'po-002',
+      product_id: 'prod-004',
+      quantity: 20,
+      unit_price: 4500000,
+      total_price: 90000000,
+      received_quantity: 0,
+    },
+    {
+      id: 'poi-003',
+      purchase_order_id: 'po-002',
+      product_id: 'prod-005',
+      quantity: 25,
+      unit_price: 2300000, // lower price for bulk
+      total_price: 57500000,
+      received_quantity: 0,
+    },
+    // PO-003
+    {
+      id: 'poi-004',
+      purchase_order_id: 'po-003',
+      product_id: 'prod-002',
+      quantity: 1,
+      unit_price: 280000000,
+      total_price: 280000000,
+      received_quantity: 0,
+    },
+     // PO-004
+    {
+      id: 'poi-005',
+      purchase_order_id: 'po-004',
+      product_id: 'prod-005',
+      quantity: 10,
+      unit_price: 2800000,
+      total_price: 28000000,
+      received_quantity: 0,
+    },
+  ];

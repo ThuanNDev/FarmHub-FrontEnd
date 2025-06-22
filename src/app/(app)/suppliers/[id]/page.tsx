@@ -1,11 +1,12 @@
+
 'use client';
 
 import * as React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { notFound, useRouter, useParams } from 'next/navigation';
-import { ArrowLeft, Mail, MapPin, Phone, User, Package } from 'lucide-react';
-import { mockSuppliers, mockProducts } from '@/lib/data';
+import { ArrowLeft, Mail, MapPin, Phone, User, Package, PackagePlus } from 'lucide-react';
+import { mockSuppliers, mockProducts, mockPurchaseOrders } from '@/lib/data';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -35,11 +36,17 @@ export default function SupplierDetailPage() {
   }
   
   const productsFromSupplier = mockProducts.filter(p => p.supplier_id === supplier.id && !p.is_deleted);
+  const purchaseOrdersFromSupplier = mockPurchaseOrders.filter(po => po.supplier_id === supplier.id);
   
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
   };
   
+  const formatDate = (dateString: string | null) => {
+    if (!dateString) return '-';
+    return new Date(dateString).toLocaleDateString('vi-VN');
+  }
+
   const getImageUrl = (imagesJson: string) => {
     try {
       const images = JSON.parse(imagesJson);
@@ -48,6 +55,17 @@ export default function SupplierDetailPage() {
       return 'https://placehold.co/64x64.png';
     }
   };
+  
+  const getStatusVariant = (status: string): 'default' | 'secondary' | 'destructive' | 'outline' => {
+    switch (status) {
+      case 'received': return 'default';
+      case 'ordered': return 'outline';
+      case 'pending': return 'secondary';
+      case 'cancelled': return 'destructive';
+      default: return 'secondary';
+    }
+  };
+
 
   return (
     <div className="flex flex-col gap-4">
@@ -60,7 +78,7 @@ export default function SupplierDetailPage() {
         </Button>
       </div>
       <div className="grid md:grid-cols-3 gap-6">
-        <div className="md:col-span-1">
+        <div className="md:col-span-1 flex flex-col gap-6">
             <Card>
                 <CardHeader>
                     <CardTitle className="font-headline">{supplier.name}</CardTitle>
@@ -90,6 +108,43 @@ export default function SupplierDetailPage() {
                      </div>
                 </CardContent>
             </Card>
+             <Card>
+                <CardHeader>
+                    <CardTitle className="font-headline flex items-center gap-2">
+                        <PackagePlus className="h-5 w-5"/>
+                        Lịch sử nhập hàng
+                    </CardTitle>
+                    <CardDescription>Tổng cộng {purchaseOrdersFromSupplier.length} đơn hàng.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                {purchaseOrdersFromSupplier.length > 0 ? (
+                 <Table>
+                 <TableHeader>
+                   <TableRow>
+                     <TableHead>Mã ĐN</TableHead>
+                     <TableHead>Trạng thái</TableHead>
+                     <TableHead className="text-right">Tổng tiền</TableHead>
+                   </TableRow>
+                 </TableHeader>
+                 <TableBody>
+                   {purchaseOrdersFromSupplier.map((po) => (
+                     <TableRow key={po.id} onClick={() => router.push(`/purchases/${po.id}`)} className="cursor-pointer">
+                       <TableCell className="font-medium">{po.order_code}</TableCell>
+                       <TableCell>
+                         <Badge variant={getStatusVariant(po.status)}>{po.status}</Badge>
+                       </TableCell>
+                       <TableCell className="text-right">{formatCurrency(po.total_amount)}</TableCell>
+                     </TableRow>
+                   ))}
+                 </TableBody>
+               </Table>
+                ) : (
+                    <div className="text-center py-8 text-muted-foreground">
+                        <p>Chưa có lịch sử nhập hàng.</p>
+                    </div>
+                )}
+                </CardContent>
+            </Card>
         </div>
         <div className="md:col-span-2">
             <Card>
@@ -108,7 +163,7 @@ export default function SupplierDetailPage() {
                      <TableHead className="hidden w-[64px] sm:table-cell">Ảnh</TableHead>
                      <TableHead>Tên sản phẩm</TableHead>
                      <TableHead>Thương hiệu</TableHead>
-                     <TableHead className="text-right">Giá</TableHead>
+                     <TableHead className="text-right">Giá bán</TableHead>
                      <TableHead className="text-center">Tồn kho</TableHead>
                    </TableRow>
                  </TableHeader>
