@@ -824,7 +824,20 @@ export const mockOrderItems = [
   },
 ];
 
-export const mockInstallmentTerms = [
+export const mockInstallmentTerms: {
+    id: string;
+    order_id: string;
+    installment_number: number;
+    due_date: string;
+    amount: number;
+    paid_at: string | null;
+    payment_method: string | null;
+    is_late: boolean;
+    note: string | null;
+    collected_by_user_id: string | null;
+    created_at: string;
+    updatedAt: string;
+}[] = [
   {
     id: 'inst-001', order_id: 'ord-003', installment_number: 1,
     due_date: '2024-08-23T00:00:00Z', amount: 2000000,

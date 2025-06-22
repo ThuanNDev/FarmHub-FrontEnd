@@ -4,7 +4,7 @@ import * as React from 'react';
 import Link from 'next/link';
 import { notFound, useRouter, useParams } from 'next/navigation';
 import { ArrowLeft, User, MapPin, Truck, Calendar, Hash, CreditCard, StickyNote, Package, Printer, Edit, XCircle } from 'lucide-react';
-import { mockOrders, mockCustomers, mockUsers, mockOrderItems, mockProducts } from '@/lib/data';
+import { mockOrders, mockCustomers, mockUsers, mockOrderItems, mockProducts, mockStores } from '@/lib/data';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -74,10 +74,136 @@ export default function OrderDetailPage() {
   };
 
   const handlePrintOrder = () => {
-    toast({
-      title: 'Tính năng đang phát triển',
-      description: 'Chức năng in đơn hàng sẽ sớm được ra mắt.',
-    });
+     if (!order || !processor) {
+        toast({
+            variant: "destructive",
+            title: "Lỗi",
+            description: "Không thể tải dữ liệu để in."
+        });
+        return;
+    }
+    
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) {
+      toast({
+        variant: 'destructive',
+        title: 'Lỗi',
+        description: 'Không thể mở cửa sổ in. Vui lòng cho phép pop-up.',
+      });
+      return;
+    }
+    
+    const storeInfo = mockStores[0];
+    
+    const itemsHtml = items.map(item => `
+      <tr class="item">
+        <td>
+          <div class="item-name">${item.product_name}</div>
+          <div class="item-details">SL: ${item.quantity} x ${formatCurrency(item.unit_price)}</div>
+        </td>
+        <td class="text-right">${formatCurrency(item.total_price)}</td>
+      </tr>
+    `).join('');
+    
+    const invoiceHtml = `
+        <html>
+        <head>
+          <title>Hóa đơn ${order.order_code}</title>
+          <style>
+            @page { margin: 0mm; }
+            @media print { body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
+            * { box-sizing: border-box; }
+            body { font-family: Arial, sans-serif; font-size: 10pt; color: #000; background: #fff; line-height: 1.4; margin: 0; padding: 0; }
+            .invoice-wrapper { width: 280px; margin: 0 auto; padding: 10px 5px; }
+            .header { text-align: center; margin-bottom: 10px; }
+            .header h1 { font-size: 14pt; margin: 0; font-weight: bold; }
+            .header p { margin: 2px 0; font-size: 9pt; }
+            .info { margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px dashed #000; }
+            .info p { margin: 3px 0; font-size: 9pt; }
+            .items-table { width: 100%; border-collapse: collapse; margin-bottom: 10px; }
+            .items-table th, .items-table td { text-align: left; padding: 4px 0; vertical-align: top; font-size: 9pt; }
+            .items-table th { border-bottom: 1px solid #000; font-weight: bold; }
+            .items-table .item-name { line-height: 1.2; word-break: break-word; }
+            .items-table .item-details { font-size: 8pt; color: #555; }
+            .items-table th:last-child, .items-table td:last-child { text-align: right; white-space: nowrap; }
+            .totals { width: 100%; margin-top: 10px; padding-top: 10px; border-top: 1px dashed #000; }
+            .totals .row { display: flex; justify-content: space-between; padding: 3px 0; font-size: 9pt; }
+            .totals .row.total { font-weight: bold; font-size: 11pt; padding-top: 5px; }
+            .footer { text-align: center; margin-top: 20px; font-size: 9pt; }
+            .text-right { text-align: right; }
+          </style>
+        </head>
+        <body>
+          <div class="invoice-wrapper">
+            <div class="header">
+              <h1>${storeInfo.name}</h1>
+              <p>${storeInfo.address}</p>
+              <p>SĐT: ${storeInfo.phone}</p>
+            </div>
+
+            <div class="info">
+              <p><strong>Hóa đơn bán lẻ:</strong> ${order.order_code}</p>
+              <p><strong>Ngày:</strong> ${formatDate(order.created_at)}</p>
+              <p><strong>Khách hàng:</strong> ${customer?.name || 'Khách lẻ'}</p>
+              ${customer ? `<p><strong>SĐT:</strong> ${customer.phone}</p>` : ''}
+              <p><strong>Nhân viên:</strong> ${processor?.full_name || 'N/A'}</p>
+            </div>
+
+            <table class="items-table">
+              <thead>
+                <tr>
+                  <th>Sản phẩm</th>
+                  <th>Thành tiền</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${itemsHtml}
+              </tbody>
+            </table>
+
+            <div class="totals">
+              <div class="row">
+                <span>Tạm tính:</span>
+                <span>${formatCurrency(items.reduce((sum, item) => sum + item.total_price, 0))}</span>
+              </div>
+              <div class="row">
+                <span>Giảm giá:</span>
+                <span>-${formatCurrency(order.discount_amount)}</span>
+              </div>
+              <div class="row">
+                <span>Phí VC:</span>
+                <span>${formatCurrency(order.shipping_fee)}</span>
+              </div>
+              <div class="row total">
+                <span>TỔNG CỘNG:</span>
+                <span>${formatCurrency(order.total_amount)}</span>
+              </div>
+              <div class="row">
+                <span>Đã trả:</span>
+                <span>${formatCurrency(order.total_paid)}</span>
+              </div>
+              <div class="row">
+                <span>Còn lại:</span>
+                <span style="font-weight: bold;">${formatCurrency(order.total_amount - order.total_paid)}</span>
+              </div>
+            </div>
+
+            <div class="footer">
+              <p>${storeInfo.invoice_footer || 'Cảm ơn quý khách và hẹn gặp lại!'}</p>
+              <p>${storeInfo.email}</p>
+            </div>
+          </div>
+        </body>
+      </html>
+    `;
+
+    printWindow.document.write(invoiceHtml);
+    printWindow.document.close();
+    printWindow.focus();
+    setTimeout(() => {
+      printWindow.print();
+      printWindow.close();
+    }, 250);
   };
 
   const handleEditOrder = () => {

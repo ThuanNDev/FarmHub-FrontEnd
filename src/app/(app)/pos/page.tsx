@@ -32,7 +32,7 @@ import {
 } from '@/components/ui/form';
 import { Textarea } from '@/components/ui/textarea';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { mockProducts, mockCustomers, mockCategories, mockStores } from '@/lib/data';
+import { mockProducts, mockCustomers, mockCategories, mockStores, mockUsers, mockOrders, mockOrderItems, mockInstallmentTerms } from '@/lib/data';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { useStore } from '@/contexts/StoreContext';
@@ -160,21 +160,104 @@ export default function POSPage() {
   };
   
   const handleConfirmPayment = () => {
-    const remaining = totalWithVat - amountPaid;
-    let description = `Đơn hàng đã được tạo.`;
+    if (cart.length === 0) {
+      toast({ variant: 'destructive', title: 'Giỏ hàng trống' });
+      return;
+    }
+    
+    const currentUser = mockUsers.find(u => u.is_active);
+    if (!currentUser) {
+        toast({ variant: 'destructive', title: 'Lỗi', description: 'Không tìm thấy người dùng hiện tại.'});
+        return;
+    }
 
+    const now = new Date();
+    const newOrderCode = `DH${now.toISOString().slice(2, 10).replace(/-/g, '')}${Math.floor(100 + Math.random() * 900)}`;
+    const deliveryAddress = (document.getElementById('delivery-address') as HTMLTextAreaElement)?.value || selectedCustomer?.address || '';
+
+    const newOrder: (typeof mockOrders)[0] = {
+      id: `ord-${now.getTime()}`,
+      order_code: newOrderCode,
+      customer_id: selectedCustomerId,
+      total_amount: totalWithVat,
+      discount_amount: discount,
+      shipping_fee: 0, 
+      total_paid: amountPaid,
+      payment_type: paymentMethod as any,
+      payment_details: `Thanh toán tại POS bằng ${paymentMethod}`,
+      status: 'Delivered' as const,
+      expected_delivery_date: null,
+      delivery_address: deliveryAddress,
+      delivery_status: deliveryAddress ? 'Processing' as const : 'Completed' as const,
+      note: 'Đơn hàng tạo tại POS',
+      processed_by_user_id: currentUser.id,
+      created_at: now.toISOString(),
+      updated_at: now.toISOString(),
+    };
+
+    mockOrders.unshift(newOrder);
+    
+    cart.forEach(item => {
+      const newOrderItem = {
+        id: `item-${newOrder.id}-${item.id}`,
+        order_id: newOrder.id,
+        product_id: item.id,
+        product_name: item.name,
+        product_unit: item.unit,
+        quantity: item.quantity,
+        unit_price: item.price,
+        total_price: item.price * item.quantity,
+      };
+      mockOrderItems.push(newOrderItem);
+      
+      const productInDb = mockProducts.find(p => p.id === item.id);
+      if (productInDb) {
+        productInDb.stock -= item.quantity;
+      }
+    });
+
+    const remaining = totalWithVat - amountPaid;
+    let description = `Đơn hàng ${newOrderCode} đã được tạo thành công.`;
+    
     if (remaining > 0 && selectedCustomer) {
-        if (paymentMethod === 'Installment') {
-            description += ` Trả trước ${formatCurrency(amountPaid)}, còn lại ${formatCurrency(remaining)} cho khách hàng ${selectedCustomer.name}.`;
-        } else { // Assumes 'Debt'
-            description += ` Ghi nợ ${formatCurrency(remaining)} cho khách hàng ${selectedCustomer.name}.`;
-        }
+      const customerInDb = mockCustomers.find(c => c.id === selectedCustomer.id);
+      if (customerInDb) {
+          if (paymentMethod === 'Debt') {
+              customerInDb.total_debt += remaining;
+              customerInDb.last_purchase_date = now.toISOString();
+              description += ` Ghi nợ ${formatCurrency(remaining)} cho khách hàng ${selectedCustomer.name}.`;
+          } else if (paymentMethod === 'Installment') {
+              const termCount = 3; 
+              const amountPerTerm = Math.ceil(remaining / termCount);
+              for (let i = 1; i <= termCount; i++) {
+                const dueDate = new Date(now);
+                dueDate.setMonth(dueDate.getMonth() + i);
+                const newTerm: (typeof mockInstallmentTerms)[0] = {
+                    id: `inst-${newOrder.id}-${i}`,
+                    order_id: newOrder.id,
+                    installment_number: i,
+                    due_date: dueDate.toISOString(),
+                    amount: amountPerTerm,
+                    paid_at: null,
+                    payment_method: null,
+                    is_late: false,
+                    note: `Kỳ ${i}/${termCount}`,
+                    collected_by_user_id: null,
+                    created_at: now.toISOString(),
+                    updatedAt: now.toISOString(),
+                };
+                mockInstallmentTerms.push(newTerm);
+              }
+              description += ` Trả góp ${formatCurrency(remaining)} trong ${termCount} kỳ.`;
+          }
+      }
     }
 
     toast({
       title: "Tạo đơn hàng thành công!",
       description: description,
     });
+
     setPaymentDialogOpen(false);
     clearCart();
     setSelectedCustomerId('guest');

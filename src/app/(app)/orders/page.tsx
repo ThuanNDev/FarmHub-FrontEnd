@@ -67,7 +67,7 @@ export default function OrdersPage() {
     
     let ordersToFilter = sortedOrders;
     if (activeTab !== 'all') {
-        ordersToFilter = sortedOrders.filter(o => o.status === activeTab);
+        ordersToFilter = sortedOrders.filter(o => o.status.toLowerCase() === activeTab.toLowerCase());
     }
     
     if (searchTerm) {
@@ -164,6 +164,58 @@ export default function OrdersPage() {
     });
   };
 
+  const handleExport = () => {
+    if (filteredOrders.length === 0) {
+      toast({
+        variant: 'destructive',
+        title: 'Không có dữ liệu',
+        description: 'Không có đơn hàng nào để xuất file.',
+      });
+      return;
+    }
+
+    const headers = [
+      'Mã ĐH',
+      'Khách hàng',
+      'Ngày tạo',
+      'Trạng thái',
+      'Tổng tiền',
+      'Đã thanh toán',
+      'Còn lại',
+      'Phương thức TT'
+    ];
+    
+    const rows = filteredOrders.map(order => [
+      `"${order.order_code}"`,
+      `"${getCustomerName(order.customer_id)}"`,
+      `"${formatDate(order.created_at)}"`,
+      `"${order.status}"`,
+      order.total_amount,
+      order.total_paid,
+      order.total_amount - order.total_paid,
+      `"${order.payment_type}"`
+    ]);
+
+    let csvContent = "data:text/csv;charset=utf-8,\uFEFF" 
+        + headers.join(",") + "\n" 
+        + rows.map(e => e.join(",")).join("\n");
+        
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    const fileName = `don_hang_${new Date().toISOString().slice(0,10)}.csv`;
+    link.setAttribute("download", fileName);
+    document.body.appendChild(link);
+
+    link.click();
+    document.body.removeChild(link);
+    
+    toast({
+        title: 'Xuất file thành công',
+        description: `Đã xuất ${filteredOrders.length} đơn hàng ra tệp ${fileName}`,
+    });
+  };
+
 
   return (
     <>
@@ -171,9 +223,9 @@ export default function OrdersPage() {
         <div className="flex items-center">
           <TabsList>
             <TabsTrigger value="all">Tất cả</TabsTrigger>
-            <TabsTrigger value="Pending">Chờ xử lý</TabsTrigger>
-            <TabsTrigger value="Delivered">Đã giao</TabsTrigger>
-            <TabsTrigger value="Cancelled">
+            <TabsTrigger value="pending">Chờ xử lý</TabsTrigger>
+            <TabsTrigger value="delivered">Đã giao</TabsTrigger>
+            <TabsTrigger value="cancelled">
               Đã hủy
             </TabsTrigger>
           </TabsList>
@@ -188,7 +240,7 @@ export default function OrdersPage() {
                     onChange={(e) => setSearchTerm(e.target.value)}
                 />
             </div>
-            <Button size="sm" variant="outline" className="h-10 gap-1">
+            <Button size="sm" variant="outline" className="h-10 gap-1" onClick={handleExport}>
               <File className="h-3.5 w-3.5" />
               <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
                 Xuất file
