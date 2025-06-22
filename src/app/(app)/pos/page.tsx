@@ -492,6 +492,8 @@ export default function POSPage() {
               <p><strong>Ngày:</strong> ${invoiceDate}</p>
               <p><strong>Khách hàng:</strong> ${selectedCustomer?.name || t('pos.guest')}</p>
               ${selectedCustomer ? `<p><strong>SĐT:</strong> ${selectedCustomer.phone}</p>` : ''}
+              <p><strong>Nhân viên:</strong> ${currentUser?.full_name || 'N/A'}</p>
+              <p><strong>Thanh toán:</strong> ${t(`pos.${paymentMethod.toLowerCase()}`)}</p>
             </div>
 
             <table class="items-table">
