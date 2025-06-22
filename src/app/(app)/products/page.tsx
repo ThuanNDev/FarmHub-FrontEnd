@@ -573,15 +573,39 @@ export default function ProductsPage() {
                <FormField
                   control={form.control}
                   name="warranty_info"
-                  render={({ field }) => (
+                  render={({ field }) => {
+                    const warrantyMonths = field.value?.match(/\d+/)?.[0] || '0';
+                    return (
                     <FormItem>
                       <FormLabel>Thông tin bảo hành</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Bảo hành 12 tháng" {...field} />
-                      </FormControl>
+                       <Select
+                        onValueChange={(months) => {
+                            const newValue = months === '0' 
+                                ? 'Không bảo hành' 
+                                : `Bảo hành ${months} tháng`;
+                            field.onChange(newValue);
+                        }}
+                        value={warrantyMonths}
+                    >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Chọn thời gian bảo hành" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="0">Không bảo hành</SelectItem>
+                          <SelectItem value="3">3 tháng</SelectItem>
+                          <SelectItem value="6">6 tháng</SelectItem>
+                          <SelectItem value="12">12 tháng</SelectItem>
+                          <SelectItem value="18">18 tháng</SelectItem>
+                          <SelectItem value="24">24 tháng</SelectItem>
+                          <SelectItem value="36">36 tháng</SelectItem>
+                        </SelectContent>
+                      </Select>
                       <FormMessage />
                     </FormItem>
-                  )}
+                    )
+                  }}
                 />
                 <FormField
                   control={form.control}
