@@ -53,6 +53,7 @@ const settingsSchema = z.object({
   is_vat_enabled: z.boolean().default(true),
   vat_rate: z.coerce.number().min(0, "VAT không được âm.").max(100, "VAT không thể lớn hơn 100%").optional(),
   invoice_footer: z.string().optional(),
+  backup_schedule: z.string().optional(),
   defaults: z.object({
     unit: z.string().optional(),
     discount: z.coerce.number().min(0, "Chiết khấu không thể âm.").optional(),
@@ -74,6 +75,7 @@ export default function SettingsPage() {
       is_vat_enabled: store.is_vat_enabled ?? true,
       vat_rate: store.vat_rate || 0,
       invoice_footer: store.invoice_footer || '',
+      backup_schedule: store.backup_schedule || 'daily_2am',
       defaults: store.defaults || { unit: 'cái', discount: 0, shipping_fee: 0 },
     },
   });
@@ -85,6 +87,7 @@ export default function SettingsPage() {
         is_vat_enabled: store.is_vat_enabled ?? true,
         vat_rate: store.vat_rate || 0,
         invoice_footer: store.invoice_footer || '',
+        backup_schedule: store.backup_schedule || 'daily_2am',
         defaults: store.defaults || { unit: 'cái', discount: 0, shipping_fee: 0 },
     });
   }, [store, form]);
@@ -355,6 +358,42 @@ export default function SettingsPage() {
                     )}
                 />
             </div>
+            
+            <Separator />
+
+            <div>
+                <h3 className="text-lg font-medium font-headline">Sao lưu Dữ liệu</h3>
+                <p className="text-sm text-muted-foreground">
+                    Cài đặt lịch sao lưu dữ liệu tự động. Dữ liệu sẽ được sao lưu trên server.
+                </p>
+            </div>
+            
+            <FormField
+                control={form.control}
+                name="backup_schedule"
+                render={({ field }) => (
+                    <FormItem>
+                    <FormLabel>Tần suất sao lưu</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                        <SelectTrigger>
+                            <SelectValue placeholder="Chọn tần suất" />
+                        </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                            <SelectItem value="every_3_hours">Mỗi 3 giờ</SelectItem>
+                            <SelectItem value="every_6_hours">Mỗi 6 giờ</SelectItem>
+                            <SelectItem value="every_12_hours">Mỗi 12 giờ</SelectItem>
+                            <SelectItem value="daily_2am">Hàng ngày (lúc 02:00 sáng)</SelectItem>
+                        </SelectContent>
+                    </Select>
+                    <FormDescription>
+                        Đây là yêu cầu gửi tới backend. Việc sao lưu thực tế được thực hiện ở server.
+                    </FormDescription>
+                    <FormMessage />
+                    </FormItem>
+                )}
+            />
             
             <Separator />
             

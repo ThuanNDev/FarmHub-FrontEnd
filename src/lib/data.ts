@@ -23,6 +23,7 @@ export const mockStores = [
     is_vat_enabled: false,
     vat_rate: 8,
     invoice_footer: 'Cảm ơn quý khách và hẹn gặp lại!',
+    backup_schedule: 'daily_2am',
     defaults: {
         unit: 'cái',
         discount: 0,
