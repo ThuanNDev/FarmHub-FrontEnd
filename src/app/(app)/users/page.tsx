@@ -81,8 +81,6 @@ import { useToast } from '@/hooks/use-toast';
 
 type User = typeof mockUsers[0];
 
-const passwordSchema = z.string().min(8, { message: "Mật khẩu phải có ít nhất 8 ký tự." });
-
 const userSchema = z.object({
   full_name: z.string().min(1, { message: "Họ tên không được để trống." }),
   username: z.string().min(3, { message: "Tên đăng nhập phải có ít nhất 3 ký tự." }),
@@ -90,13 +88,18 @@ const userSchema = z.object({
   phone: z.string().optional(),
   role: z.enum(['Admin', 'Staff']),
   is_active: z.boolean().default(true),
-  password: passwordSchema.optional(),
-  confirmPassword: passwordSchema.optional(),
-}).refine(data => {
-    if (data.password && data.password !== data.confirmPassword) {
-        return false;
+  password: z.string().optional(),
+  confirmPassword: z.string().optional(),
+}).refine((data) => {
+    if (data.password && data.password.length > 0) {
+        return data.password.length >= 8;
     }
     return true;
+}, {
+    message: "Mật khẩu phải có ít nhất 8 ký tự.",
+    path: ["password"],
+}).refine((data) => {
+    return data.password === data.confirmPassword;
 }, {
     message: "Mật khẩu không khớp.",
     path: ["confirmPassword"],
