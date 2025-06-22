@@ -15,9 +15,9 @@ export const mockStores = [
     created_at: '2023-01-01T00:00:00Z',
     updated_at: '2024-07-25T11:00:00Z',
     bank_info: {
-      bank_id: 'TPBANK',
-      account_no: 'mynamebvh',
-      account_name: 'BUI VIET HOANG'
+      bank_id: 'SACOMBANK',
+      account_no: '050104114755',
+      account_name: 'NGUYEN TRAN VAN THUAN'
     }
   }
 ];
