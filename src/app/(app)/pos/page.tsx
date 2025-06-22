@@ -200,7 +200,10 @@ export default function POSPage() {
 
     const itemsHtml = cart.map(item => `
       <tr class="item">
-        <td>${item.name}<br/><small>SL: ${item.quantity} x ${formatCurrency(item.price)}</small></td>
+        <td>
+          <div class="item-name">${item.name}</div>
+          <div class="item-details">SL: ${item.quantity} x ${formatCurrency(item.price)}</div>
+        </td>
         <td class="text-right">${formatCurrency(item.price * item.quantity)}</td>
       </tr>
     `).join('');
@@ -210,30 +213,103 @@ export default function POSPage() {
         <head>
           <title>Hóa đơn ${orderCode}</title>
           <style>
-            @media print {
-              @page { margin: 0; }
-              body { margin: 0; }
+            @page {
+              margin: 0mm;
             }
-            body { font-family: 'Helvetica Neue', 'Helvetica', Helvetica, Arial, sans-serif; font-size: 12px; line-height: 1.4; color: #000; background: #fff; }
-            .invoice-wrapper { max-width: 300px; width: 100%; margin: 0 auto; padding: 20px; }
-            .header { text-align: center; margin-bottom: 10px; }
-            .header h1 { font-size: 18px; margin: 0; font-weight: bold; text-transform: uppercase; }
-            .header p { margin: 2px 0; font-size: 12px; }
-            .info { margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px dashed #000;}
-            .info p { margin: 2px 0; }
-            .items-table { width: 100%; border-collapse: collapse; margin-bottom: 10px; }
-            .items-table th, .items-table td { text-align: left; padding: 4px 0; vertical-align: top; }
-            .items-table th { border-bottom: 1px solid #000; }
-            .items-table td { border-bottom: 1px dotted #ccc; }
-            .items-table .item td { padding-top: 8px; }
-            .items-table .item:last-child td { border-bottom: none; }
-            .items-table th:last-child, .items-table td:last-child { text-align: right; }
-            .totals { width: 100%; margin-top: 10px; padding-top: 10px; border-top: 1px dashed #000; }
-            .totals td { padding: 3px 0; }
-            .totals .label { text-align: left; }
-            .totals .value { text-align: right; }
-            .totals .total .value { font-weight: bold; font-size: 14px; }
-            .footer { text-align: center; margin-top: 20px; font-size: 11px; }
+            @media print {
+              body {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+              }
+            }
+            * {
+              box-sizing: border-box;
+            }
+            body {
+              font-family: Arial, sans-serif;
+              font-size: 10pt;
+              color: #000;
+              background: #fff;
+              line-height: 1.4;
+              margin: 0;
+              padding: 0;
+            }
+            .invoice-wrapper {
+              width: 280px; /* ~75mm, suitable for 80mm receipt paper */
+              margin: 0 auto;
+              padding: 10px 5px;
+            }
+            .header {
+              text-align: center;
+              margin-bottom: 10px;
+            }
+            .header h1 {
+              font-size: 14pt;
+              margin: 0;
+              font-weight: bold;
+            }
+            .header p {
+              margin: 2px 0;
+              font-size: 9pt;
+            }
+            .info {
+              margin-bottom: 10px;
+              padding-bottom: 10px;
+              border-bottom: 1px dashed #000;
+            }
+            .info p {
+              margin: 3px 0;
+              font-size: 9pt;
+            }
+            .items-table {
+              width: 100%;
+              border-collapse: collapse;
+              margin-bottom: 10px;
+            }
+            .items-table th, .items-table td {
+              text-align: left;
+              padding: 4px 0;
+              vertical-align: top;
+              font-size: 9pt;
+            }
+            .items-table th {
+              border-bottom: 1px solid #000;
+              font-weight: bold;
+            }
+            .items-table .item-name {
+              line-height: 1.2;
+              word-break: break-word;
+            }
+            .items-table .item-details {
+                font-size: 8pt;
+                color: #555;
+            }
+            .items-table th:last-child, .items-table td:last-child {
+              text-align: right;
+              white-space: nowrap;
+            }
+            .totals {
+              width: 100%;
+              margin-top: 10px;
+              padding-top: 10px;
+              border-top: 1px dashed #000;
+            }
+            .totals .row {
+                display: flex;
+                justify-content: space-between;
+                padding: 3px 0;
+                font-size: 9pt;
+            }
+            .totals .row.total {
+                font-weight: bold;
+                font-size: 11pt;
+                padding-top: 5px;
+            }
+            .footer {
+              text-align: center;
+              margin-top: 20px;
+              font-size: 9pt;
+            }
             .text-right { text-align: right; }
           </style>
         </head>
@@ -264,22 +340,20 @@ export default function POSPage() {
               </tbody>
             </table>
 
-            <table class="totals">
-              <tbody>
-                <tr>
-                  <td class="label">Tạm tính:</td>
-                  <td class="value">${formatCurrency(subtotal)}</td>
-                </tr>
-                <tr>
-                  <td class="label">Giảm giá:</td>
-                  <td class="value">-${formatCurrency(discount)}</td>
-                </tr>
-                <tr class="total">
-                  <td class="label"><strong>Tổng cộng:</strong></td>
-                  <td class="value">${formatCurrency(total)}</td>
-                </tr>
-              </tbody>
-            </table>
+            <div class="totals">
+               <div class="row">
+                <span>Tạm tính:</span>
+                <span>${formatCurrency(subtotal)}</span>
+              </div>
+              <div class="row">
+                <span>Giảm giá:</span>
+                <span>-${formatCurrency(discount)}</span>
+              </div>
+              <div class="row total">
+                <span>TỔNG CỘNG:</span>
+                <span>${formatCurrency(total)}</span>
+              </div>
+            </div>
 
             <div class="footer">
               <p>Cảm ơn quý khách và hẹn gặp lại!</p>
