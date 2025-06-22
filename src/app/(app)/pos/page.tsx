@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
-import { Tabs, TabsList, TabsContent, TabsTrigger } from '@/components/ui/tabs';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { mockProducts, mockCustomers } from '@/lib/data';
 
 type Product = typeof mockProducts[0];
@@ -22,10 +22,10 @@ export default function POSPage() {
 
   const addToCart = (product: Product) => {
     setCart((prevCart) => {
-      const existingItem = prevCart.find((item) => item.productCode === product.productCode);
+      const existingItem = prevCart.find((item) => item.product_code === product.product_code);
       if (existingItem) {
         return prevCart.map((item) =>
-          item.productCode === product.productCode ? { ...item, quantity: item.quantity + 1 } : item
+          item.product_code === product.product_code ? { ...item, quantity: item.quantity + 1 } : item
         );
       }
       return [...prevCart, { ...product, quantity: 1 }];
@@ -34,11 +34,11 @@ export default function POSPage() {
 
   const updateQuantity = (productId: string, newQuantity: number) => {
     if (newQuantity <= 0) {
-      setCart((prevCart) => prevCart.filter((item) => item.productCode !== productId));
+      setCart((prevCart) => prevCart.filter((item) => item.product_code !== productId));
     } else {
       setCart((prevCart) =>
         prevCart.map((item) =>
-          item.productCode === productId ? { ...item, quantity: newQuantity } : item
+          item.product_code === productId ? { ...item, quantity: newQuantity } : item
         )
       );
     }
@@ -85,7 +85,7 @@ export default function POSPage() {
               <div className="grid grid-cols-2 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 pr-4">
                 {filteredProducts.map((product) => (
                   <Card
-                    key={product.productCode}
+                    key={product.product_code}
                     className="overflow-hidden transition-all hover:shadow-lg cursor-pointer"
                     onClick={() => addToCart(product)}
                   >
@@ -119,22 +119,22 @@ export default function POSPage() {
             ) : (
               <div className="grid gap-4">
                 {cart.map((item) => (
-                  <div key={item.productCode} className="flex items-center gap-4">
+                  <div key={item.product_code} className="flex items-center gap-4">
                     <div className="flex-1">
                       <p className="font-medium">{item.name}</p>
                       <p className="text-sm text-muted-foreground">{formatCurrency(item.price)}</p>
                     </div>
                     <div className="flex items-center gap-2">
-                      <Button size="icon" variant="outline" className="h-6 w-6" onClick={() => updateQuantity(item.productCode, item.quantity - 1)}>
+                      <Button size="icon" variant="outline" className="h-6 w-6" onClick={() => updateQuantity(item.product_code, item.quantity - 1)}>
                         <MinusCircle className="h-4 w-4" />
                       </Button>
                       <span>{item.quantity}</span>
-                      <Button size="icon" variant="outline" className="h-6 w-6" onClick={() => updateQuantity(item.productCode, item.quantity + 1)}>
+                      <Button size="icon" variant="outline" className="h-6 w-6" onClick={() => updateQuantity(item.product_code, item.quantity + 1)}>
                         <PlusCircle className="h-4 w-4" />
                       </Button>
                     </div>
                     <p className="w-24 text-right font-medium">{formatCurrency(item.price * item.quantity)}</p>
-                     <Button size="icon" variant="ghost" className="h-6 w-6" onClick={() => updateQuantity(item.productCode, 0)}>
+                     <Button size="icon" variant="ghost" className="h-6 w-6" onClick={() => updateQuantity(item.product_code, 0)}>
                         <X className="h-4 w-4" />
                       </Button>
                   </div>

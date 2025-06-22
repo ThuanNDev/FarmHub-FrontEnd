@@ -82,8 +82,8 @@ export default function ProductDetailPage({ params }: { params: { slug: string }
                         
                         <div className="flex items-end gap-4">
                            <div className="text-4xl font-bold text-primary">{formatCurrency(product.price)}</div>
-                           {product.creditPrice && (
-                               <div className="text-xl text-muted-foreground line-through">{formatCurrency(product.creditPrice)}</div>
+                           {product.credit_price && (
+                               <div className="text-xl text-muted-foreground line-through">{formatCurrency(product.credit_price)}</div>
                            )}
                         </div>
 
@@ -119,7 +119,7 @@ export default function ProductDetailPage({ params }: { params: { slug: string }
 
                         <div className="grid gap-2">
                              <h3 className="font-semibold text-xl">Thông tin bảo hành</h3>
-                             <p className="text-sm text-muted-foreground">{product.warrantyInfo}</p>
+                             <p className="text-sm text-muted-foreground">{product.warranty_info}</p>
                         </div>
 
                     </div>
