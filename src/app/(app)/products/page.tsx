@@ -98,6 +98,7 @@ const productSchema = z.object({
   min_stock_level: z.coerce.number().int().min(0, { message: 'Ngưỡng tồn kho phải là số nguyên không âm.' }),
   warranty_info: z.string().optional(),
   is_active: z.boolean().default(true),
+  images: z.string().optional(),
 });
 
 type ProductFormValues = z.infer<typeof productSchema>;
@@ -130,12 +131,19 @@ export default function ProductsPage() {
       min_stock_level: 5,
       warranty_info: 'Bảo hành 12 tháng',
       is_active: true,
+      images: '',
     },
   });
 
   useEffect(() => {
     if (isAddEditDialogOpen) {
       if (selectedProduct) {
+        let imageString = '';
+        try {
+            imageString = JSON.parse(selectedProduct.images).join(', ');
+        } catch (e) {
+            console.error("Failed to parse product images", e);
+        }
         form.reset({
           name: selectedProduct.name,
           description: selectedProduct.description,
@@ -148,6 +156,7 @@ export default function ProductsPage() {
           min_stock_level: selectedProduct.min_stock_level,
           warranty_info: selectedProduct.warranty_info,
           is_active: selectedProduct.is_active,
+          images: imageString,
         });
       } else {
         form.reset({
@@ -162,6 +171,7 @@ export default function ProductsPage() {
           min_stock_level: 5,
           warranty_info: 'Bảo hành 12 tháng',
           is_active: true,
+          images: '',
         });
       }
     }
@@ -196,12 +206,17 @@ export default function ProductsPage() {
   };
 
   const onSubmit = (values: ProductFormValues) => {
+    const imagesAsJsonString = values.images
+        ? JSON.stringify(values.images.split(',').map(url => url.trim()).filter(url => url))
+        : '[]';
+
     if (selectedProduct) {
       const updatedProducts = products.map((p) =>
         p.product_code === selectedProduct.product_code 
           ? { 
               ...p, 
               ...values,
+              images: imagesAsJsonString,
               slug: values.name.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, ''),
               credit_price: values.credit_price || values.price,
               description: values.description || '',
@@ -217,7 +232,7 @@ export default function ProductsPage() {
         product_code: `P${Math.floor(1000 + Math.random() * 9000)}`,
         slug: values.name.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, ''),
         credit_price: values.credit_price || values.price,
-        images: '["https://placehold.co/600x600.png"]',
+        images: imagesAsJsonString.length > 2 ? imagesAsJsonString : '["https://placehold.co/600x600.png"]',
         specs: '{}',
         supplier_id: 'supp-new',
         is_deleted: false,
@@ -440,6 +455,22 @@ export default function ProductsPage() {
                       <FormControl>
                         <Textarea placeholder="Mô tả chi tiết về sản phẩm..." {...field} />
                       </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="images"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Hình ảnh</FormLabel>
+                      <FormControl>
+                        <Textarea placeholder="Dán các URL hình ảnh, cách nhau bằng dấu phẩy" {...field} />
+                      </FormControl>
+                      <FormDescription>
+                        Cung cấp một hoặc nhiều URL hình ảnh, phân tách bằng dấu phẩy.
+                      </FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}
