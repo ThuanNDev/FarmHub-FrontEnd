@@ -2,7 +2,7 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -83,6 +83,7 @@ import {
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
+import { Badge } from '@/components/ui/badge';
 import { mockProducts, mockCategories, mockSuppliers } from '@/lib/data';
 import { useToast } from '@/hooks/use-toast';
 import { slugify } from '@/lib/utils';
@@ -266,14 +267,25 @@ export default function ProductsPage() {
     setAddEditDialogOpen(false);
     setSelectedProduct(null);
   };
+  
+  const productsForCurrentTab = useMemo(() => {
+    const searchFiltered = products.filter((p) => 
+        p.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+        p.product_code.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+    
+    switch(activeTab) {
+        case 'Sắp hết hàng':
+            return searchFiltered.filter(p => p.stock > 0 && p.stock <= p.min_stock_level);
+        case 'Hết hàng':
+            return searchFiltered.filter(p => p.stock === 0);
+        case 'Tất cả':
+        default:
+            return searchFiltered;
+    }
+  }, [products, searchTerm, activeTab]);
 
-  const filteredProducts = products.filter((p) => p.name.toLowerCase().includes(searchTerm.toLowerCase()));
-  const categories = ['Tất cả', ...Array.from(new Set(products.map((p) => p.brand)))];
-
-  const getProductsForTab = (tab: string) => {
-    if (tab === 'Tất cả') return filteredProducts;
-    return filteredProducts.filter((p) => p.brand === tab);
-  };
+  const tabs = ['Tất cả', 'Sắp hết hàng', 'Hết hàng'];
 
   const formatCurrency = (amount: number) => {
     if (!amount) return '0 ₫';
@@ -292,8 +304,7 @@ export default function ProductsPage() {
   const getCategoryName = (categoryId: string) => {
     return mockCategories.find((c) => c.id === categoryId)?.name || "N/A";
   };
-
-  const productsForCurrentTab = getProductsForTab(activeTab);
+  
   const totalPages = Math.ceil(productsForCurrentTab.length / productsPerPage);
 
   const paginatedProducts = productsForCurrentTab.slice(
@@ -337,9 +348,9 @@ export default function ProductsPage() {
               Quản lý sản phẩm và xem tình trạng tồn kho của chúng.
             </CardDescription>
             <TabsList>
-              {categories.map((cat) => (
-                <TabsTrigger key={cat} value={cat}>
-                  {cat}
+              {tabs.map((tab) => (
+                <TabsTrigger key={tab} value={tab}>
+                  {tab}
                 </TabsTrigger>
               ))}
             </TabsList>
@@ -353,10 +364,8 @@ export default function ProductsPage() {
                       <span className="sr-only">Ảnh</span>
                     </TableHead>
                     <TableHead>Tên</TableHead>
-                    <TableHead className="hidden lg:table-cell">Giá nhập</TableHead>
-                    <TableHead>Giá lẻ</TableHead>
-                    <TableHead className="hidden lg:table-cell">Giá bán nợ</TableHead>
-                    <TableHead className="hidden md:table-cell">Tồn kho</TableHead>
+                    <TableHead>Giá bán</TableHead>
+                    <TableHead className="hidden md:table-cell text-center">Tồn kho</TableHead>
                     <TableHead className="hidden md:table-cell">Đơn vị</TableHead>
                     <TableHead className="hidden md:table-cell">Danh mục</TableHead>
                     <TableHead>
@@ -380,10 +389,16 @@ export default function ProductsPage() {
                       <TableCell className="font-medium">
                         {product.name}
                       </TableCell>
-                      <TableCell className="hidden lg:table-cell">{formatCurrency(product.import_price)}</TableCell>
                       <TableCell>{formatCurrency(product.price)}</TableCell>
-                      <TableCell className="hidden lg:table-cell">{formatCurrency(product.credit_price)}</TableCell>
-                      <TableCell className="hidden md:table-cell">{product.stock}</TableCell>
+                      <TableCell className="hidden md:table-cell text-center">
+                        {product.stock <= 0 ? (
+                            <Badge variant="destructive">Hết hàng</Badge>
+                        ) : product.stock <= product.min_stock_level ? (
+                            <Badge variant="outline">{product.stock}</Badge>
+                        ) : (
+                            product.stock
+                        )}
+                      </TableCell>
                       <TableCell className="hidden md:table-cell">{product.unit}</TableCell>
                       <TableCell className="hidden md:table-cell">{getCategoryName(product.category_id)}</TableCell>
                       <TableCell onClick={(e) => e.stopPropagation()}>
