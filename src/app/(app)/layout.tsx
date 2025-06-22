@@ -259,7 +259,7 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
             </DropdownMenuContent>
           </DropdownMenu>
         </header>
-        <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6 bg-background overflow-y-auto">
+        <main className="flex min-h-0 flex-1 flex-col gap-4 bg-background p-4 lg:gap-6 lg:p-6 overflow-y-auto">
           {children}
         </main>
       </div>
