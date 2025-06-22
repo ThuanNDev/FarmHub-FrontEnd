@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -315,14 +316,17 @@ export default function CategoriesPage() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Danh mục cha</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value || ''}>
+                    <Select
+                      onValueChange={(value) => field.onChange(value === '_ROOT_' ? '' : value)}
+                      value={field.value === '' ? '_ROOT_' : field.value}
+                    >
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Không có (danh mục gốc)" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="">Không có (danh mục gốc)</SelectItem>
+                        <SelectItem value="_ROOT_">Không có (danh mục gốc)</SelectItem>
                         {categories
                           .filter(c => c.id !== selectedCategory?.id)
                           .map(category => (
