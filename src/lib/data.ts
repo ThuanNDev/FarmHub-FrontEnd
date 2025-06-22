@@ -20,7 +20,7 @@ export const mockStores = [
       account_no: '050104114755',
       account_name: 'NGUYEN TRAN VAN THUAN'
     },
-    is_vat_enabled: false,
+    is_vat_enabled: true,
     vat_rate: 8,
     invoice_footer: 'Cảm ơn quý khách và hẹn gặp lại!',
     defaults: {
@@ -503,4 +503,26 @@ export const mockOrderItems = [
     unit_price: 4000000,
     total_price: 4000000,
   },
+];
+
+export const mockChartData = [
+  { month: 'Tháng 1', revenue: 120000000 },
+  { month: 'Tháng 2', revenue: 155000000 },
+  { month: 'Tháng 3', revenue: 132000000 },
+  { month: 'Tháng 4', revenue: 189000000 },
+  { month: 'Tháng 5', revenue: 213000000 },
+  { month: 'Tháng 6', revenue: 245000000 },
+];
+
+export const mockBanks = [
+    { id: 'VIETCOMBANK', name: 'Vietcombank (VCB)' },
+    { id: 'TPBANK', name: 'TPBank' },
+    { id: 'MBBANK', name: 'MB Bank' },
+    { id: 'ACBBANK', name: 'ACB' },
+    { id: 'TECHCOMBANK', name: 'Techcombank' },
+    { id: 'BIDV', name: 'BIDV' },
+    { id: 'VIETINBANK', name: 'VietinBank' },
+    { id: 'AGRIBANK', name: 'Agribank' },
+    { id: 'VPBANK', name: 'VPBank' },
+    { id: 'SACOMBANK', name: 'Sacombank' },
 ];

@@ -36,6 +36,7 @@ import {
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
 import { useStore } from '@/contexts/StoreContext';
+import { mockBanks } from '@/lib/data';
 
 const settingsSchema = z.object({
   name: z.string().min(1, "Tên cửa hàng không được để trống."),
@@ -60,19 +61,6 @@ const settingsSchema = z.object({
 });
 
 type SettingsFormValues = z.infer<typeof settingsSchema>;
-
-const banks = [
-    { id: 'VIETCOMBANK', name: 'Vietcombank (VCB)' },
-    { id: 'TPBANK', name: 'TPBank' },
-    { id: 'MBBANK', name: 'MB Bank' },
-    { id: 'ACBBANK', name: 'ACB' },
-    { id: 'TECHCOMBANK', name: 'Techcombank' },
-    { id: 'BIDV', name: 'BIDV' },
-    { id: 'VIETINBANK', name: 'VietinBank' },
-    { id: 'AGRIBANK', name: 'Agribank' },
-    { id: 'VPBANK', name: 'VPBank' },
-    { id: 'SACOMBANK', name: 'Sacombank' },
-];
 
 export default function SettingsPage() {
   const { store, setStore } = useStore();
@@ -329,7 +317,7 @@ export default function SettingsPage() {
                             </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                            {banks.map((bank) => (
+                            {mockBanks.map((bank) => (
                                 <SelectItem key={bank.id} value={bank.id}>
                                 {bank.name}
                                 </SelectItem>

@@ -31,17 +31,8 @@ import {
   ChartTooltipContent,
 } from '@/components/ui/chart';
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from 'recharts';
-import { mockOrders, mockCustomers, mockProducts, mockOrderItems } from '@/lib/data';
+import { mockOrders, mockCustomers, mockProducts, mockOrderItems, mockChartData } from '@/lib/data';
 import { useMemo } from 'react';
-
-const chartData = [
-  { month: 'Tháng 1', revenue: 120000000 },
-  { month: 'Tháng 2', revenue: 155000000 },
-  { month: 'Tháng 3', revenue: 132000000 },
-  { month: 'Tháng 4', revenue: 189000000 },
-  { month: 'Tháng 5', revenue: 213000000 },
-  { month: 'Tháng 6', revenue: 245000000 },
-];
 
 export default function Dashboard() {
   const formatCurrency = (amount: number) => {
@@ -164,7 +155,7 @@ export default function Dashboard() {
             </CardHeader>
             <CardContent className="pl-2">
                 <ChartContainer config={{ revenue: { label: "Doanh thu", color: "hsl(var(--primary))" } }} className="h-[300px] w-full">
-                    <BarChart data={chartData} accessibilityLayer>
+                    <BarChart data={mockChartData} accessibilityLayer>
                         <CartesianGrid vertical={false} />
                         <XAxis
                             dataKey="month"
