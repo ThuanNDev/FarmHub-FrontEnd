@@ -198,10 +198,8 @@ export default function POSPage() {
     const invoiceDate = new Date().toLocaleDateString('vi-VN');
     const orderCode = `HD${Date.now().toString().slice(-6)}`;
 
-    const vatRate = store.vat_rate || 0;
-    const vatAmount = total * (vatRate / 100);
-    const totalWithVat = total + vatAmount;
-
+    const vatRate = store.is_vat_enabled ? (store.vat_rate || 0) : 0;
+    
     const itemsHtml = cart.map(item => `
       <tr class="item">
         <td>
@@ -212,7 +210,7 @@ export default function POSPage() {
       </tr>
     `).join('');
 
-    const vatHtml = vatRate > 0 ? `
+    const vatHtml = store.is_vat_enabled && vatRate > 0 ? `
       <div class="row">
         <span>VAT (${vatRate}%):</span>
         <span>${formatCurrency(vatAmount)}</span>
@@ -400,8 +398,9 @@ export default function POSPage() {
   }, [subtotal, discount]);
 
   const vatAmount = useMemo(() => {
-    return total * ((store.vat_rate || 0) / 100);
-  }, [total, store.vat_rate]);
+    if (!store.is_vat_enabled || !store.vat_rate) return 0;
+    return total * (store.vat_rate / 100);
+  }, [total, store.is_vat_enabled, store.vat_rate]);
 
   const totalWithVat = useMemo(() => {
     return total + vatAmount;
@@ -613,7 +612,7 @@ export default function POSPage() {
                           placeholder="0"
                       />
                   </div>
-                  {store.vat_rate > 0 && (
+                  {store.is_vat_enabled && store.vat_rate > 0 && (
                     <div className="flex justify-between">
                         <span>VAT ({store.vat_rate}%)</span>
                         <span className="font-medium">{formatCurrency(vatAmount)}</span>

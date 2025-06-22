@@ -49,6 +49,7 @@ const settingsSchema = z.object({
     account_no: z.string().min(1, "Số tài khoản không được để trống."),
     account_name: z.string().min(1, "Tên chủ tài khoản không được để trống."),
   }).optional(),
+  is_vat_enabled: z.boolean().default(true),
   vat_rate: z.coerce.number().min(0, "VAT không được âm.").max(100, "VAT không thể lớn hơn 100%").optional(),
   invoice_footer: z.string().optional(),
   defaults: z.object({
@@ -82,6 +83,7 @@ export default function SettingsPage() {
     defaultValues: {
       ...store,
       bank_info: store.bank_info || { bank_id: '', account_no: '', account_name: ''},
+      is_vat_enabled: store.is_vat_enabled ?? true,
       vat_rate: store.vat_rate || 0,
       invoice_footer: store.invoice_footer || '',
       defaults: store.defaults || { unit: 'cái', discount: 0, shipping_fee: 0 },
@@ -92,6 +94,7 @@ export default function SettingsPage() {
     form.reset({
         ...store,
         bank_info: store.bank_info || { bank_id: '', account_no: '', account_name: ''},
+        is_vat_enabled: store.is_vat_enabled ?? true,
         vat_rate: store.vat_rate || 0,
         invoice_footer: store.invoice_footer || '',
         defaults: store.defaults || { unit: 'cái', discount: 0, shipping_fee: 0 },
@@ -198,6 +201,27 @@ export default function SettingsPage() {
                 </p>
             </div>
             
+            <FormField
+              control={form.control}
+              name="is_vat_enabled"
+              render={({ field }) => (
+                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
+                  <div className="space-y-0.5">
+                    <FormLabel>Áp dụng thuế VAT</FormLabel>
+                    <FormDescription>
+                      Bật/tắt tính thuế giá trị gia tăng (VAT) trên đơn hàng.
+                    </FormDescription>
+                  </div>
+                  <FormControl>
+                    <Switch
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <FormField
                     control={form.control}
