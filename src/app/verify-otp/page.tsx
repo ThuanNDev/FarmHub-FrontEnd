@@ -25,7 +25,7 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
-import { mockUsers } from '@/lib/data';
+import { mockUsers, mockStores } from '@/lib/data';
 
 const otpSchema = z.object({
   otp: z.string().min(6, { message: 'Mã OTP phải có 6 chữ số.' }).max(6, { message: 'Mã OTP phải có 6 chữ số.' }),
@@ -75,7 +75,7 @@ export default function VerifyOtpPage() {
 
         toast({
           title: 'Xác thực thành công',
-          description: `Chào mừng bạn đến với FarmHub, ${user.full_name}!`,
+          description: `Chào mừng bạn đến với ${mockStores[0].name}, ${user.full_name}!`,
         });
         router.push('/');
       } else {
@@ -94,7 +94,7 @@ export default function VerifyOtpPage() {
       <CardHeader className="text-center p-6">
         <div className="flex justify-center items-center gap-2 mb-4">
             <Leaf className="h-8 w-8 text-primary" />
-            <span className="font-headline text-3xl">FarmHub</span>
+            <span className="font-headline text-3xl">{mockStores[0].name}</span>
         </div>
         <CardTitle className="font-headline text-2xl">Xác thực tài khoản</CardTitle>
         <CardDescription>

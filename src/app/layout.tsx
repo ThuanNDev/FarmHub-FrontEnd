@@ -3,6 +3,7 @@ import { Poppins, PT_Sans } from 'next/font/google';
 import { Toaster } from "@/components/ui/toaster"
 import './globals.css';
 import { cn } from '@/lib/utils';
+import { mockStores } from '@/lib/data';
 
 const poppins = Poppins({
   subsets: ['latin'],
@@ -19,8 +20,8 @@ const ptSans = PT_Sans({
 });
 
 export const metadata: Metadata = {
-  title: 'FarmHub',
-  description: 'Modern Farm Equipment Management',
+  title: mockStores[0].name || 'Quản lý bán hàng',
+  description: 'Hệ thống quản lý bán hàng nông cơ',
 };
 
 export default function RootLayout({

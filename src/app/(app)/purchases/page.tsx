@@ -169,10 +169,9 @@ export default function PurchasesPage() {
 
     const totalAmount = items.reduce((sum, item) => sum + item.quantity * item.unitPrice, 0);
     const now = new Date().toISOString();
-    const currentUser = mockUsers[0]; // Mock current user
+    const currentUser = mockUsers[0];
 
     if(selectedPO) {
-        // Update existing PO
         const poIndex = mockPurchaseOrders.findIndex(p => p.id === selectedPO.id);
         if (poIndex !== -1) {
             mockPurchaseOrders[poIndex] = {
@@ -183,7 +182,7 @@ export default function PurchasesPage() {
                 total_amount: totalAmount,
                 updated_at: now,
             };
-            // Clear old items and add new ones
+            
             const otherItems = mockPurchaseOrderItems.filter(item => item.purchase_order_id !== selectedPO.id);
             const newItemsForThisPO = items.map((item, index) => ({
                 id: `poi-${selectedPO.id}-${index}`,
@@ -194,14 +193,13 @@ export default function PurchasesPage() {
                 total_price: item.quantity * item.unitPrice,
                 received_quantity: 0,
             }));
-
-            mockPurchaseOrderItems.length = 0; // Clear the array in-place
+            
+            mockPurchaseOrderItems.length = 0; 
             mockPurchaseOrderItems.push(...otherItems, ...newItemsForThisPO);
 
             toast({ title: "Thành công", description: "Đơn nhập hàng đã được cập nhật." });
         }
     } else {
-        // Add new PO
         const newPO: PurchaseOrder = {
             id: `po-${Date.now()}`,
             order_code: `PN${new Date().toISOString().slice(2, 10).replace(/-/g, '')}${Math.floor(100 + Math.random() * 900)}`,
@@ -364,7 +362,7 @@ export default function PurchasesPage() {
                             control={form.control}
                             name="expected_delivery_date"
                             render={({ field }) => (
-                                <FormItem className="flex flex-col">
+                                <FormItem className="flex flex-col pt-2">
                                 <FormLabel>Ngày dự kiến nhận</FormLabel>
                                 <Popover>
                                     <PopoverTrigger asChild>
@@ -410,7 +408,7 @@ export default function PurchasesPage() {
                     />
 
                     <Separator />
-                    <AddProductForm onAddItem={addItemToOrder} />
+                    <AddProductForm onAddItem={addItemToOrder} currentItems={items} />
                     <Separator />
 
                     <div>
@@ -479,10 +477,14 @@ export default function PurchasesPage() {
 }
 
 
-function AddProductForm({ onAddItem }: { onAddItem: (item: PurchaseOrderItem) => void }) {
+function AddProductForm({ onAddItem, currentItems }: { onAddItem: (item: PurchaseOrderItem) => void, currentItems: PurchaseOrderItem[] }) {
     const [selectedProductId, setSelectedProductId] = useState('');
     const [quantity, setQuantity] = useState(1);
     const [unitPrice, setUnitPrice] = useState(0);
+
+    const availableProducts = useMemo(() => {
+        return mockProducts.filter(p => p.is_active && !p.is_deleted && !currentItems.some(item => item.productId === p.id));
+    }, [currentItems]);
 
     useEffect(() => {
         const product = mockProducts.find(p => p.id === selectedProductId);
@@ -495,7 +497,7 @@ function AddProductForm({ onAddItem }: { onAddItem: (item: PurchaseOrderItem) =>
 
     const handleAdd = () => {
         if (!selectedProductId || quantity <= 0 || unitPrice < 0) {
-            // Basic validation
+            // Add toast notification for validation
             return;
         }
         const product = mockProducts.find(p => p.id === selectedProductId);
@@ -514,27 +516,27 @@ function AddProductForm({ onAddItem }: { onAddItem: (item: PurchaseOrderItem) =>
     };
 
     return (
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end p-4 border rounded-lg">
-            <FormItem className="md:col-span-2">
-                <FormLabel>Sản phẩm</FormLabel>
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-end p-4 border rounded-lg bg-muted/40">
+            <div className="md:col-span-5">
+                <Label>Sản phẩm</Label>
                 <Select value={selectedProductId} onValueChange={setSelectedProductId}>
-                    <SelectTrigger><SelectValue placeholder="Chọn sản phẩm" /></SelectTrigger>
+                    <SelectTrigger><SelectValue placeholder="Chọn sản phẩm để thêm" /></SelectTrigger>
                     <SelectContent>
-                        {mockProducts.filter(p => p.is_active && !p.is_deleted).map(p => (
-                            <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
+                        {availableProducts.map(p => (
+                            <SelectItem key={p.id} value={p.id}>{p.name} ({p.product_code})</SelectItem>
                         ))}
                     </SelectContent>
                 </Select>
-            </FormItem>
-            <FormItem>
-                <FormLabel>Số lượng</FormLabel>
-                <Input type="number" value={quantity} onChange={e => setQuantity(Number(e.target.value))} min={1} />
-            </FormItem>
-            <FormItem>
-                <FormLabel>Giá nhập</FormLabel>
-                <Input type="number" value={unitPrice} onChange={e => setUnitPrice(Number(e.target.value))} min={0} />
-            </FormItem>
-            <Button type="button" onClick={handleAdd} className="md:col-start-4">Thêm sản phẩm</Button>
+            </div>
+            <div className="md:col-span-2">
+                <Label>Số lượng</Label>
+                <Input type="number" value={quantity} onChange={e => setQuantity(Number(e.target.value) || 1)} min={1} />
+            </div>
+            <div className="md:col-span-3">
+                <Label>Giá nhập</Label>
+                <Input type="number" value={unitPrice} onChange={e => setUnitPrice(Number(e.target.value) || 0)} min={0} />
+            </div>
+            <Button type="button" onClick={handleAdd} className="md:col-span-2">Thêm vào đơn</Button>
         </div>
     )
 }

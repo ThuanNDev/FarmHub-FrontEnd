@@ -26,7 +26,7 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
-import { mockUsers } from '@/lib/data';
+import { mockUsers, mockStores } from '@/lib/data';
 
 const registerSchema = z.object({
   full_name: z.string().min(1, { message: 'Họ tên không được để trống.' }),
@@ -111,7 +111,7 @@ export default function RegisterPage() {
       <CardHeader className="text-center p-6">
         <div className="flex justify-center items-center gap-2 mb-4">
             <Leaf className="h-8 w-8 text-primary" />
-            <span className="font-headline text-3xl">FarmHub</span>
+            <span className="font-headline text-3xl">{mockStores[0].name}</span>
         </div>
         <CardTitle className="font-headline text-2xl">Tạo tài khoản</CardTitle>
         <CardDescription>Điền thông tin của bạn để bắt đầu.</CardDescription>
