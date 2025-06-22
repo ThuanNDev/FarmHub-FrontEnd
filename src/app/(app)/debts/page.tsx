@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { MoreHorizontal } from 'lucide-react';
+import { MoreHorizontal, Search } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -27,6 +27,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { Input } from '@/components/ui/input';
 import { mockCustomers } from '@/lib/data';
 import { useToast } from '@/hooks/use-toast';
 import { RecordPaymentDialog, type PaymentFormValues } from '@/components/RecordPaymentDialog';
@@ -35,6 +36,7 @@ type Debtor = (typeof mockCustomers)[0];
 
 export default function DebtsPage() {
   const [debtors, setDebtors] = useState<Debtor[]>([]);
+  const [searchTerm, setSearchTerm] = useState('');
   const router = useRouter();
   const { toast } = useToast();
 
@@ -47,6 +49,14 @@ export default function DebtsPage() {
     );
     setDebtors(customersWithDebt);
   }, []);
+
+  const filteredDebtors = useMemo(() => {
+    if (!searchTerm) return debtors;
+    return debtors.filter(debtor =>
+      debtor.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      debtor.phone.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [searchTerm, debtors]);
 
   const formatCurrency = (amount: number | null) => {
     if (amount === null || amount === undefined) return '-';
@@ -107,10 +117,24 @@ export default function DebtsPage() {
     <>
       <Card>
         <CardHeader>
-          <CardTitle className="font-headline">Quản lý công nợ</CardTitle>
-          <CardDescription>
-            Theo dõi và quản lý các khoản công nợ của khách hàng.
-          </CardDescription>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="font-headline">Quản lý công nợ</CardTitle>
+              <CardDescription>
+                Theo dõi và quản lý các khoản công nợ của khách hàng.
+              </CardDescription>
+            </div>
+             <div className="relative">
+                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input
+                    type="search"
+                    placeholder="Tìm theo tên, SĐT..."
+                    className="pl-8"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                />
+            </div>
+          </div>
         </CardHeader>
         <CardContent>
           <Table>
@@ -127,8 +151,8 @@ export default function DebtsPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {debtors.length > 0 ? (
-                debtors.map((debtor) => {
+              {filteredDebtors.length > 0 ? (
+                filteredDebtors.map((debtor) => {
                   const status = getDebtStatus(debtor);
                   return (
                     <TableRow key={debtor.id}>
@@ -168,7 +192,7 @@ export default function DebtsPage() {
         </CardContent>
         <CardFooter>
           <div className="text-xs text-muted-foreground">
-            Hiển thị <strong>{debtors.length}</strong> khách hàng có công nợ.
+            Hiển thị <strong>{filteredDebtors.length}</strong> trên <strong>{debtors.length}</strong> khách hàng có công nợ.
           </div>
         </CardFooter>
       </Card>

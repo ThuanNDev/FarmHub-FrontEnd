@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { File, MoreHorizontal, RefreshCw } from 'lucide-react';
+import { File, MoreHorizontal, RefreshCw, Search } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -43,6 +43,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { Input } from '@/components/ui/input';
 import { mockOrders, mockCustomers, mockOrderItems } from '@/lib/data';
 import { useToast } from '@/hooks/use-toast';
 
@@ -54,13 +55,30 @@ export default function OrdersPage() {
   
   const [orders, setOrders] = useState<Order[]>(mockOrders);
   const [activeTab, setActiveTab] = useState('all');
+  const [searchTerm, setSearchTerm] = useState('');
   const [orderToCancel, setOrderToCancel] = useState<Order | null>(null);
+
+  const getCustomerName = (customerId: string) => {
+    return mockCustomers.find(c => c.id === customerId)?.name || 'Khách lẻ';
+  };
 
   const filteredOrders = useMemo(() => {
     const sortedOrders = [...orders].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
-    if (activeTab === 'all') return sortedOrders;
-    return sortedOrders.filter(o => o.status === activeTab);
-  }, [orders, activeTab]);
+    
+    let ordersToFilter = sortedOrders;
+    if (activeTab !== 'all') {
+        ordersToFilter = sortedOrders.filter(o => o.status === activeTab);
+    }
+    
+    if (searchTerm) {
+        ordersToFilter = ordersToFilter.filter(order => 
+            order.order_code.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            getCustomerName(order.customer_id).toLowerCase().includes(searchTerm.toLowerCase())
+        );
+    }
+    
+    return ordersToFilter;
+  }, [orders, activeTab, searchTerm]);
 
   const getStatusVariant = (status: string) => {
     switch (status) {
@@ -73,10 +91,6 @@ export default function OrdersPage() {
       default:
         return 'outline';
     }
-  };
-
-  const getCustomerName = (customerId: string) => {
-    return mockCustomers.find(c => c.id === customerId)?.name || 'Khách lẻ';
   };
   
   const formatCurrency = (amount: number) => {
@@ -164,6 +178,16 @@ export default function OrdersPage() {
             </TabsTrigger>
           </TabsList>
           <div className="ml-auto flex items-center gap-2">
+            <div className="relative">
+                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input
+                    type="search"
+                    placeholder="Tìm theo mã ĐH, tên KH..."
+                    className="pl-8 sm:w-[200px] md:w-[300px]"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                />
+            </div>
             <Button size="sm" variant="outline" className="h-10 gap-1">
               <File className="h-3.5 w-3.5" />
               <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">

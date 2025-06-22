@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import Image from 'next/image';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -8,6 +8,7 @@ import * as z from 'zod';
 import {
   PlusCircle,
   MoreHorizontal,
+  Search,
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
@@ -91,6 +92,7 @@ type CategoryFormValues = z.infer<typeof categorySchema>;
 
 export default function CategoriesPage() {
   const [categories, setCategories] = useState<Category[]>(mockCategories.filter(c => !c.is_deleted));
+  const [searchTerm, setSearchTerm] = useState('');
   const [isAddEditDialogOpen, setAddEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
@@ -109,6 +111,14 @@ export default function CategoriesPage() {
       is_active: true,
     },
   });
+
+  const filteredCategories = useMemo(() => {
+    if (!searchTerm) return categories;
+    return categories.filter(category =>
+      category.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (category.description && category.description.toLowerCase().includes(searchTerm.toLowerCase()))
+    );
+  }, [categories, searchTerm]);
 
   useEffect(() => {
     if (isAddEditDialogOpen) {
@@ -213,12 +223,24 @@ export default function CategoriesPage() {
                 Quản lý các thể loại sản phẩm của bạn.
                 </CardDescription>
             </div>
-            <Button size="sm" className="h-10 gap-1 bg-accent hover:bg-accent/90" onClick={handleAddNew}>
-                <PlusCircle className="h-3.5 w-3.5" />
-                <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-                Thêm thể loại
-                </span>
-            </Button>
+            <div className="flex items-center gap-2">
+                <div className="relative">
+                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                    <Input
+                        type="search"
+                        placeholder="Tìm thể loại..."
+                        className="pl-8"
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                    />
+                </div>
+                <Button size="sm" className="h-10 gap-1 bg-accent hover:bg-accent/90" onClick={handleAddNew}>
+                    <PlusCircle className="h-3.5 w-3.5" />
+                    <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
+                    Thêm thể loại
+                    </span>
+                </Button>
+            </div>
           </div>
         </CardHeader>
         <CardContent>
@@ -238,7 +260,7 @@ export default function CategoriesPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {categories.map((category) => (
+              {filteredCategories.map((category) => (
                 <TableRow key={category.id} onClick={() => router.push(`/categories/${category.slug}`)} className="cursor-pointer">
                   <TableCell className="hidden sm:table-cell">
                     <Image
@@ -281,7 +303,7 @@ export default function CategoriesPage() {
         </CardContent>
         <CardFooter>
             <div className="text-xs text-muted-foreground">
-            Hiển thị <strong>{categories.length}</strong> thể loại
+              Hiển thị <strong>{filteredCategories.length}</strong> trên <strong>{categories.length}</strong> thể loại
             </div>
         </CardFooter>
       </Card>

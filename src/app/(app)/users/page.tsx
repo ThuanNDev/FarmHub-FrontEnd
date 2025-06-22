@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -10,7 +10,8 @@ import {
   MoreHorizontal,
   Mail, 
   Phone, 
-  Shield
+  Shield,
+  Search,
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
@@ -110,6 +111,7 @@ type UserFormValues = z.infer<typeof userSchema>;
 
 export default function UsersPage() {
   const [users, setUsers] = useState<User[]>(mockUsers);
+  const [searchTerm, setSearchTerm] = useState('');
   const [isAddEditDialogOpen, setAddEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
@@ -134,6 +136,15 @@ export default function UsersPage() {
       confirmPassword: ''
     },
   });
+
+  const filteredUsers = useMemo(() => {
+    if (!searchTerm) return users;
+    return users.filter(user =>
+      user.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.email.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [users, searchTerm]);
 
   useEffect(() => {
     if (isAddEditDialogOpen) {
@@ -308,12 +319,24 @@ export default function UsersPage() {
                 Quản lý nhân viên và quyền hạn của họ.
                 </CardDescription>
             </div>
-            <Button size="sm" className="h-10 gap-1 bg-accent hover:bg-accent/90" onClick={handleAddNew}>
-                <PlusCircle className="h-3.5 w-3.5" />
-                <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-                Thêm nhân viên
-                </span>
-            </Button>
+            <div className="flex items-center gap-2">
+              <div className="relative">
+                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input
+                  type="search"
+                  placeholder="Tìm nhân viên..."
+                  className="pl-8"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+              </div>
+              <Button size="sm" className="h-10 gap-1 bg-accent hover:bg-accent/90" onClick={handleAddNew}>
+                  <PlusCircle className="h-3.5 w-3.5" />
+                  <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
+                  Thêm nhân viên
+                  </span>
+              </Button>
+            </div>
           </div>
         </CardHeader>
         <CardContent>
@@ -330,7 +353,7 @@ export default function UsersPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {users.map((user) => (
+              {filteredUsers.map((user) => (
                 <TableRow key={user.id} onClick={() => router.push(`/users/${user.id}`)} className="cursor-pointer">
                   <TableCell>
                     <div className="font-medium">{user.full_name}</div>
@@ -367,7 +390,7 @@ export default function UsersPage() {
         </CardContent>
         <CardFooter>
             <div className="text-xs text-muted-foreground">
-            Hiển thị <strong>{users.length}</strong> người dùng
+            Hiển thị <strong>{filteredUsers.length}</strong> trên <strong>{users.length}</strong> người dùng
             </div>
         </CardFooter>
       </Card>

@@ -1,9 +1,9 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { MoreHorizontal, Landmark } from 'lucide-react';
+import { MoreHorizontal, Landmark, Search } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -28,6 +28,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { Input } from '@/components/ui/input';
 import { mockOrders, mockCustomers, mockInstallmentTerms } from '@/lib/data';
 import { useToast } from '@/hooks/use-toast';
 import { RecordPaymentDialog, type PaymentFormValues } from '@/components/RecordPaymentDialog';
@@ -36,6 +37,7 @@ type InstallmentOrder = (typeof mockOrders)[0];
 
 export default function InstallmentsPage() {
   const [installmentOrders, setInstallmentOrders] = useState<InstallmentOrder[]>([]);
+  const [searchTerm, setSearchTerm] = useState('');
   const router = useRouter();
   const { toast } = useToast();
 
@@ -48,6 +50,18 @@ export default function InstallmentsPage() {
     );
     setInstallmentOrders(orders);
   }, []);
+
+  const getCustomerName = (customerId: string) => {
+    return mockCustomers.find(c => c.id === customerId)?.name || 'Khách lẻ';
+  };
+
+  const filteredInstallmentOrders = useMemo(() => {
+    if (!searchTerm) return installmentOrders;
+    return installmentOrders.filter(order =>
+      order.order_code.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      getCustomerName(order.customer_id).toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [searchTerm, installmentOrders]);
   
   const handleOpenPaymentDialog = (order: InstallmentOrder) => {
     setSelectedOrder(order);
@@ -86,10 +100,6 @@ export default function InstallmentsPage() {
     setSelectedOrder(null);
   };
 
-  const getCustomerName = (customerId: string) => {
-    return mockCustomers.find(c => c.id === customerId)?.name || 'Khách lẻ';
-  };
-
   const formatCurrency = (amount: number | null) => {
     if (amount === null || amount === undefined) return '-';
     return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
@@ -118,13 +128,27 @@ export default function InstallmentsPage() {
     <>
       <Card>
         <CardHeader>
-          <CardTitle className="font-headline flex items-center gap-2">
-              <Landmark className="h-6 w-6"/>
-              Quản lý trả góp
-          </CardTitle>
-          <CardDescription>
-            Theo dõi các đơn hàng mua theo hình thức trả góp.
-          </CardDescription>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="font-headline flex items-center gap-2">
+                  <Landmark className="h-6 w-6"/>
+                  Quản lý trả góp
+              </CardTitle>
+              <CardDescription>
+                Theo dõi các đơn hàng mua theo hình thức trả góp.
+              </CardDescription>
+            </div>
+            <div className="relative">
+              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                  type="search"
+                  placeholder="Tìm theo mã ĐH, tên KH..."
+                  className="pl-8"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+          </div>
         </CardHeader>
         <CardContent>
           <Table>
@@ -144,8 +168,8 @@ export default function InstallmentsPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {installmentOrders.length > 0 ? (
-                installmentOrders.map((order) => {
+              {filteredInstallmentOrders.length > 0 ? (
+                filteredInstallmentOrders.map((order) => {
                   const status = getInstallmentStatus(order);
                   const remaining = order.total_amount - order.total_paid;
                   const { paidTerms, totalTerms, amountPerTerm } = getInstallmentDetails(order.id);
@@ -192,7 +216,7 @@ export default function InstallmentsPage() {
         </CardContent>
         <CardFooter>
           <div className="text-xs text-muted-foreground">
-            Hiển thị <strong>{installmentOrders.length}</strong> đơn hàng trả góp.
+            Hiển thị <strong>{filteredInstallmentOrders.length}</strong> trên <strong>{installmentOrders.length}</strong> đơn hàng trả góp.
           </div>
         </CardFooter>
       </Card>

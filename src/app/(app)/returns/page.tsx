@@ -77,6 +77,7 @@ type ReturnOrderFormValues = z.infer<typeof returnOrderSchema>;
 export default function ReturnsPage() {
   const [returnOrders, setReturnOrders] = useState<ReturnOrder[]>(mockReturnOrders);
   const [isCreateDialogOpen, setCreateDialogOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
   
   const [orderCode, setOrderCode] = useState('');
   const [foundOrder, setFoundOrder] = useState<Order | null>(null);
@@ -88,6 +89,19 @@ export default function ReturnsPage() {
   const form = useForm<ReturnOrderFormValues>({
     resolver: zodResolver(returnOrderSchema),
   });
+
+  const getCustomerName = (customerId: string) => mockCustomers.find(c => c.id === customerId)?.name || 'N/A';
+
+  const filteredROs = useMemo(() => {
+    if (!searchTerm) return returnOrders;
+    return returnOrders.filter(ro => {
+        const order = mockOrders.find(o => o.id === ro.order_id);
+        return ro.id.slice(-6).toLowerCase().includes(searchTerm.toLowerCase()) ||
+               (order && order.order_code.toLowerCase().includes(searchTerm.toLowerCase())) ||
+               getCustomerName(ro.customer_id).toLowerCase().includes(searchTerm.toLowerCase());
+    });
+  }, [searchTerm, returnOrders]);
+
 
   const handleSearchOrder = () => {
     const order = mockOrders.find(o => o.order_code.toLowerCase() === orderCode.toLowerCase());
@@ -167,7 +181,6 @@ export default function ReturnsPage() {
     setOrderCode('');
   };
   
-  const getCustomerName = (customerId: string) => mockCustomers.find(c => c.id === customerId)?.name || 'N/A';
   const formatCurrency = (amount: number) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
   const formatDate = (dateString: string | null) => dateString ? new Date(dateString).toLocaleDateString('vi-VN') : 'N/A';
   
@@ -194,12 +207,24 @@ export default function ReturnsPage() {
                 Theo dõi và xử lý các yêu cầu trả hàng từ khách.
               </CardDescription>
             </div>
-            <Button size="sm" className="h-10 gap-1 bg-accent hover:bg-accent/90" onClick={() => setCreateDialogOpen(true)}>
-              <PlusCircle className="h-3.5 w-3.5" />
-              <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-                Tạo đơn trả hàng
-              </span>
-            </Button>
+            <div className="flex items-center gap-2">
+              <div className="relative">
+                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input
+                  type="search"
+                  placeholder="Tìm theo mã, đơn gốc, KH..."
+                  className="pl-8"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+              </div>
+              <Button size="sm" className="h-10 gap-1 bg-accent hover:bg-accent/90" onClick={() => setCreateDialogOpen(true)}>
+                <PlusCircle className="h-3.5 w-3.5" />
+                <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
+                  Tạo đơn trả hàng
+                </span>
+              </Button>
+            </div>
           </div>
         </CardHeader>
         <CardContent>
@@ -218,7 +243,7 @@ export default function ReturnsPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {returnOrders.map((ro) => (
+              {filteredROs.map((ro) => (
                 <TableRow key={ro.id} onClick={() => router.push(`/returns/${ro.id}`)} className="cursor-pointer">
                   <TableCell className="font-medium">#{ro.id.slice(-6)}</TableCell>
                   <TableCell>{mockOrders.find(o => o.id === ro.order_id)?.order_code || 'N/A'}</TableCell>
@@ -250,7 +275,7 @@ export default function ReturnsPage() {
         </CardContent>
         <CardFooter>
             <div className="text-xs text-muted-foreground">
-                Hiển thị <strong>{returnOrders.length}</strong> đơn trả hàng
+                Hiển thị <strong>{filteredROs.length}</strong> trên <strong>{returnOrders.length}</strong> đơn trả hàng
             </div>
         </CardFooter>
       </Card>

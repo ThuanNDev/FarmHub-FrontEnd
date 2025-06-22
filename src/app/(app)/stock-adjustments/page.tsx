@@ -62,6 +62,7 @@ type AdjustmentFormValues = z.infer<typeof adjustmentSchema>;
 
 export default function StockAdjustmentsPage() {
   const [adjustments, setAdjustments] = useState<StockAdjustment[]>(mockStockAdjustments);
+  const [searchTerm, setSearchTerm] = useState('');
   const [isDialogOpen, setDialogOpen] = useState(false);
   const { toast } = useToast();
   
@@ -74,6 +75,16 @@ export default function StockAdjustmentsPage() {
       reason: '',
     },
   });
+
+  const getProductName = (productId: string) => mockProducts.find(p => p.id === productId)?.name || 'N/A';
+
+  const filteredAdjustments = useMemo(() => {
+    if (!searchTerm) return adjustments;
+    return adjustments.filter(adj => 
+        getProductName(adj.product_id).toLowerCase().includes(searchTerm.toLowerCase()) ||
+        adj.reason.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [searchTerm, adjustments]);
 
   const onSubmit = (values: AdjustmentFormValues) => {
     const product = mockProducts.find(p => p.id === values.productId);
@@ -104,7 +115,6 @@ export default function StockAdjustmentsPage() {
     form.reset();
   };
   
-  const getProductName = (productId: string) => mockProducts.find(p => p.id === productId)?.name || 'N/A';
   const getUserName = (userId: string) => mockUsers.find(u => u.id === userId)?.full_name || 'N/A';
   const formatDate = (dateString: string) => new Date(dateString).toLocaleString('vi-VN');
 
@@ -119,12 +129,24 @@ export default function StockAdjustmentsPage() {
                 Ghi lại các thay đổi tồn kho không liên quan đến mua/bán.
               </CardDescription>
             </div>
-            <Button size="sm" className="h-10 gap-1 bg-accent hover:bg-accent/90" onClick={() => setDialogOpen(true)}>
-              <PlusCircle className="h-3.5 w-3.5" />
-              <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-                Tạo phiếu điều chỉnh
-              </span>
-            </Button>
+            <div className="flex items-center gap-2">
+                <div className="relative">
+                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                    <Input
+                        type="search"
+                        placeholder="Tìm theo sản phẩm, lý do..."
+                        className="pl-8"
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                    />
+                </div>
+                <Button size="sm" className="h-10 gap-1 bg-accent hover:bg-accent/90" onClick={() => setDialogOpen(true)}>
+                    <PlusCircle className="h-3.5 w-3.5" />
+                    <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
+                        Tạo phiếu điều chỉnh
+                    </span>
+                </Button>
+            </div>
           </div>
         </CardHeader>
         <CardContent>
@@ -140,7 +162,7 @@ export default function StockAdjustmentsPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {adjustments.map((adj) => (
+              {filteredAdjustments.map((adj) => (
                 <TableRow key={adj.id}>
                   <TableCell>{formatDate(adj.created_at)}</TableCell>
                   <TableCell className="font-medium">{getProductName(adj.product_id)}</TableCell>
@@ -159,7 +181,7 @@ export default function StockAdjustmentsPage() {
         </CardContent>
         <CardFooter>
           <div className="text-xs text-muted-foreground">
-            Hiển thị <strong>{adjustments.length}</strong> phiếu điều chỉnh
+            Hiển thị <strong>{filteredAdjustments.length}</strong> trên <strong>{adjustments.length}</strong> phiếu điều chỉnh
           </div>
         </CardFooter>
       </Card>

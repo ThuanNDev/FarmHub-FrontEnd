@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { MoreHorizontal, PlusCircle, Trash2, ChevronsUpDown, Printer } from 'lucide-react';
+import { MoreHorizontal, PlusCircle, Trash2, ChevronsUpDown, Printer, Search } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -96,6 +96,7 @@ type PurchaseOrderFormValues = z.infer<typeof purchaseOrderSchema>;
 
 export default function PurchasesPage() {
   const [purchaseOrders, setPurchaseOrders] = useState<PurchaseOrder[]>(mockPurchaseOrders);
+  const [searchTerm, setSearchTerm] = useState('');
   const [isAddEditDialogOpen, setAddEditDialogOpen] = useState(false);
   const [isCancelDialogOpen, setCancelDialogOpen] = useState(false);
   const [selectedPO, setSelectedPO] = useState<PurchaseOrder | null>(null);
@@ -110,6 +111,16 @@ export default function PurchasesPage() {
       note: '',
     },
   });
+
+  const getSupplierName = (supplierId: string) => mockSuppliers.find(s => s.id === supplierId)?.name || 'N/A';
+
+  const filteredPOs = useMemo(() => {
+    if (!searchTerm) return purchaseOrders;
+    return purchaseOrders.filter(po =>
+      po.order_code.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      getSupplierName(po.supplier_id).toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [searchTerm, purchaseOrders]);
   
   useEffect(() => {
     if (!isAddEditDialogOpen) {
@@ -244,7 +255,6 @@ export default function PurchasesPage() {
     setItems(prev => prev.filter(item => item.productId !== productId));
   };
   
-  const getSupplierName = (supplierId: string) => mockSuppliers.find(s => s.id === supplierId)?.name || 'N/A';
   const formatCurrency = (amount: number) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
   const formatDate = (dateString: string | null) => dateString ? new Date(dateString).toLocaleDateString('vi-VN') : 'N/A';
   
@@ -410,12 +420,24 @@ export default function PurchasesPage() {
                 Quản lý các đơn hàng nhập từ nhà cung cấp.
               </CardDescription>
             </div>
-            <Button size="sm" className="h-10 gap-1 bg-accent hover:bg-accent/90" onClick={handleAddNew}>
-              <PlusCircle className="h-3.5 w-3.5" />
-              <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-                Thêm đơn nhập hàng
-              </span>
-            </Button>
+            <div className="flex items-center gap-2">
+                <div className="relative">
+                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                    <Input
+                        type="search"
+                        placeholder="Tìm theo mã ĐN, tên NCC..."
+                        className="pl-8"
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                    />
+                </div>
+                <Button size="sm" className="h-10 gap-1 bg-accent hover:bg-accent/90" onClick={handleAddNew}>
+                <PlusCircle className="h-3.5 w-3.5" />
+                <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
+                    Thêm đơn nhập hàng
+                </span>
+                </Button>
+            </div>
           </div>
         </CardHeader>
         <CardContent>
@@ -433,7 +455,7 @@ export default function PurchasesPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {purchaseOrders.map((po) => (
+              {filteredPOs.map((po) => (
                 <TableRow key={po.id} onClick={() => router.push(`/purchases/${po.id}`)} className="cursor-pointer">
                   <TableCell className="font-medium">{po.order_code}</TableCell>
                   <TableCell>{getSupplierName(po.supplier_id)}</TableCell>
@@ -466,7 +488,7 @@ export default function PurchasesPage() {
         </CardContent>
         <CardFooter>
             <div className="text-xs text-muted-foreground">
-                Hiển thị <strong>{purchaseOrders.length}</strong> đơn nhập hàng
+                Hiển thị <strong>{filteredPOs.length}</strong> trên <strong>{purchaseOrders.length}</strong> đơn nhập hàng
             </div>
         </CardFooter>
       </Card>

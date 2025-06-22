@@ -1,12 +1,13 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import {
   PlusCircle,
   MoreHorizontal,
+  Search,
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
@@ -80,6 +81,7 @@ type SupplierFormValues = z.infer<typeof supplierSchema>;
 
 export default function SuppliersPage() {
   const [suppliers, setSuppliers] = useState<Supplier[]>(mockSuppliers.filter(s => !s.is_deleted));
+  const [searchTerm, setSearchTerm] = useState('');
   const [isAddEditDialogOpen, setAddEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedSupplier, setSelectedSupplier] = useState<Supplier | null>(null);
@@ -99,6 +101,16 @@ export default function SuppliersPage() {
       note: '',
     },
   });
+
+  const filteredSuppliers = useMemo(() => {
+    if (!searchTerm) return suppliers;
+    return suppliers.filter(supplier =>
+      supplier.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      supplier.phone.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (supplier.email && supplier.email.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (supplier.contact_person && supplier.contact_person.toLowerCase().includes(searchTerm.toLowerCase()))
+    );
+  }, [suppliers, searchTerm]);
 
   useEffect(() => {
     if (isAddEditDialogOpen) {
@@ -170,12 +182,24 @@ export default function SuppliersPage() {
                 Quản lý các nhà cung cấp của bạn.
                 </CardDescription>
             </div>
-            <Button size="sm" className="h-10 gap-1 bg-accent hover:bg-accent/90" onClick={handleAddNew}>
-                <PlusCircle className="h-3.5 w-3.5" />
-                <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-                Thêm NCC
-                </span>
-            </Button>
+            <div className="flex items-center gap-2">
+              <div className="relative">
+                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input
+                  type="search"
+                  placeholder="Tìm nhà cung cấp..."
+                  className="pl-8"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+              </div>
+              <Button size="sm" className="h-10 gap-1 bg-accent hover:bg-accent/90" onClick={handleAddNew}>
+                  <PlusCircle className="h-3.5 w-3.5" />
+                  <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
+                  Thêm NCC
+                  </span>
+              </Button>
+            </div>
           </div>
         </CardHeader>
         <CardContent>
@@ -191,7 +215,7 @@ export default function SuppliersPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {suppliers.map((supplier) => (
+              {filteredSuppliers.map((supplier) => (
                 <TableRow key={supplier.id} onClick={() => router.push(`/suppliers/${supplier.id}`)} className="cursor-pointer">
                   <TableCell className="font-medium">{supplier.name}</TableCell>
                   <TableCell>
@@ -222,7 +246,7 @@ export default function SuppliersPage() {
         </CardContent>
         <CardFooter>
             <div className="text-xs text-muted-foreground">
-            Hiển thị <strong>{suppliers.length}</strong> nhà cung cấp
+            Hiển thị <strong>{filteredSuppliers.length}</strong> trên <strong>{suppliers.length}</strong> nhà cung cấp
             </div>
         </CardFooter>
       </Card>
