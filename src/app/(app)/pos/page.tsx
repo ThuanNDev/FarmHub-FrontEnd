@@ -1,5 +1,5 @@
 'use client';
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useForm } from 'react-hook-form';
@@ -61,6 +61,9 @@ const customerSchema = z.object({
 
 type CustomerFormValues = z.infer<typeof customerSchema>;
 
+const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('vi-VN').format(amount) + ' ₫';
+}
 
 export default function POSPage() {
   const [cart, setCart] = useState<CartItem[]>([]);
@@ -115,6 +118,11 @@ export default function POSPage() {
     );
 }, [customers, customerSearch]);
 
+  const Shortcut = ({ children }: { children: React.ReactNode }) => (
+    <kbd className="ml-auto pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground opacity-100">
+        {children}
+    </kbd>
+  );
 
   // Set global price tier based on customer type
   useEffect(() => {
@@ -337,7 +345,7 @@ export default function POSPage() {
     setSelectedCustomerId('guest');
   };
 
-  const handleQuickPrint = () => {
+  const handleQuickPrint = useCallback(() => {
     if (cart.length === 0) {
       toast({
         variant: 'destructive',
@@ -567,7 +575,7 @@ export default function POSPage() {
       printWindow.print();
       printWindow.close();
     }, 250);
-  };
+  }, [cart, t, toast, store, selectedCustomer, currentUser, paymentMethod, subtotal, vatAmount, totalWithVat, discount]);
 
 
   const subtotal = useMemo(() => {
@@ -635,7 +643,22 @@ export default function POSPage() {
       }
     }
   }, [isPaymentDialogOpen, totalWithVat, paymentMethod]);
+  
+  // Effect to handle F9 for quick print
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (isPaymentDialogOpen && event.key === 'F9') {
+        event.preventDefault(); // Prevent default browser behavior for F9
+        handleQuickPrint();
+      }
+    };
 
+    window.addEventListener('keydown', handleKeyDown);
+    
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isPaymentDialogOpen, handleQuickPrint]);
 
   const categories = mockCategories.filter(c => !c.is_deleted && c.is_active);
   const products = mockProducts.filter(p => !p.is_deleted && p.is_active);
@@ -654,10 +677,6 @@ export default function POSPage() {
     return result;
   }, [products, activeCategory, searchTerm]);
   
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('vi-VN').format(amount) + ' ₫';
-  }
-
   const getImageUrl = (imagesJson: string) => {
     try {
       const images = JSON.parse(imagesJson);
@@ -1168,9 +1187,10 @@ export default function POSPage() {
                 </div>
             </div>
             <DialogFooter className="flex-col sm:flex-row sm:justify-between gap-2 mt-4">
-                <Button variant="outline" onClick={handleQuickPrint}>
+                <Button type="button" variant="outline" onClick={handleQuickPrint}>
                     <Printer className="mr-2 h-4 w-4"/>
                     {t('pos.quick_print')}
+                    <Shortcut>F9</Shortcut>
                 </Button>
                 <div className="flex justify-end gap-2">
                     <Button variant="ghost" onClick={() => setPaymentDialogOpen(false)}>{t('common.cancel')}</Button>
