@@ -1154,23 +1154,36 @@ export const mockNotifications: {
     created_at: string;
 }[] = [];
 
-// Dynamically generate some notifications
-const generateNotifications = () => {
+// Statically generate notifications to avoid hydration issues
+const staticGeneration = () => {
     if (mockNotifications.length > 0) return; // Only generate once
+
+    const baseDate = new Date('2024-07-26T10:00:00Z');
 
     // Inventory warnings
     const lowStockProducts = mockProducts.filter(p => p.stock > 0 && p.stock <= p.min_stock_level);
-    lowStockProducts.slice(0, 2).forEach(p => {
+    if (lowStockProducts.length > 0) {
         mockNotifications.push({
-            id: `notif-inv-${p.id}`,
+            id: `notif-inv-${lowStockProducts[0].id}`,
             type: 'inventory',
             title: 'Sản phẩm sắp hết hàng',
-            description: `${p.name} chỉ còn ${p.stock} sản phẩm.`,
-            link: `/products/${p.slug}`,
+            description: `${lowStockProducts[0].name} chỉ còn ${lowStockProducts[0].stock} sản phẩm.`,
+            link: `/products/${lowStockProducts[0].slug}`,
             is_read: false,
-            created_at: new Date(Date.now() - Math.random() * 86400000).toISOString() // within last 24h
+            created_at: new Date(baseDate.getTime() - (1 * 3600000)).toISOString() // 1 hour ago
         });
-    });
+    }
+    if (lowStockProducts.length > 1) {
+        mockNotifications.push({
+            id: `notif-inv-${lowStockProducts[1].id}`,
+            type: 'inventory',
+            title: 'Sản phẩm sắp hết hàng',
+            description: `${lowStockProducts[1].name} chỉ còn ${lowStockProducts[1].stock} sản phẩm.`,
+            link: `/products/${lowStockProducts[1].slug}`,
+            is_read: false,
+            created_at: new Date(baseDate.getTime() - (5 * 3600000)).toISOString() // 5 hours ago
+        });
+    }
 
     // Pending orders
     const pendingOrders = mockOrders.filter(o => o.status === 'Pending');
@@ -1182,7 +1195,7 @@ const generateNotifications = () => {
             description: `Bạn có ${pendingOrders.length} đơn hàng đang chờ xử lý.`,
             link: '/orders',
             is_read: false,
-            created_at: new Date(Date.now() - Math.random() * 3600000).toISOString() // within last hour
+            created_at: new Date(baseDate.getTime() - 1000 * 60 * 30).toISOString() // 30 minutes ago
         });
     }
 
@@ -1194,7 +1207,7 @@ const generateNotifications = () => {
         description: 'Phiên bản mới v1.2.0 đã được cài đặt thành công.',
         link: undefined,
         is_read: true,
-        created_at: new Date(Date.now() - 86400000 * 2).toISOString() // 2 days ago
+        created_at: new Date(baseDate.getTime() - 86400000 * 2).toISOString() // 2 days ago
     });
 
     // Payment notification
@@ -1207,15 +1220,15 @@ const generateNotifications = () => {
             description: `Đơn hàng ${paidOrder.order_code} đã được thanh toán.`,
             link: `/orders/${paidOrder.id}`,
             is_read: true,
-            created_at: new Date(Date.now() - 86400000 * 3).toISOString() // 3 days ago
+            created_at: new Date(baseDate.getTime() - 86400000 * 3).toISOString() // 3 days ago
         });
     }
 
     // Sort by date
     mockNotifications.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
-}
+};
 
-generateNotifications();
+staticGeneration();
     
 export const mockVouchers = [
   { id: 'v-001', name: 'Giảm giá 50.000đ', description: 'Áp dụng cho đơn hàng bất kỳ.', points_cost: 5000, value: 50000, type: 'fixed' },
@@ -1224,5 +1237,6 @@ export const mockVouchers = [
   { id: 'v-004', name: 'Miễn phí vận chuyển', description: 'Hỗ trợ tối đa 50.000đ phí ship.', points_cost: 4000, value: 50000, type: 'shipping' },
   { id: 'v-005', name: 'Giảm giá 500.000đ', description: 'Cho đơn hàng từ 5.000.000đ.', points_cost: 48000, value: 500000, type: 'fixed' }
 ];
+
 
 
