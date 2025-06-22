@@ -58,6 +58,7 @@ import {
 } from '@/components/ui/select';
 import { mockReturnOrders, mockReturnOrderItems, mockOrders, mockOrderItems, mockCustomers, mockProducts, mockUsers } from '@/lib/data';
 import { useToast } from '@/hooks/use-toast';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 type ReturnOrder = typeof mockReturnOrders[0];
 type Order = typeof mockOrders[0];
@@ -85,6 +86,7 @@ export default function ReturnsPage() {
 
   const router = useRouter();
   const { toast } = useToast();
+  const { t } = useLanguage();
   
   const form = useForm<ReturnOrderFormValues>({
     resolver: zodResolver(returnOrderSchema),
@@ -250,7 +252,7 @@ export default function ReturnsPage() {
                   <TableCell>{getCustomerName(ro.customer_id)}</TableCell>
                   <TableCell>{formatDate(ro.return_date)}</TableCell>
                   <TableCell>
-                    <Badge variant={getStatusVariant(ro.status)}>{ro.status}</Badge>
+                    <Badge variant={getStatusVariant(ro.status)}>{t(`status.${ro.status.toLowerCase()}`)}</Badge>
                   </TableCell>
                   <TableCell className="text-right">{formatCurrency(ro.total_refund_amount)}</TableCell>
                   <TableCell onClick={(e) => e.stopPropagation()}>

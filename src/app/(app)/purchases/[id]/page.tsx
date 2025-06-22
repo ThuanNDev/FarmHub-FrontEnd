@@ -36,12 +36,14 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 type PurchaseOrder = typeof mockPurchaseOrders[0];
 
 export default function PurchaseOrderDetailPage() {
   const router = useRouter();
   const params = useParams<{ id: string }>();
+  const { t } = useLanguage();
   
   const initialPO = React.useMemo(() => mockPurchaseOrders.find((o) => o.id === params.id), [params.id]);
   
@@ -330,7 +332,7 @@ export default function PurchaseOrderDetailPage() {
                 Ngày tạo: {formatDate(po.created_at)} bởi {createdBy?.full_name || 'N/A'}
               </CardDescription>
             </div>
-            <Badge className="text-base" variant={getStatusVariant(po.status)}>{po.status}</Badge>
+            <Badge className="text-base" variant={getStatusVariant(po.status)}>{t(`status.${po.status.toLowerCase()}`)}</Badge>
           </div>
         </CardHeader>
         <CardContent>

@@ -73,6 +73,7 @@ import {
 import { Switch } from '@/components/ui/switch';
 import { mockCustomers } from '@/lib/data';
 import { useToast } from '@/hooks/use-toast';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 type Customer = typeof mockCustomers[0];
 
@@ -99,6 +100,7 @@ export default function CustomersPage() {
   
   const router = useRouter();
   const { toast } = useToast();
+  const { t } = useLanguage();
 
   const form = useForm<CustomerFormValues>({
     resolver: zodResolver(customerSchema),
@@ -269,7 +271,7 @@ export default function CustomersPage() {
                     </Badge>
                   </TableCell>
                   <TableCell>
-                    <Badge variant={customer.status === 'Active' ? 'default' : 'secondary'}>{customer.status}</Badge>
+                    <Badge variant={customer.status === 'Active' ? 'default' : 'secondary'}>{t(`status.${customer.status.toLowerCase()}`)}</Badge>
                   </TableCell>
                   <TableCell onClick={(e) => e.stopPropagation()}>
                     <DropdownMenu>
@@ -405,9 +407,9 @@ export default function CustomersPage() {
                           <SelectTrigger><SelectValue placeholder="Chọn trạng thái" /></SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="Active">Hoạt động</SelectItem>
-                          <SelectItem value="Inactive">Không hoạt động</SelectItem>
-                          <SelectItem value="Blocked">Bị chặn</SelectItem>
+                          <SelectItem value="Active">{t('status.active')}</SelectItem>
+                          <SelectItem value="Inactive">{t('status.inactive')}</SelectItem>
+                          <SelectItem value="Blocked">{t('status.blocked')}</SelectItem>
                         </SelectContent>
                       </Select>
                     <FormMessage />

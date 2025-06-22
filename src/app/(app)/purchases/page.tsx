@@ -77,6 +77,7 @@ import { CalendarIcon } from 'lucide-react';
 import { Calendar } from '@/components/ui/calendar';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 type PurchaseOrder = (typeof mockPurchaseOrders)[0];
 type PurchaseOrderItem = {
@@ -103,6 +104,7 @@ export default function PurchasesPage() {
   const [items, setItems] = useState<PurchaseOrderItem[]>([]);
   const router = useRouter();
   const { toast } = useToast();
+  const { t } = useLanguage();
   
   const form = useForm<PurchaseOrderFormValues>({
     resolver: zodResolver(purchaseOrderSchema),
@@ -463,7 +465,7 @@ export default function PurchasesPage() {
                   <TableCell>{getSupplierName(po.supplier_id)}</TableCell>
                   <TableCell>{formatDate(po.created_at)}</TableCell>
                   <TableCell>
-                    <Badge variant={getStatusVariant(po.status)}>{po.status}</Badge>
+                    <Badge variant={getStatusVariant(po.status)}>{t(`status.${po.status.toLowerCase()}`)}</Badge>
                   </TableCell>
                   <TableCell className="text-right">{formatCurrency(po.total_amount)}</TableCell>
                   <TableCell onClick={(e) => e.stopPropagation()}>

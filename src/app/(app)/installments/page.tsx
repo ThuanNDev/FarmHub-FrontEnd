@@ -33,6 +33,7 @@ import { mockOrders, mockCustomers, mockInstallmentTerms } from '@/lib/data';
 import { useToast } from '@/hooks/use-toast';
 import { RecordPaymentDialog, type PaymentFormValues } from '@/components/RecordPaymentDialog';
 import { useStore } from '@/contexts/StoreContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 type InstallmentOrder = (typeof mockOrders)[0];
 
@@ -42,6 +43,7 @@ export default function InstallmentsPage() {
   const router = useRouter();
   const { toast } = useToast();
   const { store } = useStore();
+  const { t } = useLanguage();
 
   const [isPaymentDialogOpen, setPaymentDialogOpen] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<InstallmentOrder | null>(null);
@@ -229,9 +231,9 @@ export default function InstallmentsPage() {
   const getInstallmentStatus = (order: InstallmentOrder) => {
     const remaining = order.total_amount - order.total_paid;
     if (remaining <= 0) {
-      return { text: 'Đã hoàn tất', variant: 'default' as const };
+      return { textKey: 'status.completed', variant: 'default' as const };
     }
-    return { text: 'Đang trả góp', variant: 'secondary' as const };
+    return { textKey: 'status.in_progress', variant: 'secondary' as const };
   };
 
   const getInstallmentDetails = (orderId: string) => {
@@ -306,7 +308,7 @@ export default function InstallmentsPage() {
                       <TableCell className="text-right text-primary">{formatCurrency(order.total_paid)}</TableCell>
                       <TableCell className="text-right text-destructive">{formatCurrency(remaining)}</TableCell>
                       <TableCell>
-                        <Badge variant={status.variant}>{status.text}</Badge>
+                        <Badge variant={status.variant}>{t(status.textKey)}</Badge>
                       </TableCell>
                       <TableCell>
                         <DropdownMenu>

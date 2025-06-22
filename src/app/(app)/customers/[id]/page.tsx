@@ -23,11 +23,13 @@ import {
   } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export default function CustomerDetailPage() {
   const router = useRouter();
   const params = useParams<{ id: string }>();
   const customer = mockCustomers.find((c) => c.id === params.id && !c.is_deleted);
+  const { t } = useLanguage();
 
   if (!customer) {
     notFound();
@@ -141,7 +143,7 @@ export default function CustomerDetailPage() {
                        <TableCell className="font-medium">{order.order_code}</TableCell>
                        <TableCell>{formatDate(order.created_at)}</TableCell>
                        <TableCell>
-                         <Badge variant={getStatusVariant(order.status) as any}>{order.status}</Badge>
+                         <Badge variant={getStatusVariant(order.status) as any}>{t(`status.${order.status.toLowerCase()}`)}</Badge>
                        </TableCell>
                        <TableCell className="text-right">{formatCurrency(order.total_amount)}</TableCell>
                      </TableRow>

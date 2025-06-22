@@ -16,10 +16,12 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export default function UserDetailPage() {
   const params = useParams<{ id: string }>();
   const user = mockUsers.find((u) => u.id === params.id);
+  const { t } = useLanguage();
   
   const [createdAt, setCreatedAt] = React.useState('');
   const [lastLoginAt, setLastLoginAt] = React.useState('');
@@ -65,7 +67,7 @@ export default function UserDetailPage() {
               <CardDescription>@{user.username}</CardDescription>
             </div>
             <Badge variant={user.is_active ? 'default' : 'secondary'} className="ml-auto">
-              {user.is_active ? 'Hoạt động' : 'Vô hiệu hóa'}
+              {t(user.is_active ? 'status.active' : 'status.inactive')}
             </Badge>
           </div>
         </CardHeader>

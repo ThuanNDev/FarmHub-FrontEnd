@@ -48,6 +48,26 @@
     "are_you_sure": "Bạn có chắc chắn không?",
     "action_cannot_be_undone": "Hành động này không thể hoàn tác."
   },
+  "status": {
+    "delivered": "Đã giao",
+    "pending": "Chờ xử lý",
+    "cancelled": "Đã hủy",
+    "received": "Đã nhận",
+    "ordered": "Đã đặt hàng",
+    "approved": "Đã duyệt",
+    "rejected": "Bị từ chối",
+    "refunded": "Đã hoàn tiền",
+    "restocked": "Đã nhập kho",
+    "overdue": "Quá hạn",
+    "due_soon": "Sắp đến hạn",
+    "within_due_date": "Trong hạn",
+    "unknown": "Không rõ",
+    "completed": "Đã hoàn tất",
+    "in_progress": "Đang trả góp",
+    "active": "Hoạt động",
+    "inactive": "Không hoạt động",
+    "blocked": "Bị chặn"
+  },
   "pages": {
     "dashboard": {
       "title": "Bảng điều khiển",
@@ -212,6 +232,12 @@
       "remaining": "Còn lại",
       "discount": "Giảm giá",
       "shipping_fee": "Phí vận chuyển"
+    },
+    "returns": {
+        "success_approve": "Đơn trả hàng đã được phê duyệt.",
+        "success_reject": "Đơn trả hàng đã bị từ chối.",
+        "success_refund": "Đã xác nhận hoàn tiền cho khách hàng.",
+        "success_restock": "Đã nhập lại {{count}} sản phẩm vào kho."
     }
   },
   "login": {

@@ -79,6 +79,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
 import { mockUsers } from '@/lib/data';
 import { useToast } from '@/hooks/use-toast';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 type User = typeof mockUsers[0];
 
@@ -118,6 +119,7 @@ export default function UsersPage() {
   
   const router = useRouter();
   const { toast } = useToast();
+  const { t } = useLanguage();
 
   // For demonstration: Mock the currently logged-in user.
   // In a real app, this would come from an authentication context.
@@ -293,7 +295,7 @@ export default function UsersPage() {
                 </div>
                  <div className="flex items-center gap-3">
                    <Badge variant={user.is_active ? 'default' : 'secondary'}>
-                      {user.is_active ? 'Hoạt động' : 'Vô hiệu hóa'}
+                      {t(user.is_active ? 'status.active' : 'status.inactive')}
                     </Badge>
                 </div>
               </div>
@@ -366,7 +368,7 @@ export default function UsersPage() {
                   <TableCell>{user.role}</TableCell>
                   <TableCell>
                       <Badge variant={user.is_active ? 'default' : 'secondary'}>
-                        {user.is_active ? 'Hoạt động' : 'Vô hiệu hóa'}
+                        {t(user.is_active ? 'status.active' : 'status.inactive')}
                       </Badge>
                   </TableCell>
                   <TableCell onClick={(e) => e.stopPropagation()}>

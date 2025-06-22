@@ -23,11 +23,13 @@ import {
     TableRow,
   } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export default function CategoryDetailPage() {
   const router = useRouter();
   const params = useParams<{ slug: string }>();
   const category = mockCategories.find((c) => c.slug === params.slug);
+  const { t } = useLanguage();
 
   if (!category) {
     notFound();
@@ -73,7 +75,7 @@ export default function CategoryDetailPage() {
               <div className="flex items-center gap-2">
                 <CardTitle className="font-headline text-2xl">{category.name}</CardTitle>
                 <Badge variant={category.is_active ? 'default' : 'secondary'}>
-                  {category.is_active ? 'Hoạt động' : 'Không hoạt động'}
+                  {t(category.is_active ? 'status.active' : 'status.inactive')}
                 </Badge>
               </div>
               <CardDescription>{category.description}</CardDescription>

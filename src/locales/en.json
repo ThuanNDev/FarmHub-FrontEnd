@@ -48,6 +48,26 @@
     "are_you_sure": "Are you sure?",
     "action_cannot_be_undone": "This action cannot be undone."
   },
+  "status": {
+    "delivered": "Delivered",
+    "pending": "Pending",
+    "cancelled": "Cancelled",
+    "received": "Received",
+    "ordered": "Ordered",
+    "approved": "Approved",
+    "rejected": "Rejected",
+    "refunded": "Refunded",
+    "restocked": "Restocked",
+    "overdue": "Overdue",
+    "due_soon": "Due Soon",
+    "within_due_date": "Within Due Date",
+    "unknown": "Unknown",
+    "completed": "Completed",
+    "in_progress": "In Progress",
+    "active": "Active",
+    "inactive": "Inactive",
+    "blocked": "Blocked"
+  },
   "pages": {
     "dashboard": {
       "title": "Dashboard",
@@ -212,6 +232,12 @@
       "remaining": "Remaining",
       "discount": "Discount",
       "shipping_fee": "Shipping Fee"
+    },
+    "returns": {
+      "success_approve": "Return order has been approved.",
+      "success_reject": "Return order has been rejected.",
+      "success_refund": "Refund has been confirmed.",
+      "success_restock": "{{count}} products have been restocked."
     }
   },
   "login": {

@@ -76,6 +76,7 @@ import { Switch } from '@/components/ui/switch';
 import { mockCategories } from '@/lib/data';
 import { useToast } from '@/hooks/use-toast';
 import { slugify } from '@/lib/utils';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 type Category = typeof mockCategories[0];
 
@@ -99,6 +100,7 @@ export default function CategoriesPage() {
   
   const router = useRouter();
   const { toast } = useToast();
+  const { t } = useLanguage();
 
   const form = useForm<CategoryFormValues>({
     resolver: zodResolver(categorySchema),
@@ -279,7 +281,7 @@ export default function CategoriesPage() {
                   <TableCell className="hidden lg:table-cell">{getParentCategoryName(category.parent_id)}</TableCell>
                   <TableCell>
                       <Badge variant={category.is_active ? 'default' : 'secondary'}>
-                        {category.is_active ? 'Hoạt động' : 'Không hoạt động'}
+                        {t(category.is_active ? 'status.active' : 'status.inactive')}
                       </Badge>
                   </TableCell>
                   <TableCell onClick={(e) => e.stopPropagation()}>

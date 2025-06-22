@@ -35,12 +35,14 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 type ReturnOrder = typeof mockReturnOrders[0];
 
 export default function ReturnOrderDetailPage() {
   const router = useRouter();
   const params = useParams<{ id: string }>();
+  const { t } = useLanguage();
   
   const initialRO = React.useMemo(() => mockReturnOrders.find((ro) => ro.id === params.id), [params.id]);
   
@@ -69,13 +71,13 @@ export default function ReturnOrderDetailPage() {
 
     if (action === 'approve') {
       newStatus = 'approved';
-      toastMessage = 'Đơn trả hàng đã được phê duyệt.';
+      toastMessage = t('pages.returns.success_approve');
     } else if (action === 'reject') {
       newStatus = 'rejected';
-      toastMessage = 'Đơn trả hàng đã bị từ chối.';
+      toastMessage = t('pages.returns.success_reject');
     } else if (action === 'refund') {
       newStatus = 'refunded';
-      toastMessage = 'Đã xác nhận hoàn tiền cho khách hàng.';
+      toastMessage = t('pages.returns.success_refund');
     } else if (action === 'restock') {
         const itemsToRestock = mockReturnOrderItems.filter(item => item.return_order_id === returnOrder.id && !item.restocked);
         itemsToRestock.forEach(item => {
@@ -87,7 +89,7 @@ export default function ReturnOrderDetailPage() {
             }
             item.restocked = true;
         });
-        toastMessage = `Đã nhập lại ${itemsToRestock.length} sản phẩm vào kho.`;
+        toastMessage = t('pages.returns.success_restock', { count: itemsToRestock.length });
         if(itemsToRestock.every(i => i.restocked)) {
           newStatus = 'restocked';
         }
@@ -97,7 +99,7 @@ export default function ReturnOrderDetailPage() {
     roInDb.updated_at = new Date().toISOString();
     setReturnOrder({ ...roInDb });
 
-    toast({ title: 'Thành công', description: toastMessage });
+    toast({ title: t('common.success'), description: toastMessage });
   };
 
 
@@ -160,7 +162,7 @@ export default function ReturnOrderDetailPage() {
                 Ngày tạo: {formatDate(returnOrder.created_at)}
               </CardDescription>
             </div>
-            <Badge className="text-base" variant={getStatusVariant(returnOrder.status)}>{returnOrder.status}</Badge>
+            <Badge className="text-base" variant={getStatusVariant(returnOrder.status)}>{t(`status.${returnOrder.status.toLowerCase()}`)}</Badge>
           </div>
         </CardHeader>
         <CardContent>

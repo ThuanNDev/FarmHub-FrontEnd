@@ -31,15 +31,17 @@ import { Input } from '@/components/ui/input';
 import { mockCustomers } from '@/lib/data';
 import { useToast } from '@/hooks/use-toast';
 import { RecordPaymentDialog, type PaymentFormValues } from '@/components/RecordPaymentDialog';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 type Debtor = (typeof mockCustomers)[0];
-type DebtStatus = { text: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' };
+type DebtStatus = { textKey: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' };
 
 export default function DebtsPage() {
   const [debtors, setDebtors] = useState<Debtor[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const router = useRouter();
   const { toast } = useToast();
+  const { t } = useLanguage();
 
   const [isPaymentDialogOpen, setPaymentDialogOpen] = useState(false);
   const [selectedDebtor, setSelectedDebtor] = useState<Debtor | null>(null);
@@ -59,13 +61,13 @@ export default function DebtsPage() {
     const newStatuses: Record<string, DebtStatus> = {};
     debtors.forEach(debtor => {
         if (!debtor.debt_due_date) {
-            newStatuses[debtor.id] = { text: 'Không rõ', variant: 'outline' };
+            newStatuses[debtor.id] = { textKey: 'status.unknown', variant: 'outline' };
             return;
         }
         const dueDate = new Date(debtor.debt_due_date);
         
         if (dueDate < today) {
-            newStatuses[debtor.id] = { text: 'Quá hạn', variant: 'destructive' };
+            newStatuses[debtor.id] = { textKey: 'status.overdue', variant: 'destructive' };
             return;
         }
         
@@ -73,9 +75,9 @@ export default function DebtsPage() {
         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
         if (diffDays <= 7) {
-            newStatuses[debtor.id] = { text: 'Sắp đến hạn', variant: 'default' };
+            newStatuses[debtor.id] = { textKey: 'status.due_soon', variant: 'default' };
         } else {
-            newStatuses[debtor.id] = { text: 'Trong hạn', variant: 'secondary' };
+            newStatuses[debtor.id] = { textKey: 'status.within_due_date', variant: 'secondary' };
         }
     });
     setDebtStatuses(newStatuses);
@@ -164,7 +166,7 @@ export default function DebtsPage() {
             <TableBody>
               {filteredDebtors.length > 0 ? (
                 filteredDebtors.map((debtor) => {
-                  const status = debtStatuses[debtor.id] || { text: '...', variant: 'outline' };
+                  const status = debtStatuses[debtor.id] || { textKey: 'status.unknown', variant: 'outline' };
                   return (
                     <TableRow key={debtor.id}>
                       <TableCell className="font-medium">{debtor.name}</TableCell>
@@ -172,7 +174,7 @@ export default function DebtsPage() {
                       <TableCell className="text-right">{formatCurrency(debtor.total_debt)}</TableCell>
                       <TableCell className="hidden sm:table-cell">{formatDate(debtor.debt_due_date)}</TableCell>
                       <TableCell>
-                        <Badge variant={status.variant}>{status.text}</Badge>
+                        <Badge variant={status.variant}>{t(status.textKey)}</Badge>
                       </TableCell>
                       <TableCell>
                         <DropdownMenu>
