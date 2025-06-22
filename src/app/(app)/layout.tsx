@@ -15,6 +15,7 @@ import {
   CreditCard,
   BarChart3,
   UsersRound,
+  Truck,
 } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
@@ -40,6 +41,7 @@ const navItems = [
   { href: '/orders', label: 'Orders', icon: ShoppingCart },
   { href: '/products', label: 'Products', icon: Package },
   { href: '/customers', label: 'Customers', icon: Users },
+  { href: '/suppliers', label: 'Suppliers', icon: Truck },
   { href: '/categories', label: 'Categories', icon: Tags },
   { href: '/debts', label: 'Debts', icon: CreditCard },
   { href: '/reports', label: 'Reports', icon: BarChart3 },
