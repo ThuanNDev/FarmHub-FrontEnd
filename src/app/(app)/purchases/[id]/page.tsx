@@ -4,8 +4,8 @@
 import * as React from 'react';
 import Link from 'next/link';
 import { notFound, useRouter, useParams } from 'next/navigation';
-import { ArrowLeft, User, MapPin, Truck, Calendar, Hash, StickyNote, Package, CheckCircle, XCircle } from 'lucide-react';
-import { mockPurchaseOrders, mockSuppliers, mockUsers, mockPurchaseOrderItems, mockProducts } from '@/lib/data';
+import { ArrowLeft, User, MapPin, Truck, Calendar, Hash, StickyNote, Package, CheckCircle, XCircle, Printer } from 'lucide-react';
+import { mockPurchaseOrders, mockSuppliers, mockUsers, mockPurchaseOrderItems, mockProducts, mockStores } from '@/lib/data';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -121,6 +121,142 @@ export default function PurchaseOrderDetailPage() {
   
   const getProduct = (productId: string) => mockProducts.find(p => p.id === productId);
 
+  const handlePrint = () => {
+    if (!po || !supplier || !createdBy) {
+      toast({ variant: 'destructive', title: 'Lỗi', description: 'Không đủ dữ liệu để in.' });
+      return;
+    }
+
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) {
+      toast({
+        variant: 'destructive',
+        title: 'Lỗi',
+        description: 'Không thể mở cửa sổ in. Vui lòng cho phép pop-up.',
+      });
+      return;
+    }
+
+    const itemsHtml = items.map((item, index) => {
+        const product = getProduct(item.product_id);
+        return `
+            <tr class="item">
+                <td class="text-center">${index + 1}</td>
+                <td>${product?.name || 'Sản phẩm không tìm thấy'}</td>
+                <td class="text-center">${product?.unit || 'cái'}</td>
+                <td class="text-center">${item.quantity}</td>
+                <td class="text-right">${formatCurrency(item.unit_price)}</td>
+                <td class="text-right">${formatCurrency(item.total_price)}</td>
+                <td class="text-center"><div style="width: 16px; height: 16px; border: 1px solid #000; margin: auto;"></div></td>
+            </tr>
+        `;
+    }).join('');
+
+    const printHtml = `
+      <html>
+        <head>
+          <title>Đơn Nhập Hàng ${po.order_code}</title>
+          <style>
+            @media print {
+              body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            }
+            body { font-family: Arial, sans-serif; font-size: 14px; line-height: 1.6; color: #000; }
+            .container { width: 90%; margin: 0 auto; }
+            .header { text-align: center; margin-bottom: 20px; }
+            .header h1 { margin: 0; }
+            .info-section { display: flex; justify-content: space-between; margin-bottom: 20px; }
+            .info-section div { width: 48%; }
+            .info-section h3 { margin-top: 0; border-bottom: 1px solid #ccc; padding-bottom: 5px; }
+            .info-section p { margin: 4px 0; }
+            table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+            th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+            th { background-color: #f2f2f2 !important; }
+            .text-center { text-align: center; }
+            .text-right { text-align: right; }
+            .total-section { text-align: right; margin-bottom: 40px; }
+            .total-section h2 { margin: 5px 0; }
+            .signature-section { display: flex; justify-content: space-around; text-align: center; margin-top: 50px; }
+            .signature-section div { width: 30%; }
+            .signature-section p { margin-top: 50px; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>ĐƠN NHẬP HÀNG</h1>
+              <p>Mã đơn: ${po.order_code}</p>
+              <p>Ngày tạo: ${formatDate(po.created_at)}</p>
+            </div>
+            
+            <div class="info-section">
+                <div>
+                    <h3>Thông tin cửa hàng</h3>
+                    <p><strong>Tên:</strong> ${mockStores[0].name}</p>
+                    <p><strong>Địa chỉ:</strong> ${mockStores[0].address}</p>
+                    <p><strong>Điện thoại:</strong> ${mockStores[0].phone}</p>
+                    <p><strong>Người tạo:</strong> ${createdBy.full_name}</p>
+                </div>
+                 <div>
+                    <h3>Thông tin nhà cung cấp</h3>
+                    <p><strong>Tên:</strong> ${supplier.name}</p>
+                    <p><strong>Địa chỉ:</strong> ${supplier.address || 'N/A'}</p>
+                    <p><strong>Điện thoại:</strong> ${supplier.phone}</p>
+                    <p><strong>Người liên hệ:</strong> ${supplier.contact_person || 'N/A'}</p>
+                </div>
+            </div>
+
+            <h3>Danh sách sản phẩm</h3>
+            <table>
+              <thead>
+                <tr>
+                  <th class="text-center">STT</th>
+                  <th>Tên sản phẩm</th>
+                  <th class="text-center">ĐVT</th>
+                  <th class="text-center">Số lượng</th>
+                  <th class="text-right">Đơn giá</th>
+                  <th class="text-right">Thành tiền</th>
+                  <th class="text-center" style="width: 10%;">Đã nhận</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${itemsHtml}
+              </tbody>
+            </table>
+
+            <div class="total-section">
+                <h2>Tổng cộng: ${formatCurrency(po.total_amount)}</h2>
+            </div>
+            
+            <div class="signature-section">
+                <div>
+                    <h4>Người lập phiếu</h4>
+                    <p>(Ký, họ tên)</p>
+                </div>
+                 <div>
+                    <h4>Thủ kho</h4>
+                    <p>(Ký, họ tên)</p>
+                </div>
+                 <div>
+                    <h4>Nhà cung cấp</h4>
+                    <p>(Ký, họ tên)</p>
+                </div>
+            </div>
+
+          </div>
+        </body>
+      </html>
+    `;
+
+    printWindow.document.write(printHtml);
+    printWindow.document.close();
+    printWindow.focus();
+    setTimeout(() => {
+      printWindow.print();
+      printWindow.close();
+    }, 250);
+  };
+
+
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
@@ -131,6 +267,9 @@ export default function PurchaseOrderDetailPage() {
           </Link>
         </Button>
          <div className="flex gap-2">
+            <Button variant="outline" size="sm" onClick={handlePrint}>
+                <Printer className="mr-2 h-4 w-4"/> In đơn
+            </Button>
             {po.status === 'ordered' && (
                  <AlertDialog>
                     <AlertDialogTrigger asChild>
