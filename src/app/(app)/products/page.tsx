@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import {
   File,
   PlusCircle,
@@ -130,28 +131,32 @@ export default function ProductsPage() {
           <CardContent>
             {categories.map(cat => (
                 <TabsContent key={cat} value={cat}>
-                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+                    <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
                     {getProductsForTab(cat).map((product) => (
-                        <Card key={product.productCode} className="overflow-hidden">
-                        <Image
-                            alt={product.name}
-                            className="aspect-square w-full object-cover"
-                            height="300"
-                            src={getImageUrl(product.images)}
-                            width="300"
-                            data-ai-hint={product.hint}
-                        />
-                        <CardContent className="p-4">
-                            <h3 className="font-semibold text-lg">{product.name}</h3>
-                            <p className="text-sm text-muted-foreground">{product.brand}</p>
+                      <Link href={`/products/${product.slug}`} key={product.productCode} className="block h-full">
+                        <Card className="overflow-hidden h-full flex flex-col hover:shadow-xl transition-shadow duration-300">
+                           <Image
+                              alt={product.name}
+                              className="aspect-square w-full object-cover"
+                              height="300"
+                              src={getImageUrl(product.images)}
+                              width="300"
+                              data-ai-hint={product.hint}
+                          />
+                          <CardContent className="p-4 flex flex-col flex-grow">
+                            <div className="flex-grow">
+                                <h3 className="font-semibold text-lg">{product.name}</h3>
+                                <p className="text-sm text-muted-foreground">{product.brand}</p>
+                            </div>
                             <div className="flex justify-between items-center mt-2">
                                 <span className="font-bold text-lg">{formatCurrency(product.price)}</span>
                                 <span className="text-sm text-muted-foreground">
                                     {product.stock} trong kho
                                 </span>
                             </div>
-                        </CardContent>
+                          </CardContent>
                         </Card>
+                      </Link>
                     ))}
                     </div>
                 </TabsContent>
