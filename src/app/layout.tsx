@@ -2,6 +2,7 @@ import type {Metadata} from 'next';
 import { Poppins, PT_Sans } from 'next/font/google';
 import { Toaster } from "@/components/ui/toaster"
 import './globals.css';
+import { cn } from '@/lib/utils';
 
 const poppins = Poppins({
   subsets: ['latin'],
@@ -28,9 +29,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" className={cn(poppins.variable, ptSans.variable)} suppressHydrationWarning>
       <head />
-      <body className={`${poppins.variable} ${ptSans.variable} font-body antialiased`}>
+      <body className={cn('font-body antialiased')}>
         {children}
         <Toaster />
       </body>
