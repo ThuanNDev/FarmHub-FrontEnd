@@ -23,7 +23,6 @@ const getNestedTranslation = (obj: any, key: string): string | undefined => {
 
 export function LanguageProvider({ children }: { children: ReactNode }) {
   const [locale, setLocaleState] = useState<Locale>('vi');
-  const [isInitialized, setIsInitialized] = useState(false);
 
   useEffect(() => {
     try {
@@ -34,7 +33,6 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
     } catch (error) {
         console.error("Could not access localStorage:", error);
     }
-    setIsInitialized(true);
   }, []);
 
   const setLocale = (newLocale: Locale) => {
@@ -57,10 +55,6 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
 
     return translation || key;
   }, [locale]);
-  
-  if (!isInitialized) {
-    return null; // Avoid hydration mismatch
-  }
 
   return (
     <LanguageContext.Provider value={{ locale, setLocale, t }}>

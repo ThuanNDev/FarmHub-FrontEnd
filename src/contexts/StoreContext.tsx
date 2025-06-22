@@ -14,7 +14,6 @@ const StoreContext = createContext<StoreContextType | undefined>(undefined);
 
 export function StoreProvider({ children }: { children: ReactNode }) {
   const [store, setStore] = useState<Store>(mockStores[0]);
-  const [isInitialized, setIsInitialized] = useState(false);
 
   useEffect(() => {
     try {
@@ -31,8 +30,6 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       }
     } catch (error) {
       console.error("Could not initialize store from localStorage:", error);
-    } finally {
-      setIsInitialized(true);
     }
   }, []);
 
@@ -44,10 +41,6 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     if (storeIndex !== -1) {
         mockStores[storeIndex] = newStore;
     }
-  }
-  
-  if (!isInitialized) {
-      return null; // Or a loading spinner component to prevent hydration mismatch
   }
 
   return (
