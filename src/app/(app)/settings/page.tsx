@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -27,9 +27,7 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { useToast } from '@/hooks/use-toast';
-import { mockStores } from '@/lib/data';
-
-type Store = (typeof mockStores)[0];
+import { useStore } from '@/contexts/StoreContext';
 
 const settingsSchema = z.object({
   name: z.string().min(1, "Tên cửa hàng không được để trống."),
@@ -43,29 +41,28 @@ const settingsSchema = z.object({
 type SettingsFormValues = z.infer<typeof settingsSchema>;
 
 export default function SettingsPage() {
-  const [storeSettings, setStoreSettings] = useState<Store>(mockStores[0]);
+  const { store, setStore } = useStore();
   const { toast } = useToast();
 
   const form = useForm<SettingsFormValues>({
     resolver: zodResolver(settingsSchema),
     defaultValues: {
-      name: storeSettings.name,
-      address: storeSettings.address,
-      phone: storeSettings.phone,
-      email: storeSettings.email,
-      opening_hours: storeSettings.opening_hours,
-      is_active: storeSettings.is_active,
+      name: store.name,
+      address: store.address,
+      phone: store.phone,
+      email: store.email,
+      opening_hours: store.opening_hours,
+      is_active: store.is_active,
     },
   });
 
   useEffect(() => {
-    form.reset(storeSettings);
-  }, [storeSettings, form]);
+    form.reset(store);
+  }, [store, form]);
 
   const onSubmit = (values: SettingsFormValues) => {
-    const updatedSettings = { ...storeSettings, ...values };
-    setStoreSettings(updatedSettings);
-    mockStores[0] = updatedSettings; 
+    const updatedSettings = { ...store, ...values };
+    setStore(updatedSettings); 
     toast({
       title: "Thành công",
       description: "Cài đặt cửa hàng đã được cập nhật.",

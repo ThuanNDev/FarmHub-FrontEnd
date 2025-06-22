@@ -34,7 +34,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Input } from '@/components/ui/input';
+import { StoreProvider, useStore } from '@/contexts/StoreContext';
 
 const navItems = [
   { href: '/', label: 'Bảng điều khiển', icon: LayoutDashboard },
@@ -75,8 +75,10 @@ function NavLink({
   );
 }
 
-export default function AppLayout({ children }: { children: React.ReactNode }) {
+
+function LayoutContent({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const { store } = useStore();
 
   if (pathname === '/pos') {
     return <>{children}</>;
@@ -89,7 +91,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           <div className="flex h-14 items-center border-b px-4 lg:h-[60px] lg:px-6">
             <Link href="/" className="flex items-center gap-2 font-semibold">
               <Leaf className="h-6 w-6 text-primary" />
-              <span className="font-headline text-xl">FarmHub</span>
+              <span className="font-headline text-xl">{store.name}</span>
             </Link>
           </div>
           <div className="flex-1">
@@ -121,7 +123,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                   className="flex items-center gap-2 text-lg font-semibold"
                 >
                   <Leaf className="h-6 w-6 text-primary" />
-                  <span className="font-headline text-xl">FarmHub</span>
+                  <span className="font-headline text-xl">{store.name}</span>
                 </Link>
                 {navItems.map((item) => (
                   <NavLink key={item.href} {...item} />
@@ -169,4 +171,12 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       </div>
     </div>
   );
+}
+
+export default function AppLayout({ children }: { children: React.ReactNode }) {
+    return (
+      <StoreProvider>
+        <LayoutContent>{children}</LayoutContent>
+      </StoreProvider>
+    );
 }
