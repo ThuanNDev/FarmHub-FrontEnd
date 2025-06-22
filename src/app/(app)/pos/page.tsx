@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { Plus, Minus, X, Search, ArrowLeft, UserPlus, Printer } from 'lucide-react';
+import { Plus, Minus, X, Search, ArrowLeft, UserPlus, Printer, Leaf, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -73,6 +73,8 @@ export default function POSPage() {
   const { toast } = useToast();
   const { store } = useStore();
   const { t } = useLanguage();
+
+  const currentUser = useMemo(() => mockUsers.find(u => u.is_active), []);
 
   const form = useForm<CustomerFormValues>({
     resolver: zodResolver(customerSchema),
@@ -167,7 +169,6 @@ export default function POSPage() {
       return;
     }
     
-    const currentUser = mockUsers.find(u => u.is_active);
     if (!currentUser) {
         toast({ variant: 'destructive', title: t('common.error'), description: t('pos.error_no_user')});
         return;
@@ -585,23 +586,33 @@ export default function POSPage() {
       <div className="grid h-screen w-full grid-cols-10 gap-4 bg-muted/40 p-4">
         {/* Product Selection Area */}
         <div className="col-span-6 flex flex-col gap-4">
-          <header className="flex items-center gap-4 rounded-lg bg-background p-4 shadow-sm">
+          <header className="flex h-16 items-center justify-between gap-4 rounded-lg bg-background p-4 shadow-sm">
+            <div className="flex items-center gap-4">
               <Button asChild variant="outline" size="icon" className="h-10 w-10">
-                  <Link href="/">
-                      <ArrowLeft className="h-5 w-5" />
-                      <span className="sr-only">{t('pos.back_to_dashboard')}</span>
-                  </Link>
+                <Link href="/">
+                  <ArrowLeft className="h-5 w-5" />
+                  <span className="sr-only">{t('pos.back_to_dashboard')}</span>
+                </Link>
               </Button>
-              <div className="relative flex-1">
-                  <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    type="search"
-                    placeholder={t('pos.search_placeholder')}
-                    className="pl-8"
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                  />
+              <div className="hidden items-center gap-2 md:flex">
+                <Leaf className="h-6 w-6 text-primary" />
+                <span className="font-headline text-xl font-semibold">{store.name}</span>
               </div>
+            </div>
+            <div className="relative flex-1 max-w-md">
+              <Search className="absolute left-2.5 top-3 h-4 w-4 text-muted-foreground" />
+              <Input
+                type="search"
+                placeholder={t('pos.search_placeholder')}
+                className="pl-8"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+            <div className="hidden items-center gap-2 text-sm font-medium md:flex">
+              <User className="h-5 w-5 text-muted-foreground" />
+              <span>{currentUser?.full_name || 'Nhân viên'}</span>
+            </div>
           </header>
           <main className="flex flex-1 flex-col gap-4 rounded-lg bg-background p-4 shadow-sm">
             <Tabs defaultValue="all" onValueChange={(val) => setActiveCategory(val === 'all' ? null : val)}>
