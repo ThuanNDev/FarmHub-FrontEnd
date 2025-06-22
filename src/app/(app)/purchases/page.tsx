@@ -3,7 +3,7 @@
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -103,6 +103,7 @@ export default function PurchasesPage() {
   const [selectedPO, setSelectedPO] = useState<PurchaseOrder | null>(null);
   const [items, setItems] = useState<PurchaseOrderItem[]>([]);
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { toast } = useToast();
   const { t } = useLanguage();
   
@@ -124,6 +125,13 @@ export default function PurchasesPage() {
     );
   }, [searchTerm, purchaseOrders]);
   
+  useEffect(() => {
+    if (searchParams.get('action') === 'add') {
+      setSelectedPO(null);
+      setAddEditDialogOpen(true);
+    }
+  }, [searchParams]);
+
   useEffect(() => {
     if (!isAddEditDialogOpen) {
         setItems([]);
@@ -246,8 +254,15 @@ export default function PurchasesPage() {
     }
     
     setPurchaseOrders([...mockPurchaseOrders]);
-    setAddEditDialogOpen(false);
+    handleDialogChange(false);
   };
+
+  const handleDialogChange = (open: boolean) => {
+    setAddEditDialogOpen(open);
+    if (!open) {
+      router.replace('/purchases', { scroll: false });
+    }
+  }
 
   const addItemToOrder = (item: PurchaseOrderItem) => {
     setItems(prev => [...prev, item]);
@@ -497,7 +512,7 @@ export default function PurchasesPage() {
         </CardFooter>
       </Card>
       
-      <Dialog open={isAddEditDialogOpen} onOpenChange={setAddEditDialogOpen}>
+      <Dialog open={isAddEditDialogOpen} onOpenChange={handleDialogChange}>
         <DialogContent className="sm:max-w-4xl">
             <DialogHeader>
                 <DialogTitle className="font-headline">{selectedPO ? 'Sửa đơn nhập hàng' : 'Tạo đơn nhập hàng mới'}</DialogTitle>

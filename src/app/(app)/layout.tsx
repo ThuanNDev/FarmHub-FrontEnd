@@ -26,6 +26,8 @@ import {
   Phone,
   Printer,
   Bell,
+  Plus,
+  UserPlus,
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { vi as viLocale } from 'date-fns/locale';
@@ -112,6 +114,48 @@ function NavLink({
       {label}
     </Link>
   );
+}
+
+function QuickActionsMenu() {
+    const { t } = useLanguage();
+    return (
+        <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+                <Button
+                    className="fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-lg bg-accent hover:bg-accent/90 text-accent-foreground z-50"
+                    size="icon"
+                >
+                    <Plus className="h-6 w-6" />
+                </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent
+                side="top"
+                align="end"
+                className="w-56 mb-2"
+            >
+                <DropdownMenuLabel>Thao tác nhanh</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem asChild>
+                    <Link href="/pos">
+                        <ShoppingCart className="mr-2 h-4 w-4" />
+                        <span>{t('nav.pos')}</span>
+                    </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                    <Link href="/customers?action=add">
+                        <UserPlus className="mr-2 h-4 w-4" />
+                        <span>Thêm khách hàng</span>
+                    </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                    <Link href="/purchases?action=add">
+                        <PackagePlus className="mr-2 h-4 w-4" />
+                        <span>Tạo đơn nhập hàng</span>
+                    </Link>
+                </DropdownMenuItem>
+            </DropdownMenuContent>
+        </DropdownMenu>
+    )
 }
 
 
@@ -360,6 +404,7 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
         <main className="flex flex-1 flex-col gap-4 bg-background p-4 lg:gap-6 lg:p-6 overflow-y-auto min-h-0">
           {children}
         </main>
+        <QuickActionsMenu />
       </div>
     </div>
   );

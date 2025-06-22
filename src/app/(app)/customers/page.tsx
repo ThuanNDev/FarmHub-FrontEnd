@@ -9,7 +9,7 @@ import {
   MoreHorizontal,
   Search,
 } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -99,6 +99,7 @@ export default function CustomersPage() {
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
   
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { toast } = useToast();
   const { t } = useLanguage();
 
@@ -116,6 +117,13 @@ export default function CustomersPage() {
       status: 'Active',
     },
   });
+
+  useEffect(() => {
+    if (searchParams.get('action') === 'add') {
+      setSelectedCustomer(null);
+      setAddEditDialogOpen(true);
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     if (isAddEditDialogOpen) {
@@ -193,9 +201,15 @@ export default function CustomersPage() {
       setCustomers([newCustomer, ...customers]);
       toast({ title: "Thành công", description: "Khách hàng mới đã được thêm." });
     }
-    setAddEditDialogOpen(false);
-    setSelectedCustomer(null);
+    handleDialogChange(false);
   };
+
+  const handleDialogChange = (open: boolean) => {
+    setAddEditDialogOpen(open);
+    if (!open) {
+      router.replace('/customers', { scroll: false });
+    }
+  }
 
   const filteredCustomers = customers.filter(customer =>
     !customer.is_deleted &&
@@ -301,7 +315,7 @@ export default function CustomersPage() {
         </CardFooter>
       </Card>
       
-      <Dialog open={isAddEditDialogOpen} onOpenChange={setAddEditDialogOpen}>
+      <Dialog open={isAddEditDialogOpen} onOpenChange={handleDialogChange}>
         <DialogContent className="sm:max-w-2xl">
           <DialogHeader>
             <DialogTitle className="font-headline">{selectedCustomer ? 'Sửa khách hàng' : 'Thêm khách hàng mới'}</DialogTitle>
