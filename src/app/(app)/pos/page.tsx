@@ -198,6 +198,10 @@ export default function POSPage() {
     const invoiceDate = new Date().toLocaleDateString('vi-VN');
     const orderCode = `HD${Date.now().toString().slice(-6)}`;
 
+    const vatRate = store.vat_rate || 0;
+    const vatAmount = total * (vatRate / 100);
+    const totalWithVat = total + vatAmount;
+
     const itemsHtml = cart.map(item => `
       <tr class="item">
         <td>
@@ -207,6 +211,17 @@ export default function POSPage() {
         <td class="text-right">${formatCurrency(item.price * item.quantity)}</td>
       </tr>
     `).join('');
+
+    const vatHtml = vatRate > 0 ? `
+      <div class="row">
+        <span>VAT (${vatRate}%):</span>
+        <span>${formatCurrency(vatAmount)}</span>
+      </div>
+    ` : '';
+    
+    const invoiceFooterHtml = store.invoice_footer
+      ? `<p>${store.invoice_footer.replace(/\n/g, '<br>')}</p>`
+      : `<p>Cảm ơn quý khách và hẹn gặp lại!</p>`;
 
     const invoiceHtml = `
       <html>
@@ -349,14 +364,15 @@ export default function POSPage() {
                 <span>Giảm giá:</span>
                 <span>-${formatCurrency(discount)}</span>
               </div>
+              ${vatHtml}
               <div class="row total">
                 <span>TỔNG CỘNG:</span>
-                <span>${formatCurrency(total)}</span>
+                <span>${formatCurrency(totalWithVat)}</span>
               </div>
             </div>
 
             <div class="footer">
-              <p>Cảm ơn quý khách và hẹn gặp lại!</p>
+              ${invoiceFooterHtml}
               <p>${store.email}</p>
             </div>
           </div>
