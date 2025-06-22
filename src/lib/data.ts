@@ -1,3 +1,4 @@
+
 // All IDs are kept simple for mocking purposes. In a real DB, these would be UUIDs or CUIDs.
 // Timestamps are in ISO 8601 format.
 
@@ -171,6 +172,7 @@ export const mockProducts = [
     category_id: "cate-001",
     brand: "Kubota",
     unit: "chiếc",
+    import_price: 1200000,
     price: 1500000,
     credit_price: 1600000,
     stock: 25,
@@ -194,6 +196,7 @@ export const mockProducts = [
     category_id: "cate-001",
     brand: "Yanmar",
     unit: "chiếc",
+    import_price: 280000,
     price: 350000,
     credit_price: 360000,
     stock: 10,
@@ -217,6 +220,7 @@ export const mockProducts = [
     category_id: "cate-002",
     brand: "John Deere",
     unit: "chiếc",
+    import_price: 2000000,
     price: 2500000,
     credit_price: 260000,
     stock: 5,
@@ -240,6 +244,7 @@ export const mockProducts = [
     category_id: "cate-003",
     brand: "STIHL",
     unit: "chiếc",
+    import_price: 45000,
     price: 55000,
     credit_price: 60000,
     stock: 50,
@@ -263,6 +268,7 @@ export const mockProducts = [
     category_id: "cate-003",
     brand: "Honda",
     unit: "chiếc",
+    import_price: 28000,
     price: 35000,
     credit_price: 40000,
     stock: 40,

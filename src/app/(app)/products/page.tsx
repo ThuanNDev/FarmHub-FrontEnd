@@ -95,8 +95,9 @@ const productSchema = z.object({
   supplier_id: z.string().min(1, { message: 'Vui lòng chọn nhà cung cấp.' }),
   brand: z.string().min(1, { message: 'Thương hiệu không được để trống.' }),
   unit: z.string().min(1, { message: 'Đơn vị không được để trống.' }),
-  price: z.coerce.number().positive({ message: 'Giá phải là một số dương.' }),
-  credit_price: z.coerce.number().positive({ message: 'Giá trả góp phải là số dương.' }).optional(),
+  import_price: z.coerce.number().positive({ message: 'Giá nhập phải là một số dương.' }),
+  price: z.coerce.number().positive({ message: 'Giá lẻ phải là một số dương.' }),
+  credit_price: z.coerce.number().positive({ message: 'Giá bán nợ phải là số dương.' }).optional(),
   stock: z.coerce.number().int().min(0, { message: 'Tồn kho phải là số nguyên không âm.' }),
   min_stock_level: z.coerce.number().int().min(0, { message: 'Ngưỡng tồn kho phải là số nguyên không âm.' }),
   warranty_info: z.string().optional(),
@@ -131,6 +132,7 @@ export default function ProductsPage() {
       supplier_id: '',
       brand: '',
       unit: 'chiếc',
+      import_price: 0,
       price: 0,
       credit_price: 0,
       stock: 0,
@@ -158,6 +160,7 @@ export default function ProductsPage() {
           supplier_id: selectedProduct.supplier_id,
           brand: selectedProduct.brand,
           unit: selectedProduct.unit,
+          import_price: selectedProduct.import_price,
           price: selectedProduct.price,
           credit_price: selectedProduct.credit_price || undefined,
           stock: selectedProduct.stock,
@@ -175,6 +178,7 @@ export default function ProductsPage() {
           supplier_id: '',
           brand: '',
           unit: 'chiếc',
+          import_price: 0,
           price: 0,
           credit_price: undefined,
           stock: 0,
@@ -270,6 +274,7 @@ export default function ProductsPage() {
   };
 
   const formatCurrency = (amount: number) => {
+    if (!amount) return '0 ₫';
     return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
   };
 
@@ -280,6 +285,10 @@ export default function ProductsPage() {
     } catch (e) {
       return 'https://placehold.co/300x300.png';
     }
+  };
+
+  const getCategoryName = (categoryId: string) => {
+    return mockCategories.find((c) => c.id === categoryId)?.name || "N/A";
   };
 
   const productsForCurrentTab = getProductsForTab(activeTab);
@@ -338,13 +347,16 @@ export default function ProductsPage() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="hidden w-[100px] sm:table-cell">
+                    <TableHead className="hidden w-[64px] sm:table-cell">
                       <span className="sr-only">Ảnh</span>
                     </TableHead>
                     <TableHead>Tên</TableHead>
-                    <TableHead>Thương hiệu</TableHead>
-                    <TableHead className="hidden md:table-cell">Giá</TableHead>
+                    <TableHead className="hidden lg:table-cell">Giá nhập</TableHead>
+                    <TableHead>Giá lẻ</TableHead>
+                    <TableHead className="hidden lg:table-cell">Giá bán nợ</TableHead>
                     <TableHead className="hidden md:table-cell">Tồn kho</TableHead>
+                    <TableHead className="hidden md:table-cell">Đơn vị</TableHead>
+                    <TableHead className="hidden md:table-cell">Danh mục</TableHead>
                     <TableHead>
                       <span className="sr-only">Hành động</span>
                     </TableHead>
@@ -370,9 +382,12 @@ export default function ProductsPage() {
                           {product.name}
                         </Link>
                       </TableCell>
-                      <TableCell>{product.brand}</TableCell>
-                      <TableCell className="hidden md:table-cell">{formatCurrency(product.price)}</TableCell>
+                      <TableCell className="hidden lg:table-cell">{formatCurrency(product.import_price)}</TableCell>
+                      <TableCell>{formatCurrency(product.price)}</TableCell>
+                      <TableCell className="hidden lg:table-cell">{formatCurrency(product.credit_price)}</TableCell>
                       <TableCell className="hidden md:table-cell">{product.stock}</TableCell>
+                      <TableCell className="hidden md:table-cell">{product.unit}</TableCell>
+                      <TableCell className="hidden md:table-cell">{getCategoryName(product.category_id)}</TableCell>
                       <TableCell>
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
@@ -436,7 +451,7 @@ export default function ProductsPage() {
                   control={form.control}
                   name="name"
                   render={({ field }) => (
-                    <FormItem>
+                    <FormItem className="md:col-span-2">
                       <FormLabel>Tên sản phẩm</FormLabel>
                       <FormControl>
                         <Input placeholder="Máy xới đất Kubota" {...field} />
@@ -519,19 +534,6 @@ export default function ProductsPage() {
                       </FormItem>
                     )}
                   />
-                <FormField
-                  control={form.control}
-                  name="unit"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Đơn vị</FormLabel>
-                      <FormControl>
-                        <Input placeholder="chiếc, kg, lít..." {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
                <FormField
                   control={form.control}
                   name="description"
@@ -563,10 +565,23 @@ export default function ProductsPage() {
                 />
                  <FormField
                     control={form.control}
+                    name="import_price"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Giá nhập</FormLabel>
+                        <FormControl>
+                          <Input type="number" placeholder="12000000" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                 <FormField
+                    control={form.control}
                     name="price"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Giá</FormLabel>
+                        <FormLabel>Giá lẻ</FormLabel>
                         <FormControl>
                           <Input type="number" placeholder="15000000" {...field} />
                         </FormControl>
@@ -579,9 +594,22 @@ export default function ProductsPage() {
                     name="credit_price"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Giá trả góp (tùy chọn)</FormLabel>
+                        <FormLabel>Giá bán nợ (tùy chọn)</FormLabel>
                         <FormControl>
                           <Input type="number" placeholder="16000000" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="unit"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Đơn vị</FormLabel>
+                        <FormControl>
+                          <Input placeholder="chiếc, kg, lít..." {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
