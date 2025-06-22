@@ -299,6 +299,7 @@ export default function PurchasesPage() {
                 <td class="text-center">${item.quantity}</td>
                 <td class="text-right">${formatCurrency(item.unit_price)}</td>
                 <td class="text-right">${formatCurrency(item.total_price)}</td>
+                <td></td>
                 <td class="text-center"><div style="width: 16px; height: 16px; border: 1px solid #000; margin: auto;"></div></td>
             </tr>
         `;
@@ -367,6 +368,7 @@ export default function PurchasesPage() {
                   <th class="text-center">Số lượng</th>
                   <th class="text-right">Đơn giá</th>
                   <th class="text-right">Thành tiền</th>
+                  <th class="text-center" style="width: 20%;">Ghi chú</th>
                   <th class="text-center" style="width: 10%;">Đã nhận</th>
                 </tr>
               </thead>
