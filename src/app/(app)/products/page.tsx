@@ -60,6 +60,7 @@ import { Label } from '@/components/ui/label';
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -601,5 +602,3 @@ export default function ProductsPage() {
     </>
   );
 }
-
-    
