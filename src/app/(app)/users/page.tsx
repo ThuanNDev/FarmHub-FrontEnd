@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -7,6 +8,9 @@ import * as z from 'zod';
 import {
   PlusCircle,
   MoreHorizontal,
+  Mail, 
+  Phone, 
+  Shield
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
@@ -70,6 +74,8 @@ import {
   } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Separator } from '@/components/ui/separator';
 import { mockUsers } from '@/lib/data';
 import { useToast } from '@/hooks/use-toast';
 
@@ -108,6 +114,10 @@ export default function UsersPage() {
   const router = useRouter();
   const { toast } = useToast();
 
+  // For demonstration: Mock the currently logged-in user.
+  // Change to mockUsers[1] (Staff) to see the non-admin view.
+  const currentUser = mockUsers[0];
+
   const form = useForm<UserFormValues>({
     resolver: zodResolver(userSchema),
     defaultValues: {
@@ -135,7 +145,6 @@ export default function UsersPage() {
           password: '',
           confirmPassword: '',
         });
-        // Make password optional for editing
         form.getFieldState('password').isDirty = false;
       } else {
         form.reset({
@@ -187,7 +196,6 @@ export default function UsersPage() {
         u.id === selectedUser.id ? { 
             ...u, 
             ...values, 
-            // In a real app, you'd only update the hash if a new password is provided
             password_hash: values.password ? `hashed_${values.password}` : u.password_hash,
             updated_at: now 
         } : u
@@ -198,7 +206,7 @@ export default function UsersPage() {
       const newUser: User = {
         id: `user-${Math.floor(1000 + Math.random() * 9000)}`,
         username: values.username,
-        password_hash: `hashed_${values.password}`, // Mock hashing
+        password_hash: `hashed_${values.password}`,
         full_name: values.full_name,
         email: values.email,
         phone: values.phone || '',
@@ -219,6 +227,73 @@ export default function UsersPage() {
     setSelectedUser(null);
   };
 
+  // --- Role-based View ---
+  if (currentUser.role !== 'Admin') {
+    const user = mockUsers.find(u => u.id === currentUser.id);
+
+    if (!user) {
+      return (
+        <Card>
+          <CardHeader><CardTitle>Lỗi</CardTitle></CardHeader>
+          <CardContent><p>Không tìm thấy thông tin người dùng.</p></CardContent>
+        </Card>
+      );
+    }
+
+    return (
+      <Card>
+        <CardHeader>
+          <div className="flex items-start gap-4">
+            <Avatar className="h-20 w-20 border">
+              <AvatarImage src={`https://placehold.co/128x128.png`} alt={user.full_name} />
+              <AvatarFallback>{user.full_name.charAt(0)}</AvatarFallback>
+            </Avatar>
+            <div className="pt-2">
+              <CardTitle className="font-headline text-2xl">{user.full_name}</CardTitle>
+              <CardDescription>@{user.username}</CardDescription>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <Separator className="my-4" />
+          <div className="space-y-6">
+            <div>
+              <h3 className="font-semibold text-lg mb-2">Thông tin liên hệ</h3>
+              <div className="grid gap-2 text-sm">
+                <div className="flex items-center gap-3">
+                  <Mail className="h-4 w-4 text-muted-foreground" />
+                  <span>{user.email}</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <Phone className="h-4 w-4 text-muted-foreground" />
+                  <span>{user.phone || 'Chưa cập nhật'}</span>
+                </div>
+              </div>
+            </div>
+            <div>
+              <h3 className="font-semibold text-lg mb-2">Thông tin tài khoản</h3>
+              <div className="grid gap-2 text-sm">
+                <div className="flex items-center gap-3">
+                  <Shield className="h-4 w-4 text-muted-foreground" />
+                  <span>Vai trò: {user.role}</span>
+                </div>
+                 <div className="flex items-center gap-3">
+                   <Badge variant={user.is_active ? 'default' : 'secondary'}>
+                      {user.is_active ? 'Hoạt động' : 'Vô hiệu hóa'}
+                    </Badge>
+                </div>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+        <CardFooter>
+          <Button>Đổi mật khẩu</Button>
+        </CardFooter>
+      </Card>
+    );
+  }
+
+  // --- Admin View ---
   return (
     <>
       <Card>
