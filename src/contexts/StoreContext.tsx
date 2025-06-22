@@ -1,7 +1,7 @@
 'use client';
 
-import React, { createContext, useContext, useState, ReactNode } from 'react';
-import { mockStores } from '@/lib/data';
+import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
+import { mockStores, mockUsers } from '@/lib/data';
 
 type Store = typeof mockStores[0];
 
@@ -14,12 +14,40 @@ const StoreContext = createContext<StoreContextType | undefined>(undefined);
 
 export function StoreProvider({ children }: { children: ReactNode }) {
   const [store, setStore] = useState<Store>(mockStores[0]);
+  const [isInitialized, setIsInitialized] = useState(false);
+
+  useEffect(() => {
+    try {
+      const loggedInUserId = localStorage.getItem('loggedInUserId');
+      if (loggedInUserId) {
+        const user = mockUsers.find(u => u.id === loggedInUserId);
+        if (user && user.associated_store_ids.length > 0) {
+          const userStoreId = user.associated_store_ids[0];
+          const userStore = mockStores.find(s => s.id === userStoreId);
+          if (userStore) {
+            setStore(userStore);
+          }
+        }
+      }
+    } catch (error) {
+      console.error("Could not initialize store from localStorage:", error);
+    } finally {
+      setIsInitialized(true);
+    }
+  }, []);
 
   const handleSetStore = (newStore: Store) => {
     setStore(newStore);
     // This updates the mock data as well, simulating a persistent change across reloads (during dev).
     // In a real app, this would be an API call.
-    mockStores[0] = newStore;
+    const storeIndex = mockStores.findIndex(s => s.id === newStore.id);
+    if (storeIndex !== -1) {
+        mockStores[storeIndex] = newStore;
+    }
+  }
+  
+  if (!isInitialized) {
+      return null; // Or a loading spinner component to prevent hydration mismatch
   }
 
   return (

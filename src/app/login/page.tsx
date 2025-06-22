@@ -56,6 +56,8 @@ export default function LoginPage() {
 
         // In a real app, you would compare a hashed password.
         if (user && user.is_active) {
+            localStorage.setItem('loggedInUserId', user.id); // Save user ID
+
             if (user.last_login_at === null) {
                 // First time login, redirect to OTP verification
                 toast({

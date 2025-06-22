@@ -110,6 +110,7 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
   const appCreator = mockUsers.find(u => u.is_superadmin);
 
   const handleLogout = () => {
+    localStorage.removeItem('loggedInUserId');
     toast({
       title: "Đã đăng xuất",
       description: "Bạn đã đăng xuất thành công.",
