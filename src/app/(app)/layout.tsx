@@ -328,22 +328,25 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
                   <ScrollArea className="h-80 mt-2">
                     {filteredNotifications.length > 0 ? (
                       filteredNotifications.map((notification) => (
-                        <Link href={notification.link || '#'} key={notification.id} passHref legacyBehavior>
-                           <a onClick={() => handleMarkAsRead(notification.id)} className="block">
-                              <div className={cn(
-                                'flex items-start gap-3 rounded-lg p-3 text-sm transition-colors hover:bg-muted',
-                                !notification.is_read && 'bg-primary/5'
-                              )}>
-                                {!notification.is_read && <div className="mt-1 h-2 w-2 rounded-full bg-primary" />}
-                                <div className={cn('flex-1 space-y-1', notification.is_read && 'pl-5')}>
-                                  <p className="font-medium">{notification.title}</p>
-                                  <p className="text-muted-foreground">{notification.description}</p>
-                                  <p className="text-xs text-muted-foreground/80">
-                                    <RelativeTime date={notification.created_at} />
-                                  </p>
-                                </div>
-                              </div>
-                           </a>
+                        <Link
+                          href={notification.link || '#'}
+                          key={notification.id}
+                          onClick={() => handleMarkAsRead(notification.id)}
+                          className="block"
+                        >
+                           <div className={cn(
+                            'flex items-start gap-3 rounded-lg p-3 text-sm transition-colors hover:bg-muted',
+                            !notification.is_read && 'bg-primary/5'
+                           )}>
+                            {!notification.is_read && <div className="mt-1 h-2 w-2 rounded-full bg-primary" />}
+                            <div className={cn('flex-1 space-y-1', notification.is_read && 'pl-5')}>
+                              <p className="font-medium">{notification.title}</p>
+                              <p className="text-muted-foreground">{notification.description}</p>
+                              <p className="text-xs text-muted-foreground/80">
+                                <RelativeTime date={notification.created_at} />
+                              </p>
+                            </div>
+                          </div>
                         </Link>
                       ))
                     ) : (
