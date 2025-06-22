@@ -183,28 +183,28 @@ export default function POSPage() {
   const handleQuickPrint = () => {
     if (cart.length === 0) {
       toast({
-        variant: "destructive",
-        title: "Giỏ hàng trống",
-        description: "Vui lòng thêm sản phẩm vào giỏ hàng trước khi in.",
+        variant: 'destructive',
+        title: 'Giỏ hàng trống',
+        description: 'Vui lòng thêm sản phẩm vào giỏ hàng trước khi in.',
       });
       return;
     }
-
+  
     const printWindow = window.open('', '_blank');
     if (!printWindow) {
       toast({
-        variant: "destructive",
-        title: "Lỗi",
-        description: "Không thể mở cửa sổ in. Vui lòng cho phép pop-up.",
+        variant: 'destructive',
+        title: 'Lỗi',
+        description: 'Không thể mở cửa sổ in. Vui lòng cho phép pop-up.',
       });
       return;
     }
-    
+  
     const invoiceDate = new Date().toLocaleDateString('vi-VN');
     const orderCode = `HD${Date.now().toString().slice(-6)}`;
-
+  
     const vatRate = store.is_vat_enabled ? (store.vat_rate || 0) : 0;
-    
+  
     const itemsHtml = cart.map(item => `
       <tr class="item">
         <td>
@@ -214,18 +214,34 @@ export default function POSPage() {
         <td class="text-right">${formatCurrency(item.price * item.quantity)}</td>
       </tr>
     `).join('');
-
+  
     const vatHtml = store.is_vat_enabled && vatRate > 0 ? `
       <div class="row">
         <span>VAT (${vatRate}%):</span>
         <span>${formatCurrency(vatAmount)}</span>
       </div>
     ` : '';
-    
+  
     const invoiceFooterHtml = store.invoice_footer
       ? `<p>${store.invoice_footer.replace(/\n/g, '<br>')}</p>`
       : `<p>Cảm ơn quý khách và hẹn gặp lại!</p>`;
-
+  
+    let qrCodeHtml = '';
+    if (paymentMethod === 'Transfer' && store?.bank_info && totalWithVat > 0) {
+        const params = new URLSearchParams({
+            amount: totalWithVat.toString(),
+            addInfo: `Thanh toan don hang ${orderCode}`,
+            accountName: store.bank_info.account_name,
+        });
+        const url = `https://img.vietqr.io/image/${store.bank_info.bank_id}-${store.bank_info.account_no}-compact2.jpg?${params.toString()}`;
+        qrCodeHtml = `
+            <div class="qr-code" style="text-align: center; margin-top: 15px;">
+                <p style="font-weight: bold; margin-bottom: 5px; font-size: 9pt;">Quét mã QR để thanh toán</p>
+                <img src="${url}" alt="QR Code" style="display: block; margin: 0 auto; width: 180px; height: 180px;"/>
+            </div>
+        `;
+    }
+  
     const invoiceHtml = `
       <html>
         <head>
@@ -374,6 +390,8 @@ export default function POSPage() {
               </div>
             </div>
 
+            ${qrCodeHtml}
+
             <div class="footer">
               ${invoiceFooterHtml}
               <p>${store.email}</p>
@@ -382,7 +400,7 @@ export default function POSPage() {
         </body>
       </html>
     `;
-
+  
     printWindow.document.write(invoiceHtml);
     printWindow.document.close();
     printWindow.focus();

@@ -20,7 +20,7 @@ export const mockStores = [
       account_no: '050104114755',
       account_name: 'NGUYEN TRAN VAN THUAN'
     },
-    is_vat_enabled: true,
+    is_vat_enabled: false,
     vat_rate: 8,
     invoice_footer: 'Cảm ơn quý khách và hẹn gặp lại!',
     defaults: {
