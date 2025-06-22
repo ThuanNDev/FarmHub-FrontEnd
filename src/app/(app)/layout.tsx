@@ -1,7 +1,7 @@
 'use client';
 import * as React from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import {
   Package,
   ShoppingCart,
@@ -17,6 +17,7 @@ import {
   UsersRound,
   Truck,
   PackagePlus,
+  LogOut,
 } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
@@ -34,8 +35,20 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { StoreProvider, useStore } from '@/contexts/StoreContext';
+import { useToast } from '@/hooks/use-toast';
 
 const navItems = [
   { href: '/', label: 'Bảng điều khiển', icon: LayoutDashboard },
@@ -81,6 +94,16 @@ function NavLink({
 function LayoutContent({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const { store } = useStore();
+  const router = useRouter();
+  const { toast } = useToast();
+
+  const handleLogout = () => {
+    toast({
+      title: "Đã đăng xuất",
+      description: "Bạn đã đăng xuất thành công.",
+    });
+    router.push('/login');
+  };
 
   if (pathname === '/pos') {
     return <>{children}</>;
@@ -163,7 +186,31 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
               </DropdownMenuItem>
               <DropdownMenuItem>Hỗ trợ</DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>Đăng xuất</DropdownMenuItem>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <DropdownMenuItem
+                    onSelect={(e) => e.preventDefault()}
+                    className="text-destructive focus:bg-destructive/10 focus:text-destructive"
+                  >
+                    <LogOut className="mr-2 h-4 w-4" />
+                    <span>Đăng xuất</span>
+                  </DropdownMenuItem>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Bạn có muốn đăng xuất không?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Hành động này sẽ kết thúc phiên làm việc hiện tại và đưa bạn về trang đăng nhập.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Hủy</AlertDialogCancel>
+                    <AlertDialogAction onClick={handleLogout} className="bg-destructive hover:bg-destructive/90">
+                      Đăng xuất
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
             </DropdownMenuContent>
           </DropdownMenu>
         </header>
