@@ -177,7 +177,7 @@ export default function CategoriesPage() {
             ...values,
             slug,
             parent_id: values.parent_id || null,
-            image: values.image || 'https://placehold.co/100x100.png',
+            image: values.image || 'https://picsum.photos/100/100',
             order: values.order ?? c.order,
             description: values.description || '',
             updated_at: new Date().toISOString(),
@@ -192,7 +192,7 @@ export default function CategoriesPage() {
         slug,
         description: values.description || '',
         parent_id: values.parent_id || null,
-        image: values.image || 'https://placehold.co/100x100.png',
+        image: values.image || 'https://picsum.photos/100/100',
         order: values.order ?? categories.length + 1,
         is_active: values.is_active,
         created_at: new Date().toISOString(),
@@ -267,7 +267,7 @@ export default function CategoriesPage() {
                         alt={category.name}
                         className="aspect-square rounded-md object-cover"
                         height="64"
-                        src={category.image || 'https://placehold.co/64x64.png'}
+                        src={category.image || 'https://picsum.photos/64/64'}
                         width="64"
                         data-ai-hint="category icon"
                     />
@@ -381,7 +381,7 @@ export default function CategoriesPage() {
                   <FormItem>
                     <FormLabel>URL Hình ảnh</FormLabel>
                     <FormControl>
-                      <Input placeholder="https://placehold.co/100x100.png" {...field} />
+                      <Input placeholder="https://picsum.photos/100/100" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

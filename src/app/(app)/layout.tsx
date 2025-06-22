@@ -182,7 +182,7 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
             <DropdownMenuTrigger asChild>
               <Button variant="secondary" size="icon" className="rounded-full">
                 <Avatar>
-                  <AvatarImage src="https://placehold.co/40x40.png" alt="@admin" />
+                  <AvatarImage src={`https://picsum.photos/id/237/40/40`} alt="@admin" />
                   <AvatarFallback>A</AvatarFallback>
                 </Avatar>
                 <span className="sr-only">Mở menu người dùng</span>

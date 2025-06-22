@@ -24,7 +24,7 @@ export default function ProductDetailPage() {
   }
 
   const images = JSON.parse(product.images) as string[];
-  const [selectedImage, setSelectedImage] = useState(images[0] || 'https://placehold.co/600x600.png');
+  const [selectedImage, setSelectedImage] = useState(images[0] || 'https://picsum.photos/600/600');
   const specs = JSON.parse(product.specs) as Record<string, string>;
   
   const formatCurrency = (amount: number) => {

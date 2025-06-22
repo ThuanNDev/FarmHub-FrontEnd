@@ -489,9 +489,9 @@ export default function POSPage() {
   const getImageUrl = (imagesJson: string) => {
     try {
       const images = JSON.parse(imagesJson);
-      return images[0] || 'https://placehold.co/300x300.png';
+      return images[0] || 'https://picsum.photos/300/300';
     } catch (e) {
-      return 'https://placehold.co/300x300.png';
+      return 'https://picsum.photos/300/300';
     }
   }
 

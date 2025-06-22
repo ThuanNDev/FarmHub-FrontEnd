@@ -42,9 +42,9 @@ export default function CategoryDetailPage() {
   const getImageUrl = (imagesJson: string) => {
     try {
       const images = JSON.parse(imagesJson);
-      return images[0] || 'https://placehold.co/64x64.png';
+      return images[0] || 'https://picsum.photos/64/64';
     } catch (e) {
-      return 'https://placehold.co/64x64.png';
+      return 'https://picsum.photos/64/64';
     }
   };
 
@@ -62,7 +62,7 @@ export default function CategoryDetailPage() {
         <CardHeader>
           <div className="flex items-center gap-4">
              <Image
-                src={category.image || 'https://placehold.co/64x64.png'}
+                src={category.image || 'https://picsum.photos/64/64'}
                 alt={category.name}
                 width={64}
                 height={64}

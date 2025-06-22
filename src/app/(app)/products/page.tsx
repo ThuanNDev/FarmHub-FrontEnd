@@ -251,7 +251,7 @@ export default function ProductsPage() {
         ...values,
         slug: slugify(values.name),
         credit_price: values.credit_price || values.price,
-        images: imagesAsJsonString.length > 2 ? imagesAsJsonString : '["https://placehold.co/600x600.png"]',
+        images: imagesAsJsonString.length > 2 ? imagesAsJsonString : '["https://picsum.photos/600/600"]',
         specs: '{}',
         created_at: now,
         updated_at: now,
@@ -283,9 +283,9 @@ export default function ProductsPage() {
   const getImageUrl = (imagesJson: string) => {
     try {
       const images = JSON.parse(imagesJson);
-      return images[0] || 'https://placehold.co/300x300.png';
+      return images[0] || 'https://picsum.photos/64/64';
     } catch (e) {
-      return 'https://placehold.co/300x300.png';
+      return 'https://picsum.photos/64/64';
     }
   };
 

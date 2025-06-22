@@ -57,7 +57,7 @@ export default function UserDetailPage() {
         <CardHeader>
           <div className="flex items-center gap-4">
             <Avatar className="h-16 w-16">
-              <AvatarImage src={`https://placehold.co/128x128.png`} alt={user.full_name} />
+              <AvatarImage src={`https://picsum.photos/seed/${user.id}/128/128`} alt={user.full_name} />
               <AvatarFallback>{user.full_name.charAt(0)}</AvatarFallback>
             </Avatar>
             <div>
