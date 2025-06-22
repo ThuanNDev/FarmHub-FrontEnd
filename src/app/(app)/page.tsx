@@ -30,7 +30,7 @@ import {
   ChartTooltipContent,
 } from '@/components/ui/chart';
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Tooltip } from 'recharts';
-import { mockOrders } from '@/lib/data';
+import { mockOrders, mockCustomers } from '@/lib/data';
 
 const chartData = [
   { month: 'Jan', revenue: 120000 },
@@ -43,6 +43,14 @@ const chartData = [
 
 export default function Dashboard() {
   const recentOrders = mockOrders.slice(0, 5);
+
+  const getCustomerName = (customerId: string) => {
+    return mockCustomers.find(c => c.id === customerId)?.name || 'Khách lẻ';
+  };
+  
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
+  }
   
   return (
     <div className="flex flex-1 flex-col gap-4 md:gap-8">
@@ -148,12 +156,12 @@ export default function Dashboard() {
                 {recentOrders.map((order) => (
                   <TableRow key={order.id}>
                     <TableCell>
-                      <div className="font-medium">{order.customerName}</div>
+                      <div className="font-medium">{getCustomerName(order.customer_id)}</div>
                       <div className="hidden text-sm text-muted-foreground md:inline">
                         {order.status}
                       </div>
                     </TableCell>
-                    <TableCell className="text-right">${order.total.toFixed(2)}</TableCell>
+                    <TableCell className="text-right">{formatCurrency(order.total_amount)}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>

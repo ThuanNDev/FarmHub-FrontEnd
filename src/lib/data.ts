@@ -1,13 +1,94 @@
-export const mockCustomers = [
-  { id: 'CUST001', name: 'John Doe', email: 'john.doe@example.com', totalSpent: 1500, outstandingDebt: 200, joinDate: '2023-01-15' },
-  { id: 'CUST002', name: 'Jane Smith', email: 'jane.smith@example.com', totalSpent: 2500, outstandingDebt: 0, joinDate: '2023-02-20' },
-  { id: 'CUST003', name: 'Mike Johnson', email: 'mike.j@example.com', totalSpent: 800, outstandingDebt: 50, joinDate: '2023-03-10' },
-  { id: 'CUST004', name: 'Emily Davis', email: 'emily.d@example.com', totalSpent: 3200, outstandingDebt: 0, joinDate: '2023-04-05' },
-  { id: 'CUST005', name: 'Chris Lee', email: 'chris.lee@example.com', totalSpent: 500, outstandingDebt: 100, joinDate: '2023-05-12' },
+// All IDs are kept simple for mocking purposes. In a real DB, these would be UUIDs or CUIDs.
+// Timestamps are in ISO 8601 format.
+
+export const mockCategories = [
+  { 
+    id: 'cate-001', 
+    name: 'Máy làm đất', 
+    slug: 'may-lam-dat',
+    description: 'Các loại máy xới, máy cày phục vụ công tác làm đất.',
+    parent_id: null,
+    image: 'https://placehold.co/100x100.png',
+    order: 1,
+    is_active: true,
+    created_at: '2023-01-10T10:00:00Z',
+    updated_at: '2023-01-10T10:00:00Z',
+    is_deleted: false
+  },
+  { 
+    id: 'cate-002', 
+    name: 'Máy thu hoạch', 
+    slug: 'may-thu-hoach',
+    description: 'Máy gặt đập, máy tuốt lúa và các thiết bị thu hoạch khác.',
+    parent_id: null,
+    image: 'https://placehold.co/100x100.png',
+    order: 2,
+    is_active: true,
+    created_at: '2023-01-10T10:05:00Z',
+    updated_at: '2023-01-10T10:05:00Z',
+    is_deleted: false
+  },
+  { 
+    id: 'cate-003', 
+    name: 'Dụng cụ & Thiết bị',
+    slug: 'dung-cu-thiet-bi', 
+    description: 'Các loại máy móc, dụng cụ cầm tay hỗ trợ nông nghiệp.',
+    parent_id: null,
+    image: 'https://placehold.co/100x100.png',
+    order: 3,
+    is_active: false,
+    created_at: '2023-01-10T10:10:00Z',
+    updated_at: '2023-01-10T10:10:00Z',
+    is_deleted: false
+  },
 ];
+
+export const mockSuppliers = [
+  {
+    id: "supp-001",
+    name: "Công ty Nông機 Việt Nam",
+    phone: "02838123456",
+    email: "contact@nongnghiepvn.com",
+    address: "KCN Tân Bình, Quận Tân Phú, TP.HCM",
+    tax_code: "0300123456",
+    contact_person: "Anh Minh",
+    note: "Chuyên cung cấp máy nông nghiệp Kubota, Yanmar.",
+    created_at: "2023-02-15T09:00:00Z",
+    updated_at: "2023-05-20T14:30:00Z",
+    is_deleted: false
+  },
+  {
+    id: "supp-002",
+    name: "Nhà phân phối Toàn Phát",
+    phone: "02435556789",
+    email: "info@toanphat.com.vn",
+    address: "Cụm CN Ngọc Hồi, Huyện Thanh Trì, Hà Nội",
+    tax_code: "0100987654",
+    contact_person: "Chị Lan",
+    note: "Nhà phân phối chính hãng STIHL và Honda Power Products.",
+    created_at: "2022-11-20T11:00:00Z",
+    updated_at: "2023-06-01T10:00:00Z",
+    is_deleted: false
+  },
+  {
+    id: "supp-003",
+    name: "Tập đoàn GreenCo",
+    phone: "02363111222",
+    email: "sales@greenco.com",
+    address: "KCN Hòa Khánh, Quận Liên Chiểu, Đà Nẵng",
+    tax_code: "0400112233",
+    contact_person: "Mr. Baker",
+    note: "Nhà cung cấp máy John Deere và các thiết bị nông nghiệp công nghệ cao.",
+    created_at: "2021-08-01T15:00:00Z",
+    updated_at: "2023-04-10T16:45:00Z",
+    is_deleted: true
+  }
+];
+
 
 export const mockProducts = [
   {
+    id: "prod-001",
     product_code: "P001-B1",
     name: "Máy xới đất Kubota",
     slug: "may-xoi-dat-kubota",
@@ -25,9 +106,12 @@ export const mockProducts = [
     supplier_id: "supp-001",
     is_active: true,
     is_deleted: false,
+    created_at: "2023-03-01T12:00:00Z",
+    updated_at: "2023-07-15T10:00:00Z",
     hint: 'tiller agriculture'
   },
   {
+    id: "prod-002",
     product_code: "P002-Y1",
     name: "Máy cày Yanmar",
     slug: "may-cay-yanmar",
@@ -42,12 +126,15 @@ export const mockProducts = [
     images: "[\"https://placehold.co/600x600.png\",\"https://placehold.co/601x601.png\",\"https://placehold.co/602x602.png\"]",
     specs: "{\"Trọng lượng\": \"2.5 tấn\", \"Động cơ\": \"Diesel\", \"Công suất\": \"50HP\", \"Hộp số\": \"8 tiến 2 lùi\"}",
     warranty_info: "Bảo hành 24 tháng chính hãng. Miễn phí vận chuyển toàn quốc.",
-    supplier_id: "supp-002",
+    supplier_id: "supp-001",
     is_active: true,
     is_deleted: false,
+    created_at: "2023-03-05T14:00:00Z",
+    updated_at: "2023-07-20T11:00:00Z",
     hint: 'tractor agriculture'
   },
   {
+    id: "prod-003",
     product_code: "P003-J1",
     name: "Máy gặt đập John Deere",
     slug: "may-gat-dap-john-deere",
@@ -65,9 +152,12 @@ export const mockProducts = [
     supplier_id: "supp-003",
     is_active: true,
     is_deleted: false,
+    created_at: "2023-04-10T09:00:00Z",
+    updated_at: "2023-07-18T15:00:00Z",
     hint: 'combine harvester'
   },
   {
+    id: "prod-004",
     product_code: "P004-K1",
     name: "Máy phun thuốc STIHL",
     slug: "may-phun-thuoc-stihl",
@@ -82,12 +172,15 @@ export const mockProducts = [
     images: "[\"https://placehold.co/600x600.png\",\"https://placehold.co/601x601.png\"]",
     specs: "{\"Trọng lượng\": \"10kg\", \"Dung tích bình\": \"20L\", \"Lưu lượng phun\": \"2-4 L/phút\"}",
     warranty_info: "Bảo hành 6 tháng. Dễ dàng sửa chữa.",
-    supplier_id: "supp-001",
+    supplier_id: "supp-002",
     is_active: true,
     is_deleted: false,
+    created_at: "2023-05-15T11:00:00Z",
+    updated_at: "2023-07-21T09:30:00Z",
     hint: 'sprayer farm'
   },
   {
+    id: "prod-005",
     product_code: "P005-B2",
     name: "Máy cắt cỏ Honda",
     slug: "may-cat-co-honda",
@@ -105,48 +198,163 @@ export const mockProducts = [
     supplier_id: "supp-002",
     is_active: true,
     is_deleted: false,
+    created_at: "2023-06-20T16:00:00Z",
+    updated_at: "2023-07-22T14:00:00Z",
     hint: 'lawn mower'
   }
 ];
 
-export const mockOrders = [
-  { id: 'ORD001', customerName: 'John Doe', date: '2024-07-20', status: 'Delivered', total: 75.50 },
-  { id: 'ORD002', customerName: 'Jane Smith', date: '2024-07-21', status: 'Pending', total: 120.00 },
-  { id: 'ORD003', customerName: 'Mike Johnson', date: '2024-07-21', status: 'Delivered', total: 45.20 },
-  { id: 'ORD004', customerName: 'Emily Davis', date: '2024-07-22', status: 'Shipped', total: 200.00 },
-  { id: 'ORD005', customerName: 'Chris Lee', date: '2024-07-23', status: 'Pending', total: 30.00 },
-  { id: 'ORD006', customerName: 'John Doe', date: '2024-07-23', status: 'Cancelled', total: 55.00 },
+
+export const mockCustomers = [
+  { 
+    id: 'cust-001', 
+    name: 'Trang trại Hữu Cơ Xanh', 
+    phone: '0901112222', 
+    email: 'contact@huucoxanh.com',
+    address: 'Thôn 1, Xã E-Kmat, TP. Buôn Ma Thuột, Đắk Lắk',
+    tax_code: '5801234567',
+    customer_type: 'Wholesale' as const,
+    note: 'Khách hàng lớn, ưu tiên giao hàng nhanh.',
+    credit_limit: 100000000,
+    total_debt: 25000000,
+    debt_due_date: '2024-08-15T00:00:00Z',
+    last_purchase_date: '2024-07-10T00:00:00Z',
+    status: 'Active' as const,
+    created_at: '2022-03-15T00:00:00Z',
+    updated_at: '2024-07-10T00:00:00Z',
+    is_deleted: false
+  },
+  { 
+    id: 'cust-002', 
+    name: 'Bà Nguyễn Thị Mai', 
+    phone: '0987654321', 
+    email: 'mai.nguyen@email.com',
+    address: '123 Đường Trần Phú, Phường 4, TP. Đà Lạt, Lâm Đồng',
+    tax_code: null,
+    customer_type: 'Retail' as const,
+    note: 'Khách hàng thân thiết, mua lẻ.',
+    credit_limit: 0,
+    total_debt: 0,
+    debt_due_date: null,
+    last_purchase_date: '2024-07-20T00:00:00Z',
+    status: 'Active' as const,
+    created_at: '2023-05-20T00:00:00Z',
+    updated_at: '2024-07-20T00:00:00Z',
+    is_deleted: false
+  },
+  { 
+    id: 'cust-003', 
+    name: 'Công ty Giống Cây Trồng Miền Tây', 
+    phone: '02923888999', 
+    email: 'info@giongmietay.vn',
+    address: 'KCN Trà Nóc, Q. Bình Thủy, TP. Cần Thơ',
+    tax_code: '1800123789',
+    customer_type: 'Wholesale' as const,
+    note: 'Chuyên mua sỉ thuốc trừ sâu và phân bón.',
+    credit_limit: 50000000,
+    total_debt: 0,
+    debt_due_date: null,
+    last_purchase_date: '2024-06-05T00:00:00Z',
+    status: 'Active' as const,
+    created_at: '2021-11-01T00:00:00Z',
+    updated_at: '2024-06-05T00:00:00Z',
+    is_deleted: false
+  },
+  {
+    id: 'cust-004',
+    name: 'Ông Trần Văn Hùng',
+    phone: '0913123456',
+    email: 'hung.tran@gmail.com',
+    address: 'Xã Long Hưng, Huyện Mỹ Tú, Sóc Trăng',
+    tax_code: null,
+    customer_type: 'Retail' as const,
+    note: 'Đã khóa do nợ quá hạn',
+    credit_limit: 10000000,
+    total_debt: 12500000,
+    debt_due_date: '2024-05-01T00:00:00Z',
+    last_purchase_date: '2024-03-01T00:00:00Z',
+    status: 'Blocked' as const,
+    created_at: '2022-08-10T00:00:00Z',
+    updated_at: '2024-06-01T00:00:00Z',
+    is_deleted: false
+  }
 ];
 
-export const mockCategories = [
+export const mockOrders = [
   { 
-    id: 'cate-001', 
-    name: 'Máy làm đất', 
-    slug: 'may-lam-dat',
-    description: 'Các loại máy xới, máy cày phục vụ công tác làm đất.',
-    parent_id: null,
-    image: 'https://placehold.co/100x100.png',
-    order: 1,
-    is_active: true
+    id: 'ord-001', 
+    order_code: 'DH20240725001',
+    customer_id: 'cust-001',
+    total_amount: 15500000,
+    discount_amount: 500000,
+    shipping_fee: 0,
+    total_paid: 15000000,
+    payment_type: 'Bank Transfer' as const,
+    payment_details: 'Chuyển khoản qua VCB',
+    status: 'Delivered' as const,
+    expected_delivery_date: '2024-07-26T00:00:00Z',
+    delivery_address: 'Thôn 1, Xã E-Kmat, TP. Buôn Ma Thuột, Đắk Lắk',
+    delivery_status: 'Completed' as const,
+    note: 'Giao hàng trong giờ hành chính',
+    processed_by_user_id: 'user-001',
+    created_at: '2024-07-25T10:30:00Z',
+    updated_at: '2024-07-26T14:00:00Z'
   },
   { 
-    id: 'cate-002', 
-    name: 'Máy thu hoạch', 
-    slug: 'may-thu-hoach',
-    description: 'Máy gặt đập, máy tuốt lúa và các thiết bị thu hoạch khác.',
-    parent_id: null,
-    image: 'https://placehold.co/100x100.png',
-    order: 2,
-    is_active: true
+    id: 'ord-002', 
+    order_code: 'DH20240724005',
+    customer_id: 'cust-002',
+    total_amount: 5500000,
+    discount_amount: 0,
+    shipping_fee: 0,
+    total_paid: 5500000,
+    payment_type: 'Cash' as const,
+    payment_details: 'Thanh toán tại quầy',
+    status: 'Delivered' as const,
+    expected_delivery_date: null,
+    delivery_address: null,
+    delivery_status: 'N/A' as const,
+    note: null,
+    processed_by_user_id: 'user-002',
+    created_at: '2024-07-24T15:00:00Z',
+    updated_at: '2024-07-24T15:05:00Z'
   },
   { 
-    id: 'cate-003', 
-    name: 'Dụng cụ & Thiết bị',
-    slug: 'dung-cu-thiet-bi', 
-    description: 'Các loại máy móc, dụng cụ cầm tay hỗ trợ nông nghiệp.',
-    parent_id: null,
-    image: 'https://placehold.co/100x100.png',
-    order: 3,
-    is_active: false
+    id: 'ord-003', 
+    order_code: 'DH20240723002',
+    customer_id: 'cust-003',
+    total_amount: 350000000,
+    discount_amount: 10000000,
+    shipping_fee: 2000000,
+    total_paid: 100000000,
+    payment_type: 'Installment' as const,
+    payment_details: 'Trả góp 6 tháng',
+    status: 'Pending' as const,
+    expected_delivery_date: '2024-08-01T00:00:00Z',
+    delivery_address: 'KCN Trà Nóc, Q. Bình Thủy, TP. Cần Thơ',
+    delivery_status: 'Processing' as const,
+    note: 'Hẹn lịch giao hàng trước 1 ngày',
+    processed_by_user_id: 'user-001',
+    created_at: '2024-07-23T09:00:00Z',
+    updated_at: '2024-07-23T09:00:00Z'
+  },
+  { 
+    id: 'ord-004', 
+    order_code: 'DH20240722010',
+    customer_id: 'cust-001',
+    total_amount: 7500000,
+    discount_amount: 0,
+    shipping_fee: 0,
+    total_paid: 0,
+    payment_type: 'Credit' as const,
+    payment_details: 'Ghi nợ',
+    status: 'Cancelled' as const,
+    expected_delivery_date: '2024-07-23T00:00:00Z',
+    delivery_address: 'Thôn 1, Xã E-Kmat, TP. Buôn Ma Thuột, Đắk Lắk',
+    delivery_status: 'Cancelled' as const,
+    note: 'Khách hàng báo hủy',
+    processed_by_user_id: 'user-002',
+    created_at: '2024-07-22T11:45:00Z',
+    updated_at: '2024-07-22T16:00:00Z'
   },
 ];

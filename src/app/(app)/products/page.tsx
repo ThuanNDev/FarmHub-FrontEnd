@@ -81,15 +81,17 @@ import {
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
-import { mockProducts, mockCategories } from '@/lib/data';
+import { mockProducts, mockCategories, mockSuppliers } from '@/lib/data';
 import { useToast } from '@/hooks/use-toast';
 
 type Product = (typeof mockProducts)[0];
 
 const productSchema = z.object({
   name: z.string().min(1, { message: 'Tên sản phẩm không được để trống.' }),
+  product_code: z.string().min(1, { message: 'Mã sản phẩm không được để trống.' }),
   description: z.string().optional(),
   category_id: z.string().min(1, { message: 'Vui lòng chọn thể loại.' }),
+  supplier_id: z.string().min(1, { message: 'Vui lòng chọn nhà cung cấp.' }),
   brand: z.string().min(1, { message: 'Thương hiệu không được để trống.' }),
   unit: z.string().min(1, { message: 'Đơn vị không được để trống.' }),
   price: z.coerce.number().positive({ message: 'Giá phải là một số dương.' }),
@@ -104,7 +106,7 @@ const productSchema = z.object({
 type ProductFormValues = z.infer<typeof productSchema>;
 
 export default function ProductsPage() {
-  const [products, setProducts] = useState<Product[]>(mockProducts);
+  const [products, setProducts] = useState<Product[]>(mockProducts.filter(p => !p.is_deleted));
   const [searchTerm, setSearchTerm] = useState('');
   const [activeTab, setActiveTab] = useState('Tất cả');
 
@@ -121,8 +123,10 @@ export default function ProductsPage() {
     resolver: zodResolver(productSchema),
     defaultValues: {
       name: '',
+      product_code: '',
       description: '',
       category_id: '',
+      supplier_id: '',
       brand: '',
       unit: 'chiếc',
       price: 0,
@@ -146,12 +150,14 @@ export default function ProductsPage() {
         }
         form.reset({
           name: selectedProduct.name,
+          product_code: selectedProduct.product_code,
           description: selectedProduct.description,
           category_id: selectedProduct.category_id,
+          supplier_id: selectedProduct.supplier_id,
           brand: selectedProduct.brand,
           unit: selectedProduct.unit,
           price: selectedProduct.price,
-          credit_price: selectedProduct.credit_price,
+          credit_price: selectedProduct.credit_price || undefined,
           stock: selectedProduct.stock,
           min_stock_level: selectedProduct.min_stock_level,
           warranty_info: selectedProduct.warranty_info,
@@ -161,12 +167,14 @@ export default function ProductsPage() {
       } else {
         form.reset({
           name: '',
+          product_code: '',
           description: '',
           category_id: '',
+          supplier_id: '',
           brand: '',
           unit: 'chiếc',
           price: 0,
-          credit_price: 0,
+          credit_price: undefined,
           stock: 0,
           min_stock_level: 5,
           warranty_info: 'Bảo hành 12 tháng',
@@ -198,7 +206,7 @@ export default function ProductsPage() {
 
   const confirmDelete = () => {
     if (selectedProduct) {
-      setProducts(products.filter((p) => p.product_code !== selectedProduct.product_code));
+      setProducts(products.map(p => p.id === selectedProduct.id ? { ...p, is_deleted: true } : p).filter(p => !p.is_deleted));
       toast({ title: 'Thành công', description: 'Sản phẩm đã được xóa.' });
     }
     setDeleteDialogOpen(false);
@@ -209,10 +217,12 @@ export default function ProductsPage() {
     const imagesAsJsonString = values.images
         ? JSON.stringify(values.images.split(',').map(url => url.trim()).filter(url => url))
         : '[]';
+    
+    const now = new Date().toISOString();
 
     if (selectedProduct) {
       const updatedProducts = products.map((p) =>
-        p.product_code === selectedProduct.product_code 
+        p.id === selectedProduct.id 
           ? { 
               ...p, 
               ...values,
@@ -221,6 +231,7 @@ export default function ProductsPage() {
               credit_price: values.credit_price || values.price,
               description: values.description || '',
               warranty_info: values.warranty_info || 'Không có',
+              updated_at: now,
             } 
           : p
       );
@@ -228,13 +239,14 @@ export default function ProductsPage() {
       toast({ title: 'Thành công', description: 'Sản phẩm đã được cập nhật.' });
     } else {
       const newProduct: Product = {
+        id: `prod-${Math.floor(1000 + Math.random() * 9000)}`,
         ...values,
-        product_code: `P${Math.floor(1000 + Math.random() * 9000)}`,
         slug: values.name.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, ''),
         credit_price: values.credit_price || values.price,
         images: imagesAsJsonString.length > 2 ? imagesAsJsonString : '["https://placehold.co/600x600.png"]',
         specs: '{}',
-        supplier_id: 'supp-new',
+        created_at: now,
+        updated_at: now,
         is_deleted: false,
         hint: 'product',
         description: values.description || '',
@@ -271,8 +283,16 @@ export default function ProductsPage() {
   const productsForCurrentTab = getProductsForTab(activeTab);
   const totalPages = Math.ceil(productsForCurrentTab.length / productsPerPage);
 
+  const paginatedProducts = productsForCurrentTab.slice(
+    (currentPage - 1) * productsPerPage,
+    currentPage * productsPerPage
+  );
+
   const firstItem = productsForCurrentTab.length > 0 ? (currentPage - 1) * productsPerPage + 1 : 0;
   const lastItem = Math.min(currentPage * productsPerPage, productsForCurrentTab.length);
+  
+  const activeCategories = mockCategories.filter(c => c.is_active && !c.is_deleted);
+  const activeSuppliers = mockSuppliers.filter(s => !s.is_deleted);
 
   return (
     <>
@@ -312,75 +332,66 @@ export default function ProductsPage() {
             </TabsList>
           </CardHeader>
           <CardContent>
-            {categories.map((cat) => {
-              const productsForThisTab = getProductsForTab(cat);
-              const paginatedProducts = productsForThisTab.slice(
-                (currentPage - 1) * productsPerPage,
-                currentPage * productsPerPage
-              );
-              return (
-                <TabsContent key={cat} value={cat}>
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead className="hidden w-[100px] sm:table-cell">
-                          <span className="sr-only">Ảnh</span>
-                        </TableHead>
-                        <TableHead>Tên</TableHead>
-                        <TableHead>Thương hiệu</TableHead>
-                        <TableHead className="hidden md:table-cell">Giá</TableHead>
-                        <TableHead className="hidden md:table-cell">Tồn kho</TableHead>
-                        <TableHead>
-                          <span className="sr-only">Hành động</span>
-                        </TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {paginatedProducts.map((product) => (
-                        <TableRow key={product.product_code}>
-                          <TableCell className="hidden sm:table-cell">
-                            <Link href={`/products/${product.slug}`}>
-                              <Image
-                                alt={product.name}
-                                className="aspect-square rounded-md object-cover"
-                                height="64"
-                                src={getImageUrl(product.images)}
-                                width="64"
-                                data-ai-hint={product.hint}
-                              />
-                            </Link>
-                          </TableCell>
-                          <TableCell className="font-medium">
-                            <Link href={`/products/${product.slug}`} className="hover:underline">
-                              {product.name}
-                            </Link>
-                          </TableCell>
-                          <TableCell>{product.brand}</TableCell>
-                          <TableCell className="hidden md:table-cell">{formatCurrency(product.price)}</TableCell>
-                          <TableCell className="hidden md:table-cell">{product.stock}</TableCell>
-                          <TableCell>
-                            <DropdownMenu>
-                              <DropdownMenuTrigger asChild>
-                                <Button aria-haspopup="true" size="icon" variant="ghost">
-                                  <MoreHorizontal className="h-4 w-4" />
-                                  <span className="sr-only">Toggle menu</span>
-                                </Button>
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end">
-                                <DropdownMenuItem onClick={() => handleEdit(product)}>Sửa</DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => handleDelete(product)} className="text-destructive">
-                                  Xóa
-                                </DropdownMenuItem>
-                              </DropdownMenuContent>
-                            </DropdownMenu>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </TabsContent>
-              );
-            })}
+            <TabsContent value={activeTab} className="mt-0">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="hidden w-[100px] sm:table-cell">
+                      <span className="sr-only">Ảnh</span>
+                    </TableHead>
+                    <TableHead>Tên</TableHead>
+                    <TableHead>Thương hiệu</TableHead>
+                    <TableHead className="hidden md:table-cell">Giá</TableHead>
+                    <TableHead className="hidden md:table-cell">Tồn kho</TableHead>
+                    <TableHead>
+                      <span className="sr-only">Hành động</span>
+                    </TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {paginatedProducts.map((product) => (
+                    <TableRow key={product.id}>
+                      <TableCell className="hidden sm:table-cell">
+                        <Link href={`/products/${product.slug}`}>
+                          <Image
+                            alt={product.name}
+                            className="aspect-square rounded-md object-cover"
+                            height="64"
+                            src={getImageUrl(product.images)}
+                            width="64"
+                            data-ai-hint={product.hint}
+                          />
+                        </Link>
+                      </TableCell>
+                      <TableCell className="font-medium">
+                        <Link href={`/products/${product.slug}`} className="hover:underline">
+                          {product.name}
+                        </Link>
+                      </TableCell>
+                      <TableCell>{product.brand}</TableCell>
+                      <TableCell className="hidden md:table-cell">{formatCurrency(product.price)}</TableCell>
+                      <TableCell className="hidden md:table-cell">{product.stock}</TableCell>
+                      <TableCell>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button aria-haspopup="true" size="icon" variant="ghost">
+                              <MoreHorizontal className="h-4 w-4" />
+                              <span className="sr-only">Toggle menu</span>
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => handleEdit(product)}>Sửa</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleDelete(product)} className="text-destructive">
+                              Xóa
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TabsContent>
           </CardContent>
           <CardFooter>
             <div className="text-xs text-muted-foreground">
@@ -390,7 +401,7 @@ export default function ProductsPage() {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => setCurrentPage((prev) => prev - 1)}
+                onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
                 disabled={currentPage === 1}
               >
                 Trước
@@ -398,7 +409,7 @@ export default function ProductsPage() {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => setCurrentPage((prev) => prev + 1)}
+                onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
                 disabled={currentPage >= totalPages}
               >
                 Sau
@@ -431,6 +442,19 @@ export default function ProductsPage() {
                     </FormItem>
                   )}
                 />
+                 <FormField
+                  control={form.control}
+                  name="product_code"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Mã sản phẩm (SKU)</FormLabel>
+                      <FormControl>
+                        <Input placeholder="KUB-XOI-001" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
                 <FormField
                   control={form.control}
                   name="brand"
@@ -457,7 +481,7 @@ export default function ProductsPage() {
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            {mockCategories.map((category) => (
+                            {activeCategories.map((category) => (
                               <SelectItem key={category.id} value={category.id}>
                                 {category.name}
                               </SelectItem>
@@ -468,6 +492,43 @@ export default function ProductsPage() {
                       </FormItem>
                     )}
                   />
+                  <FormField
+                    control={form.control}
+                    name="supplier_id"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Nhà cung cấp</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Chọn nhà cung cấp" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {activeSuppliers.map((supplier) => (
+                              <SelectItem key={supplier.id} value={supplier.id}>
+                                {supplier.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                <FormField
+                  control={form.control}
+                  name="unit"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Đơn vị</FormLabel>
+                      <FormControl>
+                        <Input placeholder="chiếc, kg, lít..." {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
                <FormField
                   control={form.control}
                   name="description"
@@ -518,19 +579,6 @@ export default function ProductsPage() {
                         <FormLabel>Giá trả góp (tùy chọn)</FormLabel>
                         <FormControl>
                           <Input type="number" placeholder="16000000" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="unit"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Đơn vị</FormLabel>
-                        <FormControl>
-                          <Input placeholder="chiếc, kg, lít..." {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>

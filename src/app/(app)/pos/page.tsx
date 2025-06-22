@@ -11,21 +11,21 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { mockProducts, mockCustomers } from '@/lib/data';
+import { mockProducts, mockCustomers, mockCategories } from '@/lib/data';
 
 type Product = typeof mockProducts[0];
 type CartItem = Product & { quantity: number };
 
 export default function POSPage() {
   const [cart, setCart] = useState<CartItem[]>([]);
-  const [activeCategory, setActiveCategory] = useState('Tất cả');
+  const [activeCategory, setActiveCategory] = useState<string | null>(null);
 
   const addToCart = (product: Product) => {
     setCart((prevCart) => {
-      const existingItem = prevCart.find((item) => item.product_code === product.product_code);
+      const existingItem = prevCart.find((item) => item.id === product.id);
       if (existingItem) {
         return prevCart.map((item) =>
-          item.product_code === product.product_code ? { ...item, quantity: item.quantity + 1 } : item
+          item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item
         );
       }
       return [...prevCart, { ...product, quantity: 1 }];
@@ -34,11 +34,11 @@ export default function POSPage() {
 
   const updateQuantity = (productId: string, newQuantity: number) => {
     if (newQuantity <= 0) {
-      setCart((prevCart) => prevCart.filter((item) => item.product_code !== productId));
+      setCart((prevCart) => prevCart.filter((item) => item.id !== productId));
     } else {
       setCart((prevCart) =>
         prevCart.map((item) =>
-          item.product_code === productId ? { ...item, quantity: newQuantity } : item
+          item.id === productId ? { ...item, quantity: newQuantity } : item
         )
       );
     }
@@ -46,8 +46,12 @@ export default function POSPage() {
 
   const cartTotal = cart.reduce((total, item) => total + item.price * item.quantity, 0);
 
-  const categories = ['Tất cả', ...Array.from(new Set(mockProducts.map((p) => p.brand)))];
-  const filteredProducts = activeCategory === 'Tất cả' ? mockProducts : mockProducts.filter(p => p.brand === activeCategory);
+  const categories = mockCategories.filter(c => !c.is_deleted && c.is_active);
+  const products = mockProducts.filter(p => !p.is_deleted && p.is_active);
+  
+  const filteredProducts = activeCategory
+    ? products.filter(p => p.category_id === activeCategory)
+    : products;
   
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
@@ -74,10 +78,11 @@ export default function POSPage() {
             </Button>
             <h1 className="text-lg font-semibold md:text-2xl font-headline">Bán hàng tại quầy (POS)</h1>
         </div>
-        <Tabs defaultValue="Tất cả" onValueChange={setActiveCategory} className="flex flex-1 flex-col">
-          <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 md:grid-cols-5">
+        <Tabs defaultValue="all" onValueChange={(val) => setActiveCategory(val === 'all' ? null : val)} className="flex flex-1 flex-col">
+          <TabsList>
+            <TabsTrigger value="all">Tất cả</TabsTrigger>
             {categories.map(cat => (
-              <TabsTrigger key={cat} value={cat}>{cat}</TabsTrigger>
+              <TabsTrigger key={cat.id} value={cat.id}>{cat.name}</TabsTrigger>
             ))}
           </TabsList>
           <div className="mt-4 flex-1 overflow-hidden">
@@ -85,7 +90,7 @@ export default function POSPage() {
               <div className="grid grid-cols-2 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 pr-4">
                 {filteredProducts.map((product) => (
                   <Card
-                    key={product.product_code}
+                    key={product.id}
                     className="overflow-hidden transition-all hover:shadow-lg cursor-pointer"
                     onClick={() => addToCart(product)}
                   >
@@ -119,22 +124,22 @@ export default function POSPage() {
             ) : (
               <div className="grid gap-4">
                 {cart.map((item) => (
-                  <div key={item.product_code} className="flex items-center gap-4">
+                  <div key={item.id} className="flex items-center gap-4">
                     <div className="flex-1">
                       <p className="font-medium">{item.name}</p>
                       <p className="text-sm text-muted-foreground">{formatCurrency(item.price)}</p>
                     </div>
                     <div className="flex items-center gap-2">
-                      <Button size="icon" variant="outline" className="h-6 w-6" onClick={() => updateQuantity(item.product_code, item.quantity - 1)}>
+                      <Button size="icon" variant="outline" className="h-6 w-6" onClick={() => updateQuantity(item.id, item.quantity - 1)}>
                         <MinusCircle className="h-4 w-4" />
                       </Button>
                       <span>{item.quantity}</span>
-                      <Button size="icon" variant="outline" className="h-6 w-6" onClick={() => updateQuantity(item.product_code, item.quantity + 1)}>
+                      <Button size="icon" variant="outline" className="h-6 w-6" onClick={() => updateQuantity(item.id, item.quantity + 1)}>
                         <PlusCircle className="h-4 w-4" />
                       </Button>
                     </div>
                     <p className="w-24 text-right font-medium">{formatCurrency(item.price * item.quantity)}</p>
-                     <Button size="icon" variant="ghost" className="h-6 w-6" onClick={() => updateQuantity(item.product_code, 0)}>
+                     <Button size="icon" variant="ghost" className="h-6 w-6" onClick={() => updateQuantity(item.id, 0)}>
                         <X className="h-4 w-4" />
                       </Button>
                   </div>
@@ -150,7 +155,7 @@ export default function POSPage() {
                         <SelectValue placeholder="Chọn một khách hàng" />
                     </SelectTrigger>
                     <SelectContent>
-                        {mockCustomers.map(customer => (
+                        {mockCustomers.filter(c => !c.is_deleted && c.status === 'Active').map(customer => (
                              <SelectItem key={customer.id} value={customer.id}>{customer.name}</SelectItem>
                         ))}
                     </SelectContent>

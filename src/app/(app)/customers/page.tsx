@@ -1,11 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
 import {
-  File,
   PlusCircle,
-  Search,
   MoreHorizontal,
+  Search,
 } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
@@ -18,13 +20,6 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 import {
   Table,
   TableBody,
@@ -40,136 +35,419 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from '@/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
 import { mockCustomers } from '@/lib/data';
+import { useToast } from '@/hooks/use-toast';
+
+type Customer = typeof mockCustomers[0];
+
+const customerSchema = z.object({
+  name: z.string().min(1, "Tên không được để trống."),
+  phone: z.string().min(1, "Số điện thoại không được để trống."),
+  email: z.string().email("Email không hợp lệ.").optional().or(z.literal('')),
+  address: z.string().optional(),
+  tax_code: z.string().optional(),
+  customer_type: z.enum(['Retail', 'Wholesale']),
+  note: z.string().optional(),
+  credit_limit: z.coerce.number().min(0).optional(),
+  status: z.enum(['Active', 'Inactive', 'Blocked']),
+});
+
+type CustomerFormValues = z.infer<typeof customerSchema>;
 
 export default function CustomersPage() {
+  const [customers, setCustomers] = useState<Customer[]>(mockCustomers);
   const [searchTerm, setSearchTerm] = useState('');
+  const [isAddEditDialogOpen, setAddEditDialogOpen] = useState(false);
+  const [isDeleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
+  
+  const { toast } = useToast();
 
-  const filteredCustomers = mockCustomers.filter((customer) =>
-    customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    customer.email.toLowerCase().includes(searchTerm.toLowerCase())
+  const form = useForm<CustomerFormValues>({
+    resolver: zodResolver(customerSchema),
+    defaultValues: {
+      name: '',
+      phone: '',
+      email: '',
+      address: '',
+      tax_code: '',
+      customer_type: 'Retail',
+      note: '',
+      credit_limit: 0,
+      status: 'Active',
+    },
+  });
+
+  useEffect(() => {
+    if (isAddEditDialogOpen) {
+      if (selectedCustomer) {
+        form.reset({
+          ...selectedCustomer,
+          credit_limit: selectedCustomer.credit_limit || 0,
+        });
+      } else {
+        form.reset({
+          name: '', phone: '', email: '', address: '', tax_code: '', 
+          customer_type: 'Retail', note: '', credit_limit: 0, status: 'Active'
+        });
+      }
+    }
+  }, [isAddEditDialogOpen, selectedCustomer, form]);
+
+  const handleAddNew = () => {
+    setSelectedCustomer(null);
+    setAddEditDialogOpen(true);
+  };
+
+  const handleEdit = (customer: Customer) => {
+    setSelectedCustomer(customer);
+    setAddEditDialogOpen(true);
+  };
+
+  const handleDelete = (customer: Customer) => {
+    setSelectedCustomer(customer);
+    setDeleteDialogOpen(true);
+  };
+
+  const confirmDelete = () => {
+    if (selectedCustomer) {
+      setCustomers(customers.map(c => c.id === selectedCustomer.id ? { ...c, is_deleted: true } : c));
+      toast({ title: "Thành công", description: "Khách hàng đã được xóa." });
+    }
+    setDeleteDialogOpen(false);
+    setSelectedCustomer(null);
+  };
+
+  const onSubmit = (values: CustomerFormValues) => {
+    const now = new Date().toISOString();
+    if (selectedCustomer) {
+      const updatedCustomers = customers.map(c => 
+        c.id === selectedCustomer.id 
+          ? { 
+              ...c, 
+              ...values, 
+              updated_at: now,
+              credit_limit: values.credit_limit || null,
+              address: values.address || null,
+              tax_code: values.tax_code || null,
+              note: values.note || null,
+            } 
+          : c
+      );
+      setCustomers(updatedCustomers);
+      toast({ title: "Thành công", description: "Khách hàng đã được cập nhật." });
+    } else {
+      const newCustomer: Customer = {
+        id: `cust-${Math.floor(1000 + Math.random() * 9000)}`,
+        ...values,
+        total_debt: 0,
+        debt_due_date: null,
+        last_purchase_date: null,
+        created_at: now,
+        updated_at: now,
+        is_deleted: false,
+        credit_limit: values.credit_limit || null,
+        address: values.address || null,
+        tax_code: values.tax_code || null,
+        note: values.note || null,
+      };
+      setCustomers([newCustomer, ...customers]);
+      toast({ title: "Thành công", description: "Khách hàng mới đã được thêm." });
+    }
+    setAddEditDialogOpen(false);
+    setSelectedCustomer(null);
+  };
+
+  const filteredCustomers = customers.filter(customer =>
+    !customer.is_deleted &&
+    (customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+     customer.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+     customer.phone.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
+  const formatCurrency = (amount: number | null) => {
+    if (amount === null || amount === undefined) return '-';
+    return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
+  }
+
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="font-headline">Customers</CardTitle>
-        <CardDescription>
-          Manage your customers and view their sales history.
-        </CardDescription>
-        <div className="flex items-center gap-2 pt-4">
-          <div className="relative flex-1">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input
-              type="search"
-              placeholder="Search customers..."
-              className="pl-8"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-          </div>
-          <Dialog>
-            <DialogTrigger asChild>
-              <Button size="sm" className="h-10 gap-1 bg-accent hover:bg-accent/90">
+    <>
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="font-headline">Khách hàng</CardTitle>
+              <CardDescription>
+                Quản lý khách hàng và lịch sử mua hàng của họ.
+              </CardDescription>
+            </div>
+            <div className='flex items-center gap-2'>
+              <div className="relative">
+                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input
+                  type="search"
+                  placeholder="Tìm khách hàng..."
+                  className="pl-8"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+              </div>
+              <Button size="sm" className="h-10 gap-1 bg-accent hover:bg-accent/90" onClick={handleAddNew}>
                 <PlusCircle className="h-3.5 w-3.5" />
                 <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-                  Add Customer
+                  Thêm khách hàng
                 </span>
               </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle className="font-headline">Add New Customer</DialogTitle>
-                <DialogDescription>
-                  Fill in the details to create a new customer profile.
-                </DialogDescription>
-              </DialogHeader>
-              <div className="grid gap-4 py-4">
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="name" className="text-right">
-                    Name
-                  </Label>
-                  <Input id="name" placeholder="John Doe" className="col-span-3" />
-                </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="email" className="text-right">
-                    Email
-                  </Label>
-                  <Input id="email" type="email" placeholder="john.doe@example.com" className="col-span-3" />
-                </div>
-              </div>
-              <DialogFooter>
-                <Button type="submit" className="bg-primary hover:bg-primary/90">Save customer</Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
-        </div>
-      </CardHeader>
-      <CardContent>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Name</TableHead>
-              <TableHead>Email</TableHead>
-              <TableHead className="hidden md:table-cell">Total Spent</TableHead>
-              <TableHead className="hidden md:table-cell">
-                Outstanding Debt
-              </TableHead>
-              <TableHead>
-                <span className="sr-only">Actions</span>
-              </TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {filteredCustomers.map((customer) => (
-              <TableRow key={customer.id}>
-                <TableCell className="font-medium">{customer.name}</TableCell>
-                <TableCell>{customer.email}</TableCell>
-                <TableCell className="hidden md:table-cell">
-                  ${customer.totalSpent.toFixed(2)}
-                </TableCell>
-                <TableCell className="hidden md:table-cell">
-                  {customer.outstandingDebt > 0 ? (
-                    <Badge variant="destructive">
-                      ${customer.outstandingDebt.toFixed(2)}
-                    </Badge>
-                  ) : (
-                    <span>-</span>
-                  )}
-                </TableCell>
-                <TableCell>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button aria-haspopup="true" size="icon" variant="ghost">
-                        <MoreHorizontal className="h-4 w-4" />
-                        <span className="sr-only">Toggle menu</span>
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                      <DropdownMenuItem>Edit</DropdownMenuItem>
-                      <DropdownMenuItem>View Details</DropdownMenuItem>
-                      <DropdownMenuItem className="text-red-600">
-                        Delete
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </TableCell>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Tên</TableHead>
+                <TableHead>Liên hệ</TableHead>
+                <TableHead className="hidden md:table-cell">Loại</TableHead>
+                <TableHead className="hidden md:table-cell text-right">Tổng nợ</TableHead>
+                <TableHead>Trạng thái</TableHead>
+                <TableHead>
+                  <span className="sr-only">Actions</span>
+                </TableHead>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </CardContent>
-      <CardFooter>
-        <div className="text-xs text-muted-foreground">
-          Showing <strong>1-{filteredCustomers.length}</strong> of{' '}
-          <strong>{mockCustomers.length}</strong> customers
-        </div>
-      </CardFooter>
-    </Card>
+            </TableHeader>
+            <TableBody>
+              {filteredCustomers.map((customer) => (
+                <TableRow key={customer.id}>
+                  <TableCell className="font-medium">{customer.name}</TableCell>
+                  <TableCell>
+                    <div className="font-medium">{customer.phone}</div>
+                    <div className="hidden text-sm text-muted-foreground md:inline">
+                      {customer.email}
+                    </div>
+                  </TableCell>
+                  <TableCell className="hidden md:table-cell">{customer.customer_type}</TableCell>
+                  <TableCell className="hidden md:table-cell text-right">
+                    <Badge variant={customer.total_debt > 0 ? "destructive" : "outline"}>
+                      {formatCurrency(customer.total_debt)}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant={customer.status === 'Active' ? 'default' : 'secondary'}>{customer.status}</Badge>
+                  </TableCell>
+                  <TableCell>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button aria-haspopup="true" size="icon" variant="ghost">
+                          <MoreHorizontal className="h-4 w-4" />
+                          <span className="sr-only">Toggle menu</span>
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => handleEdit(customer)}>Sửa</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleDelete(customer)} className="text-destructive">
+                          Xóa
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </CardContent>
+        <CardFooter>
+          <div className="text-xs text-muted-foreground">
+            Hiển thị <strong>{filteredCustomers.length}</strong> trên <strong>{customers.filter(c => !c.is_deleted).length}</strong> khách hàng
+          </div>
+        </CardFooter>
+      </Card>
+      
+      <Dialog open={isAddEditDialogOpen} onOpenChange={setAddEditDialogOpen}>
+        <DialogContent className="sm:max-w-2xl">
+          <DialogHeader>
+            <DialogTitle className="font-headline">{selectedCustomer ? 'Sửa khách hàng' : 'Thêm khách hàng mới'}</DialogTitle>
+            <DialogDescription>
+              Điền thông tin chi tiết của khách hàng.
+            </DialogDescription>
+          </DialogHeader>
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4 max-h-[70vh] overflow-y-auto pr-6">
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Tên khách hàng</FormLabel>
+                    <FormControl><Input placeholder="Nguyễn Văn A" {...field} /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="phone"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Số điện thoại</FormLabel>
+                    <FormControl><Input placeholder="0901234567" {...field} /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem className="md:col-span-2">
+                    <FormLabel>Email</FormLabel>
+                    <FormControl><Input type="email" placeholder="nguyenvana@example.com" {...field} /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+               <FormField
+                control={form.control}
+                name="address"
+                render={({ field }) => (
+                  <FormItem className="md:col-span-2">
+                    <FormLabel>Địa chỉ</FormLabel>
+                    <FormControl><Textarea placeholder="Số nhà, đường, phường/xã, quận/huyện, tỉnh/thành" {...field} /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="tax_code"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Mã số thuế</FormLabel>
+                    <FormControl><Input placeholder="Tùy chọn" {...field} /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="credit_limit"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Hạn mức công nợ</FormLabel>
+                    <FormControl><Input type="number" placeholder="0" {...field} /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+               <FormField
+                control={form.control}
+                name="customer_type"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Loại khách hàng</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger><SelectValue placeholder="Chọn loại khách" /></SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="Retail">Khách lẻ</SelectItem>
+                          <SelectItem value="Wholesale">Khách sỉ</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="status"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Trạng thái</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger><SelectValue placeholder="Chọn trạng thái" /></SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="Active">Hoạt động</SelectItem>
+                          <SelectItem value="Inactive">Không hoạt động</SelectItem>
+                          <SelectItem value="Blocked">Bị chặn</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="note"
+                render={({ field }) => (
+                  <FormItem className="md:col-span-2">
+                    <FormLabel>Ghi chú</FormLabel>
+                    <FormControl><Textarea placeholder="Thông tin thêm về khách hàng..." {...field} /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <DialogFooter className="md:col-span-2">
+                <Button type="submit" className="bg-primary hover:bg-primary/90">Lưu khách hàng</Button>
+              </DialogFooter>
+            </form>
+          </Form>
+        </DialogContent>
+      </Dialog>
+      
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Bạn có chắc chắn không?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Hành động này không thể hoàn tác. Thao tác này sẽ xóa vĩnh viễn khách hàng
+               <strong> "{selectedCustomer?.name}"</strong>.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Hủy</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete} className="bg-destructive hover:bg-destructive/90">
+              Xóa
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 }

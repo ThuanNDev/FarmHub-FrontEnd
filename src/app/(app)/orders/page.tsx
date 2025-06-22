@@ -1,10 +1,6 @@
 'use client';
 
-import {
-  File,
-  ListFilter,
-} from 'lucide-react';
-
+import { File, ListFilter } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -36,30 +32,43 @@ import {
   TabsList,
   TabsTrigger,
 } from '@/components/ui/tabs';
-import { mockOrders } from '@/lib/data';
+import { mockOrders, mockCustomers } from '@/lib/data';
 
 export default function OrdersPage() {
-    const getStatusVariant = (status: string) => {
-        switch (status) {
-            case 'Delivered':
-            return 'default';
-            case 'Pending':
-            return 'secondary';
-            case 'Cancelled':
-            return 'destructive';
-            default:
-            return 'outline';
-        }
-    };
+  const getStatusVariant = (status: string) => {
+    switch (status) {
+      case 'Delivered':
+        return 'default';
+      case 'Pending':
+        return 'secondary';
+      case 'Cancelled':
+        return 'destructive';
+      default:
+        return 'outline';
+    }
+  };
+
+  const getCustomerName = (customerId: string) => {
+    return mockCustomers.find(c => c.id === customerId)?.name || 'Khách lẻ';
+  };
+  
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
+  }
+  
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('vi-VN');
+  }
+
   return (
     <Tabs defaultValue="all">
       <div className="flex items-center">
         <TabsList>
-          <TabsTrigger value="all">All</TabsTrigger>
-          <TabsTrigger value="pending">Pending</TabsTrigger>
-          <TabsTrigger value="delivered">Delivered</TabsTrigger>
-          <TabsTrigger value="cancelled" className="hidden sm:flex">
-            Cancelled
+          <TabsTrigger value="all">Tất cả</TabsTrigger>
+          <TabsTrigger value="Pending">Chờ xử lý</TabsTrigger>
+          <TabsTrigger value="Delivered">Đã giao</TabsTrigger>
+          <TabsTrigger value="Cancelled" className="hidden sm:flex">
+            Đã hủy
           </TabsTrigger>
         </TabsList>
         <div className="ml-auto flex items-center gap-2">
@@ -68,24 +77,24 @@ export default function OrdersPage() {
               <Button variant="outline" size="sm" className="h-10 gap-1">
                 <ListFilter className="h-3.5 w-3.5" />
                 <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-                  Filter
+                  Lọc
                 </span>
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuLabel>Filter by</DropdownMenuLabel>
+              <DropdownMenuLabel>Lọc theo trạng thái</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuCheckboxItem checked>
-                Delivered
+                Đã giao
               </DropdownMenuCheckboxItem>
-              <DropdownMenuCheckboxItem>Pending</DropdownMenuCheckboxItem>
-              <DropdownMenuCheckboxItem>Cancelled</DropdownMenuCheckboxItem>
+              <DropdownMenuCheckboxItem>Chờ xử lý</DropdownMenuCheckboxItem>
+              <DropdownMenuCheckboxItem>Đã hủy</DropdownMenuCheckboxItem>
             </DropdownMenuContent>
           </DropdownMenu>
           <Button size="sm" variant="outline" className="h-10 gap-1">
             <File className="h-3.5 w-3.5" />
             <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-              Export
+              Xuất file
             </span>
           </Button>
         </div>
@@ -93,29 +102,29 @@ export default function OrdersPage() {
       <TabsContent value="all">
         <Card>
           <CardHeader>
-            <CardTitle className="font-headline">Orders</CardTitle>
+            <CardTitle className="font-headline">Đơn hàng</CardTitle>
             <CardDescription>
-              A list of all recent orders from your store.
+              Danh sách các đơn hàng gần đây từ cửa hàng của bạn.
             </CardDescription>
           </CardHeader>
           <CardContent>
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Order ID</TableHead>
-                  <TableHead>Customer</TableHead>
-                  <TableHead className="hidden md:table-cell">Date</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="text-right">Total</TableHead>
+                  <TableHead>Mã ĐH</TableHead>
+                  <TableHead>Khách hàng</TableHead>
+                  <TableHead className="hidden md:table-cell">Ngày</TableHead>
+                  <TableHead>Trạng thái</TableHead>
+                  <TableHead className="text-right">Tổng tiền</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {mockOrders.map((order) => (
                   <TableRow key={order.id}>
-                    <TableCell className="font-medium">{order.id}</TableCell>
-                    <TableCell>{order.customerName}</TableCell>
+                    <TableCell className="font-medium">{order.order_code}</TableCell>
+                    <TableCell>{getCustomerName(order.customer_id)}</TableCell>
                     <TableCell className="hidden md:table-cell">
-                      {order.date}
+                      {formatDate(order.created_at)}
                     </TableCell>
                     <TableCell>
                       <Badge variant={getStatusVariant(order.status) as any}>
@@ -123,7 +132,7 @@ export default function OrdersPage() {
                       </Badge>
                     </TableCell>
                     <TableCell className="text-right">
-                      ${order.total.toFixed(2)}
+                      {formatCurrency(order.total_amount)}
                     </TableCell>
                   </TableRow>
                 ))}
