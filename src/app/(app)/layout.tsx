@@ -37,17 +37,16 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Input } from '@/components/ui/input';
 
 const navItems = [
-  { href: '/', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/orders', label: 'Orders', icon: ShoppingCart },
-  { href: '/products', label: 'Products', icon: Package },
-  { href: '/customers', label: 'Customers', icon: Users },
-  { href: '/suppliers', label: 'Suppliers', icon: Truck },
-  { href: '/categories', label: 'Categories', icon: Tags },
-  { href: '/debts', label: 'Debts', icon: CreditCard },
-  { href: '/reports', label: 'Reports', icon: BarChart3 },
-  { href: '/users', label: 'Users', icon: UsersRound },
-  { href: '/settings', label: 'Settings', icon: Settings },
-  { href: '/pos', label: 'POS', icon: DollarSign },
+  { href: '/', label: 'Bảng điều khiển', icon: LayoutDashboard },
+  { href: '/orders', label: 'Đơn hàng', icon: ShoppingCart },
+  { href: '/products', label: 'Sản phẩm', icon: Package },
+  { href: '/customers', label: 'Khách hàng', icon: Users },
+  { href: '/suppliers', label: 'Nhà cung cấp', icon: Truck },
+  { href: '/categories', label: 'Thể loại', icon: Tags },
+  { href: '/debts', label: 'Công nợ', icon: CreditCard },
+  { href: '/reports', label: 'Báo cáo', icon: BarChart3 },
+  { href: '/users', label: 'Nhân viên', icon: UsersRound },
+  { href: '/settings', label: 'Cài đặt', icon: Settings },
 ];
 
 function NavLink({
@@ -112,7 +111,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                 className="shrink-0 md:hidden"
               >
                 <Menu className="h-5 w-5" />
-                <span className="sr-only">Toggle navigation menu</span>
+                <span className="sr-only">Mở menu điều hướng</span>
               </Button>
             </SheetTrigger>
             <SheetContent side="left" className="flex flex-col">
@@ -133,6 +132,12 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           <div className="w-full flex-1">
              {/* Can add a global search here if needed */}
           </div>
+          <Button asChild size="lg" className="bg-accent hover:bg-accent/90 font-semibold h-10">
+            <Link href="/pos">
+                <DollarSign className="h-5 w-5" />
+                <span>Bán hàng</span>
+            </Link>
+          </Button>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="secondary" size="icon" className="rounded-full">
@@ -140,21 +145,21 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                   <AvatarImage src="https://placehold.co/40x40.png" alt="@admin" />
                   <AvatarFallback>A</AvatarFallback>
                 </Avatar>
-                <span className="sr-only">Toggle user menu</span>
+                <span className="sr-only">Mở menu người dùng</span>
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuLabel>My Account</DropdownMenuLabel>
+              <DropdownMenuLabel>Tài khoản của tôi</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem asChild>
                 <Link href="/settings">
                   <Settings className="mr-2 h-4 w-4" />
-                  <span>Settings</span>
+                  <span>Cài đặt</span>
                 </Link>
               </DropdownMenuItem>
-              <DropdownMenuItem>Support</DropdownMenuItem>
+              <DropdownMenuItem>Hỗ trợ</DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>Logout</DropdownMenuItem>
+              <DropdownMenuItem>Đăng xuất</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </header>
