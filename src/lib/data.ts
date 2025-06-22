@@ -1,6 +1,54 @@
 // All IDs are kept simple for mocking purposes. In a real DB, these would be UUIDs or CUIDs.
 // Timestamps are in ISO 8601 format.
 
+export const mockUsers = [
+    {
+      id: 'user-001',
+      username: 'admin',
+      password_hash: '$2b$12$D.p.a.S.s.W.o.r.d.P.l.a.c.e.h.o.l.d.e.r',
+      full_name: 'Lê Minh Quản',
+      email: 'admin@agritrack.com',
+      phone: '0909090909',
+      role: 'Admin' as const,
+      associated_store_ids: ['store-001'],
+      is_active: true,
+      is_superadmin: true,
+      last_login_at: '2024-07-25T10:00:00Z',
+      created_at: '2023-01-01T00:00:00Z',
+      updated_at: '2024-07-25T10:00:00Z'
+    },
+    {
+      id: 'user-002',
+      username: 'nhanvien1',
+      password_hash: '$2b$12$D.p.a.S.s.W.o.r.d.P.l.a.c.e.h.o.l.d.e.r',
+      full_name: 'Nguyễn Thị Bích',
+      email: 'bich.nguyen@agritrack.com',
+      phone: '0912345678',
+      role: 'Staff' as const,
+      associated_store_ids: ['store-001'],
+      is_active: true,
+      is_superadmin: false,
+      last_login_at: '2024-07-24T15:00:00Z',
+      created_at: '2023-02-10T00:00:00Z',
+      updated_at: '2024-07-24T15:00:00Z'
+    },
+    {
+      id: 'user-003',
+      username: 'nhanvien2',
+      password_hash: '$2b$12$D.p.a.S.s.W.o.r.d.P.l.a.c.e.h.o.l.d.e.r',
+      full_name: 'Trần Văn An',
+      email: 'an.tran@agritrack.com',
+      phone: '0988776655',
+      role: 'Staff' as const,
+      associated_store_ids: ['store-001'],
+      is_active: false,
+      is_superadmin: false,
+      last_login_at: '2024-06-30T11:00:00Z',
+      created_at: '2023-03-05T00:00:00Z',
+      updated_at: '2024-06-30T11:00:00Z'
+    }
+  ];
+
 export const mockCategories = [
   { 
     id: 'cate-001', 
