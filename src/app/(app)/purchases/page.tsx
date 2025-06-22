@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { MoreHorizontal, PlusCircle, Trash2 } from 'lucide-react';
+import { MoreHorizontal, PlusCircle, Trash2, ChevronsUpDown } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -67,6 +67,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { mockPurchaseOrders, mockPurchaseOrderItems, mockSuppliers, mockProducts, mockUsers } from '@/lib/data';
 import { useToast } from '@/hooks/use-toast';
@@ -482,10 +483,20 @@ function AddProductForm({ onAddItem, currentItems }: { onAddItem: (item: Purchas
     const [selectedProductId, setSelectedProductId] = useState('');
     const [quantity, setQuantity] = useState(1);
     const [unitPrice, setUnitPrice] = useState(0);
+    const [open, setOpen] = useState(false);
+    const [search, setSearch] = useState("");
 
     const availableProducts = useMemo(() => {
         return mockProducts.filter(p => p.is_active && !p.is_deleted && !currentItems.some(item => item.productId === p.id));
     }, [currentItems]);
+
+    const filteredProducts = useMemo(() => {
+        if (!search) return availableProducts;
+        return availableProducts.filter(p =>
+            p.name.toLowerCase().includes(search.toLowerCase()) ||
+            p.product_code.toLowerCase().includes(search.toLowerCase())
+        );
+    }, [search, availableProducts]);
 
     useEffect(() => {
         const product = mockProducts.find(p => p.id === selectedProductId);
@@ -498,7 +509,7 @@ function AddProductForm({ onAddItem, currentItems }: { onAddItem: (item: Purchas
 
     const handleAdd = () => {
         if (!selectedProductId || quantity <= 0 || unitPrice < 0) {
-            // Add toast notification for validation
+            // TODO: Add toast notification for validation
             return;
         }
         const product = mockProducts.find(p => p.id === selectedProductId);
@@ -511,23 +522,63 @@ function AddProductForm({ onAddItem, currentItems }: { onAddItem: (item: Purchas
             });
             // Reset form
             setSelectedProductId('');
+            setSearch('');
             setQuantity(1);
             setUnitPrice(0);
         }
     };
 
+    const selectedProduct = availableProducts.find(p => p.id === selectedProductId);
+
     return (
         <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-end p-4 border rounded-lg bg-muted/40">
             <div className="md:col-span-5">
                 <Label>Sản phẩm</Label>
-                <Select value={selectedProductId} onValueChange={setSelectedProductId}>
-                    <SelectTrigger><SelectValue placeholder="Chọn sản phẩm để thêm" /></SelectTrigger>
-                    <SelectContent>
-                        {availableProducts.map(p => (
-                            <SelectItem key={p.id} value={p.id}>{p.name} ({p.product_code})</SelectItem>
-                        ))}
-                    </SelectContent>
-                </Select>
+                <Popover open={open} onOpenChange={setOpen}>
+                    <PopoverTrigger asChild>
+                        <Button
+                            variant="outline"
+                            role="combobox"
+                            aria-expanded={open}
+                            className="w-full justify-between font-normal"
+                        >
+                            {selectedProduct
+                                ? selectedProduct.name
+                                : "Chọn hoặc tìm sản phẩm..."}
+                            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
+                         <Input
+                            placeholder="Tìm theo tên hoặc mã..."
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
+                            className="m-2 w-[calc(100%-1rem)]"
+                        />
+                        <Separator />
+                        <ScrollArea className="h-72">
+                           <div className="p-2 space-y-1">
+                            {filteredProducts.length > 0 ? filteredProducts.map((product) => (
+                                <Button
+                                    key={product.id}
+                                    variant="ghost"
+                                    className="w-full justify-start font-normal h-auto py-2 text-left"
+                                    onClick={() => {
+                                        setSelectedProductId(product.id);
+                                        setSearch('');
+                                        setOpen(false);
+                                    }}
+                                >
+                                    <div>
+                                        <div>{product.name}</div>
+                                        <div className="text-xs text-muted-foreground">{product.product_code}</div>
+                                    </div>
+                                </Button>
+                            )) : <p className="p-2 text-center text-sm text-muted-foreground">Không tìm thấy sản phẩm.</p>}
+                           </div>
+                        </ScrollArea>
+                    </PopoverContent>
+                </Popover>
             </div>
             <div className="md:col-span-2">
                 <Label>Số lượng</Label>
@@ -541,3 +592,5 @@ function AddProductForm({ onAddItem, currentItems }: { onAddItem: (item: Purchas
         </div>
     )
 }
+
+    
