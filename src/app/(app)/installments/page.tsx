@@ -29,12 +29,18 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { mockOrders, mockCustomers, mockInstallmentTerms } from '@/lib/data';
+import { useToast } from '@/hooks/use-toast';
+import { RecordPaymentDialog, type PaymentFormValues } from '@/components/RecordPaymentDialog';
 
 type InstallmentOrder = (typeof mockOrders)[0];
 
 export default function InstallmentsPage() {
   const [installmentOrders, setInstallmentOrders] = useState<InstallmentOrder[]>([]);
   const router = useRouter();
+  const { toast } = useToast();
+
+  const [isPaymentDialogOpen, setPaymentDialogOpen] = useState(false);
+  const [selectedOrder, setSelectedOrder] = useState<InstallmentOrder | null>(null);
 
   useEffect(() => {
     const orders = mockOrders.filter(
@@ -42,6 +48,43 @@ export default function InstallmentsPage() {
     );
     setInstallmentOrders(orders);
   }, []);
+  
+  const handleOpenPaymentDialog = (order: InstallmentOrder) => {
+    setSelectedOrder(order);
+    setPaymentDialogOpen(true);
+  };
+  
+  const handleConfirmPayment = (values: PaymentFormValues) => {
+    if (!selectedOrder) return;
+    
+    const orderInDb = mockOrders.find(o => o.id === selectedOrder.id);
+    if(orderInDb) {
+        orderInDb.total_paid += values.amount;
+    }
+    
+    const nextUnpaidTerm = mockInstallmentTerms
+        .filter(t => t.order_id === selectedOrder.id && t.paid_at === null)
+        .sort((a,b) => a.installment_number - b.installment_number)[0];
+
+    if (nextUnpaidTerm) {
+        const termInDb = mockInstallmentTerms.find(t => t.id === nextUnpaidTerm.id);
+        if (termInDb) {
+            termInDb.paid_at = new Date().toISOString();
+            termInDb.payment_method = values.paymentMethod;
+            termInDb.note = `${termInDb.note || ''} | TT ${formatCurrency(values.amount)}: ${values.note || ''}`.trim();
+        }
+    }
+    
+    setInstallmentOrders([...mockOrders].filter(o => o.payment_type === 'Installment' && o.status !== 'Cancelled'));
+    
+    toast({
+        title: 'Thành công',
+        description: `Ghi nhận thanh toán ${formatCurrency(values.amount)} cho đơn hàng ${selectedOrder.order_code}.`,
+    });
+    
+    setPaymentDialogOpen(false);
+    setSelectedOrder(null);
+  };
 
   const getCustomerName = (customerId: string) => {
     return mockCustomers.find(c => c.id === customerId)?.name || 'Khách lẻ';
@@ -72,85 +115,103 @@ export default function InstallmentsPage() {
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="font-headline flex items-center gap-2">
-            <Landmark className="h-6 w-6"/>
-            Quản lý trả góp
-        </CardTitle>
-        <CardDescription>
-          Theo dõi các đơn hàng mua theo hình thức trả góp.
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Mã ĐH</TableHead>
-              <TableHead>Khách hàng</TableHead>
-              <TableHead className="text-right">Tổng tiền</TableHead>
-              <TableHead className="text-center">Kỳ trả góp</TableHead>
-              <TableHead className="text-right">Số tiền/kỳ</TableHead>
-              <TableHead className="text-right">Đã trả</TableHead>
-              <TableHead className="text-right">Còn lại</TableHead>
-              <TableHead>Tình trạng</TableHead>
-              <TableHead>
-                <span className="sr-only">Hành động</span>
-              </TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {installmentOrders.length > 0 ? (
-              installmentOrders.map((order) => {
-                const status = getInstallmentStatus(order);
-                const remaining = order.total_amount - order.total_paid;
-                const { paidTerms, totalTerms, amountPerTerm } = getInstallmentDetails(order.id);
-                return (
-                  <TableRow key={order.id}>
-                    <TableCell className="font-medium">{order.order_code}</TableCell>
-                    <TableCell>{getCustomerName(order.customer_id)}</TableCell>
-                    <TableCell className="text-right">{formatCurrency(order.total_amount)}</TableCell>
-                    <TableCell className="text-center font-medium">
-                      {totalTerms > 0 ? `${paidTerms}/${totalTerms}` : 'N/A'}
-                    </TableCell>
-                    <TableCell className="text-right">{formatCurrency(amountPerTerm)}</TableCell>
-                    <TableCell className="text-right text-primary">{formatCurrency(order.total_paid)}</TableCell>
-                    <TableCell className="text-right text-destructive">{formatCurrency(remaining)}</TableCell>
-                    <TableCell>
-                      <Badge variant={status.variant}>{status.text}</Badge>
-                    </TableCell>
-                    <TableCell>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button aria-haspopup="true" size="icon" variant="ghost">
-                            <MoreHorizontal className="h-4 w-4" />
-                            <span className="sr-only">Toggle menu</span>
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => router.push(`/orders/${order.id}`)}>Xem chi tiết đơn hàng</DropdownMenuItem>
-                          <DropdownMenuItem>Ghi nhận thanh toán</DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </TableCell>
-                  </TableRow>
-                );
-              })
-            ) : (
+    <>
+      <Card>
+        <CardHeader>
+          <CardTitle className="font-headline flex items-center gap-2">
+              <Landmark className="h-6 w-6"/>
+              Quản lý trả góp
+          </CardTitle>
+          <CardDescription>
+            Theo dõi các đơn hàng mua theo hình thức trả góp.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
               <TableRow>
-                <TableCell colSpan={9} className="h-24 text-center">
-                  Không có đơn hàng trả góp nào.
-                </TableCell>
+                <TableHead>Mã ĐH</TableHead>
+                <TableHead>Khách hàng</TableHead>
+                <TableHead className="text-right">Tổng tiền</TableHead>
+                <TableHead className="text-center">Kỳ trả góp</TableHead>
+                <TableHead className="text-right">Số tiền/kỳ</TableHead>
+                <TableHead className="text-right">Đã trả</TableHead>
+                <TableHead className="text-right">Còn lại</TableHead>
+                <TableHead>Tình trạng</TableHead>
+                <TableHead>
+                  <span className="sr-only">Hành động</span>
+                </TableHead>
               </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </CardContent>
-      <CardFooter>
-        <div className="text-xs text-muted-foreground">
-          Hiển thị <strong>{installmentOrders.length}</strong> đơn hàng trả góp.
-        </div>
-      </CardFooter>
-    </Card>
+            </TableHeader>
+            <TableBody>
+              {installmentOrders.length > 0 ? (
+                installmentOrders.map((order) => {
+                  const status = getInstallmentStatus(order);
+                  const remaining = order.total_amount - order.total_paid;
+                  const { paidTerms, totalTerms, amountPerTerm } = getInstallmentDetails(order.id);
+                  return (
+                    <TableRow key={order.id}>
+                      <TableCell className="font-medium">{order.order_code}</TableCell>
+                      <TableCell>{getCustomerName(order.customer_id)}</TableCell>
+                      <TableCell className="text-right">{formatCurrency(order.total_amount)}</TableCell>
+                      <TableCell className="text-center font-medium">
+                        {totalTerms > 0 ? `${paidTerms}/${totalTerms}` : 'N/A'}
+                      </TableCell>
+                      <TableCell className="text-right">{formatCurrency(amountPerTerm)}</TableCell>
+                      <TableCell className="text-right text-primary">{formatCurrency(order.total_paid)}</TableCell>
+                      <TableCell className="text-right text-destructive">{formatCurrency(remaining)}</TableCell>
+                      <TableCell>
+                        <Badge variant={status.variant}>{status.text}</Badge>
+                      </TableCell>
+                      <TableCell>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button aria-haspopup="true" size="icon" variant="ghost">
+                              <MoreHorizontal className="h-4 w-4" />
+                              <span className="sr-only">Toggle menu</span>
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => router.push(`/orders/${order.id}`)}>Xem chi tiết đơn hàng</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleOpenPaymentDialog(order)}>Ghi nhận thanh toán</DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={9} className="h-24 text-center">
+                    Không có đơn hàng trả góp nào.
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </CardContent>
+        <CardFooter>
+          <div className="text-xs text-muted-foreground">
+            Hiển thị <strong>{installmentOrders.length}</strong> đơn hàng trả góp.
+          </div>
+        </CardFooter>
+      </Card>
+
+      {selectedOrder && (
+        <RecordPaymentDialog
+          open={isPaymentDialogOpen}
+          onOpenChange={setPaymentDialogOpen}
+          title={`Thanh toán cho ĐH ${selectedOrder.order_code}`}
+          description={`Tổng tiền còn lại: ${formatCurrency(selectedOrder.total_amount - selectedOrder.total_paid)}. Vui lòng xác nhận số tiền thanh toán.`}
+          dueAmount={
+            mockInstallmentTerms
+                .filter(t => t.order_id === selectedOrder.id && t.paid_at === null)
+                .sort((a,b) => a.installment_number - b.installment_number)[0]?.amount 
+            || (selectedOrder.total_amount - selectedOrder.total_paid)
+          }
+          onConfirm={handleConfirmPayment}
+        />
+      )}
+    </>
   );
 }
