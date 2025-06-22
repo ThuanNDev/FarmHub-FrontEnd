@@ -31,6 +31,7 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Textarea } from '@/components/ui/textarea';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { mockProducts, mockCustomers, mockCategories } from '@/lib/data';
 import { useToast } from '@/hooks/use-toast';
 
@@ -60,6 +61,8 @@ export default function POSPage() {
   const [discount, setDiscount] = useState(0);
   const [customers, setCustomers] = useState<Customer[]>(mockCustomers);
   const [isAddCustomerDialogOpen, setAddCustomerDialogOpen] = useState(false);
+  const [isPaymentDialogOpen, setPaymentDialogOpen] = useState(false);
+  const [selectedCustomerId, setSelectedCustomerId] = useState('guest');
   
   const { toast } = useToast();
 
@@ -77,6 +80,11 @@ export default function POSPage() {
       status: 'Active',
     },
   });
+
+  const selectedCustomer = useMemo(() => {
+    if (selectedCustomerId === 'guest') return null;
+    return customers.find(c => c.id === selectedCustomerId);
+  }, [selectedCustomerId, customers]);
 
   const addToCart = (product: Product) => {
     setCart((prevCart) => {
@@ -144,7 +152,16 @@ export default function POSPage() {
     toast({ title: "Thành công", description: "Khách hàng mới đã được thêm." });
     setAddCustomerDialogOpen(false);
   };
-
+  
+  const handleConfirmPayment = () => {
+    toast({
+      title: "Thanh toán thành công!",
+      description: `Đơn hàng đã được tạo.`,
+    });
+    setPaymentDialogOpen(false);
+    clearCart();
+    setSelectedCustomerId('guest');
+  };
 
   const subtotal = useMemo(() => {
     return cart.reduce((total, item) => total + item.price * item.quantity, 0);
@@ -255,7 +272,7 @@ export default function POSPage() {
           <Card className="flex h-full flex-col shadow-sm">
             <CardHeader className="p-4 border-b">
               <div className="flex items-center gap-2">
-                  <Select defaultValue="guest">
+                  <Select value={selectedCustomerId} onValueChange={(value) => setSelectedCustomerId(value || 'guest')}>
                       <SelectTrigger>
                           <SelectValue placeholder="Chọn một khách hàng" />
                       </SelectTrigger>
@@ -332,7 +349,7 @@ export default function POSPage() {
                       <span>{formatCurrency(total)}</span>
                   </div>
               </div>
-              <Button className="w-full bg-accent hover:bg-accent/90" size="lg" disabled={cart.length === 0}>
+              <Button className="w-full bg-accent hover:bg-accent/90" size="lg" disabled={cart.length === 0} onClick={() => setPaymentDialogOpen(true)}>
                 Thanh toán
               </Button>
             </CardFooter>
@@ -471,6 +488,67 @@ export default function POSPage() {
               </DialogFooter>
             </form>
           </Form>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={isPaymentDialogOpen} onOpenChange={setPaymentDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+                <DialogTitle className="font-headline">Xác nhận thanh toán</DialogTitle>
+                <DialogDescription>
+                    Kiểm tra lại thông tin đơn hàng và hoàn tất thanh toán.
+                </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4">
+                <div className="space-y-2 text-sm">
+                    <div className="flex justify-between">
+                        <span>Khách hàng</span>
+                        <span className="font-medium">{selectedCustomer?.name || 'Khách lẻ'}</span>
+                    </div>
+                    <div className="flex justify-between font-bold text-lg">
+                        <span>Tổng cộng</span>
+                        <span>{formatCurrency(total)}</span>
+                    </div>
+                </div>
+                <Separator />
+                <div className="space-y-4">
+                    <div>
+                        <Label>Phương thức thanh toán</Label>
+                        <RadioGroup defaultValue="Cash" className="mt-2 grid grid-cols-3 gap-2">
+                            <div>
+                                <RadioGroupItem value="Cash" id="cash" className="peer sr-only" />
+                                <Label htmlFor="cash" className="flex cursor-pointer flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary">
+                                    Tiền mặt
+                                </Label>
+                            </div>
+                            <div>
+                                <RadioGroupItem value="Card" id="card" className="peer sr-only" />
+                                <Label htmlFor="card" className="flex cursor-pointer flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary">
+                                    Thẻ
+                                </Label>
+                            </div>
+                            <div>
+                                <RadioGroupItem value="Transfer" id="transfer" className="peer sr-only" />
+                                <Label htmlFor="transfer" className="flex cursor-pointer flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary">
+                                    C.Khoản
+                                </Label>
+                            </div>
+                        </RadioGroup>
+                    </div>
+                    <div>
+                        <Label htmlFor="delivery-address">Địa chỉ giao hàng (nếu có)</Label>
+                        <Textarea 
+                            id="delivery-address" 
+                            placeholder="Để trống nếu nhận tại cửa hàng"
+                            defaultValue={selectedCustomer?.address || ''}
+                        />
+                    </div>
+                </div>
+            </div>
+            <DialogFooter>
+                <Button variant="outline" onClick={() => setPaymentDialogOpen(false)}>Hủy</Button>
+                <Button onClick={handleConfirmPayment} className="bg-primary hover:bg-primary/90">Xác nhận thanh toán</Button>
+            </DialogFooter>
         </DialogContent>
       </Dialog>
     </>
