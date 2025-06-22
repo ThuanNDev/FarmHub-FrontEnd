@@ -12,6 +12,9 @@ import {
   Settings,
   DollarSign,
   Tags,
+  CreditCard,
+  BarChart3,
+  UsersRound,
 } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
@@ -38,6 +41,10 @@ const navItems = [
   { href: '/products', label: 'Products', icon: Package },
   { href: '/customers', label: 'Customers', icon: Users },
   { href: '/categories', label: 'Categories', icon: Tags },
+  { href: '/debts', label: 'Debts', icon: CreditCard },
+  { href: '/reports', label: 'Reports', icon: BarChart3 },
+  { href: '/users', label: 'Users', icon: UsersRound },
+  { href: '/settings', label: 'Settings', icon: Settings },
   { href: '/pos', label: 'POS', icon: DollarSign },
 ];
 
@@ -137,9 +144,11 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             <DropdownMenuContent align="end">
               <DropdownMenuLabel>My Account</DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>
-                <Settings className="mr-2 h-4 w-4" />
-                <span>Settings</span>
+              <DropdownMenuItem asChild>
+                <Link href="/settings">
+                  <Settings className="mr-2 h-4 w-4" />
+                  <span>Settings</span>
+                </Link>
               </DropdownMenuItem>
               <DropdownMenuItem>Support</DropdownMenuItem>
               <DropdownMenuSeparator />
