@@ -120,6 +120,13 @@ function NavLink({
 
 function QuickActionsMenu() {
     const { t } = useLanguage();
+
+    const Shortcut = ({ children }: { children: React.ReactNode }) => (
+        <kbd className="ml-auto pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground opacity-100">
+            {children}
+        </kbd>
+    );
+
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -141,18 +148,21 @@ function QuickActionsMenu() {
                     <Link href="/pos">
                         <ShoppingCart className="mr-2 h-4 w-4" />
                         <span>{t('nav.pos')}</span>
+                        <Shortcut>Alt + N</Shortcut>
                     </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
                     <Link href="/customers?action=add">
                         <UserPlus className="mr-2 h-4 w-4" />
                         <span>Thêm khách hàng</span>
+                        <Shortcut>Alt + C</Shortcut>
                     </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
                     <Link href="/purchases?action=add">
                         <PackagePlus className="mr-2 h-4 w-4" />
                         <span>Tạo đơn nhập hàng</span>
+                        <Shortcut>Alt + P</Shortcut>
                     </Link>
                 </DropdownMenuItem>
             </DropdownMenuContent>
@@ -175,6 +185,39 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
 
   const unreadCount = React.useMemo(() => notifications.filter(n => !n.is_read).length, [notifications]);
   
+  React.useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+        const target = event.target as HTMLElement;
+        // Ignore shortcuts if user is in an input field
+        if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable) {
+            return;
+        }
+
+        if (event.altKey) {
+            switch (event.key.toLowerCase()) {
+                case 'n':
+                    event.preventDefault();
+                    router.push('/pos');
+                    break;
+                case 'c':
+                    event.preventDefault();
+                    router.push('/customers?action=add');
+                    break;
+                case 'p':
+                    event.preventDefault();
+                    router.push('/purchases?action=add');
+                    break;
+            }
+        }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+        window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [router]);
+
   const handleMarkAsRead = (notificationId: string) => {
     setNotifications(prev => prev.map(n => n.id === notificationId ? { ...n, is_read: true } : n));
   };
