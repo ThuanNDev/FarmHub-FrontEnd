@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { File, ListFilter, MoreHorizontal } from 'lucide-react';
+import { File, MoreHorizontal, RefreshCw } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -14,10 +14,8 @@ import {
 } from '@/components/ui/card';
 import {
   DropdownMenu,
-  DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
@@ -45,7 +43,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { mockOrders, mockCustomers } from '@/lib/data';
+import { mockOrders, mockCustomers, mockOrderItems } from '@/lib/data';
 import { useToast } from '@/hooks/use-toast';
 
 type Order = typeof mockOrders[0];
@@ -59,8 +57,9 @@ export default function OrdersPage() {
   const [orderToCancel, setOrderToCancel] = useState<Order | null>(null);
 
   const filteredOrders = useMemo(() => {
-    if (activeTab === 'all') return orders;
-    return orders.filter(o => o.status === activeTab);
+    const sortedOrders = [...orders].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+    if (activeTab === 'all') return sortedOrders;
+    return sortedOrders.filter(o => o.status === activeTab);
   }, [orders, activeTab]);
 
   const getStatusVariant = (status: string) => {
@@ -112,11 +111,43 @@ export default function OrdersPage() {
     if (!orderToCancel) return;
     setOrders(prevOrders =>
       prevOrders.map(o =>
-        o.id === orderToCancel.id ? { ...o, status: 'Cancelled', updated_at: new Date().toISOString() } : o
+        o.id === orderToCancel.id ? { ...o, status: 'Cancelled', delivery_status: 'Cancelled', updated_at: new Date().toISOString() } : o
       )
     );
     toast({ title: 'Thành công', description: `Đơn hàng ${orderToCancel.order_code} đã được hủy.` });
     setOrderToCancel(null);
+  };
+
+  const handleRecreateOrder = (cancelledOrder: Order) => {
+    const now = new Date();
+    const newOrderCode = `DH${now.toISOString().slice(2, 10).replace(/-/g, '')}${Math.floor(100 + Math.random() * 900)}`;
+
+    const newOrder: Order = {
+      ...cancelledOrder,
+      id: `ord-${now.getTime()}`,
+      order_code: newOrderCode,
+      status: 'Pending',
+      delivery_status: 'Processing',
+      created_at: now.toISOString(),
+      updated_at: now.toISOString(),
+    };
+
+    const originalItems = mockOrderItems.filter(item => item.order_id === cancelledOrder.id);
+    const newItems = originalItems.map(item => ({
+      ...item,
+      id: `item-${now.getTime()}-${Math.floor(Math.random() * 1000)}`,
+      order_id: newOrder.id,
+    }));
+    
+    mockOrderItems.push(...newItems);
+    mockOrders.unshift(newOrder);
+
+    setOrders(prevOrders => [newOrder, ...prevOrders]);
+
+    toast({
+      title: 'Thành công',
+      description: `Đơn hàng ${newOrder.order_code} đã được tái tạo thành công.`,
+    });
   };
 
 
@@ -189,16 +220,25 @@ export default function OrdersPage() {
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
                             <DropdownMenuItem onClick={() => router.push(`/orders/${order.id}`)}>Xem chi tiết</DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => handlePrint(order)}>In đơn</DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => handleEdit(order)} disabled={order.status !== 'Pending'}>Sửa</DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem 
-                              onClick={() => handleOpenCancelDialog(order)} 
-                              className="text-destructive" 
-                              disabled={order.status === 'Delivered' || order.status === 'Cancelled'}
-                            >
-                              Hủy đơn
-                            </DropdownMenuItem>
+                            {order.status === 'Cancelled' ? (
+                                <DropdownMenuItem onClick={() => handleRecreateOrder(order)}>
+                                    <RefreshCw className="mr-2 h-4 w-4" />
+                                    <span>Tái tạo đơn</span>
+                                </DropdownMenuItem>
+                            ) : (
+                                <>
+                                    <DropdownMenuItem onClick={() => handlePrint(order)}>In đơn</DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => handleEdit(order)} disabled={order.status !== 'Pending'}>Sửa</DropdownMenuItem>
+                                    <DropdownMenuSeparator />
+                                    <DropdownMenuItem 
+                                        onClick={() => handleOpenCancelDialog(order)} 
+                                        className="text-destructive" 
+                                        disabled={order.status === 'Delivered' || order.status === 'Cancelled'}
+                                    >
+                                        Hủy đơn
+                                    </DropdownMenuItem>
+                                </>
+                            )}
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </TableCell>
