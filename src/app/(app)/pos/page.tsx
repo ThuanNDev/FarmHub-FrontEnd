@@ -233,11 +233,11 @@ export default function POSPage() {
             addInfo: `Thanh toan don hang ${orderCode}`,
             accountName: store.bank_info.account_name,
         });
-        const url = `https://img.vietqr.io/image/${store.bank_info.bank_id}-${store.bank_info.account_no}-compact2.jpg?${params.toString()}`;
+        const url = `https://img.vietqr.io/image/${store.bank_info.bank_id}-${store.bank_info.account_no}-print.png?${params.toString()}`;
         qrCodeHtml = `
             <div class="qr-code" style="text-align: center; margin-top: 15px;">
                 <p style="font-weight: bold; margin-bottom: 5px; font-size: 9pt;">Quét mã QR để thanh toán</p>
-                <img src="${url}" alt="QR Code" style="display: block; margin: 0 auto; width: 180px; height: 180px;"/>
+                <img src="${url}" alt="QR Code" style="display: block; margin: 0 auto; width: 220px; height: auto;"/>
             </div>
         `;
     }
@@ -456,7 +456,7 @@ export default function POSPage() {
           addInfo: `Thanh toan don hang ${orderCode}`,
           accountName: storeInfo.bank_info.account_name,
         });
-        const url = `https://img.vietqr.io/image/${storeInfo.bank_info.bank_id}-${storeInfo.bank_info.account_no}-compact2.jpg?${params.toString()}`;
+        const url = `https://img.vietqr.io/image/${storeInfo.bank_info.bank_id}-${storeInfo.bank_info.account_no}-print.png?${params.toString()}`;
         setQrCodeUrl(url);
       } else {
         setQrCodeUrl('');

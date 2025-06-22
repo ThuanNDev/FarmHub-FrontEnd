@@ -17,7 +17,7 @@ export const mockStores = [
     updated_at: '2024-07-25T11:00:00Z',
     bank_info: {
       bank_id: 'SACOMBANK',
-      account_no: '050104114755',
+      account_no: '050109114755',
       account_name: 'NGUYEN TRAN VAN THUAN'
     },
     is_vat_enabled: false,
