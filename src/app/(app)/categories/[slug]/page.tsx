@@ -3,7 +3,7 @@
 import * as React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { notFound, useRouter } from 'next/navigation';
+import { notFound, useRouter, useParams } from 'next/navigation';
 import { ArrowLeft } from 'lucide-react';
 import { mockCategories, mockProducts } from '@/lib/data';
 import { Button } from '@/components/ui/button';
@@ -24,8 +24,9 @@ import {
   } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 
-export default function CategoryDetailPage({ params }: { params: { slug: string } }) {
+export default function CategoryDetailPage() {
   const router = useRouter();
+  const params = useParams<{ slug: string }>();
   const category = mockCategories.find((c) => c.slug === params.slug);
 
   if (!category) {

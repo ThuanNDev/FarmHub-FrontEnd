@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import Link from 'next/link';
-import { notFound } from 'next/navigation';
+import { notFound, useParams } from 'next/navigation';
 import { ArrowLeft, Mail, Phone, Shield, User, Briefcase, CalendarCheck, Clock } from 'lucide-react';
 import { mockUsers, mockStores } from '@/lib/data';
 import { Button } from '@/components/ui/button';
@@ -17,7 +17,8 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
-export default function UserDetailPage({ params }: { params: { id: string } }) {
+export default function UserDetailPage() {
+  const params = useParams<{ id: string }>();
   const user = mockUsers.find((u) => u.id === params.id);
 
   if (!user) {

@@ -3,7 +3,7 @@
 import * as React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { notFound, useRouter } from 'next/navigation';
+import { notFound, useRouter, useParams } from 'next/navigation';
 import { ArrowLeft, Mail, MapPin, Phone, User, Package } from 'lucide-react';
 import { mockSuppliers, mockProducts } from '@/lib/data';
 import { Button } from '@/components/ui/button';
@@ -25,8 +25,9 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 
-export default function SupplierDetailPage({ params }: { params: { id: string } }) {
+export default function SupplierDetailPage() {
   const router = useRouter();
+  const params = useParams<{ id: string }>();
   const supplier = mockSuppliers.find((s) => s.id === params.id && !s.is_deleted);
 
   if (!supplier) {

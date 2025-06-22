@@ -4,7 +4,7 @@ import * as React from 'react';
 import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { notFound } from 'next/navigation';
+import { notFound, useParams } from 'next/navigation';
 import { ArrowLeft, CheckCircle, XCircle } from 'lucide-react';
 import { mockProducts } from '@/lib/data';
 import { Button } from '@/components/ui/button';
@@ -15,7 +15,8 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 
-export default function ProductDetailPage({ params }: { params: { slug: string } }) {
+export default function ProductDetailPage() {
+  const params = useParams<{ slug: string }>();
   const product = mockProducts.find((p) => p.slug === params.slug);
 
   if (!product) {

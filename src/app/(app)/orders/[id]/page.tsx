@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import Link from 'next/link';
-import { notFound, useRouter } from 'next/navigation';
+import { notFound, useRouter, useParams } from 'next/navigation';
 import { ArrowLeft, User, MapPin, Truck, Calendar, Hash, CreditCard, StickyNote, Package } from 'lucide-react';
 import { mockOrders, mockCustomers, mockUsers, mockOrderItems, mockProducts } from '@/lib/data';
 import { Button } from '@/components/ui/button';
@@ -24,8 +24,9 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 
-export default function OrderDetailPage({ params }: { params: { id: string } }) {
+export default function OrderDetailPage() {
   const router = useRouter();
+  const params = useParams<{ id: string }>();
   const order = mockOrders.find((o) => o.id === params.id);
 
   if (!order) {

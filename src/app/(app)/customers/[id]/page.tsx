@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import Link from 'next/link';
-import { notFound, useRouter } from 'next/navigation';
+import { notFound, useRouter, useParams } from 'next/navigation';
 import { ArrowLeft, Edit, Mail, MapPin, Phone, Trash2 } from 'lucide-react';
 import { mockCustomers, mockOrders } from '@/lib/data';
 import { Button } from '@/components/ui/button';
@@ -24,8 +24,9 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 
-export default function CustomerDetailPage({ params }: { params: { id: string } }) {
+export default function CustomerDetailPage() {
   const router = useRouter();
+  const params = useParams<{ id: string }>();
   const customer = mockCustomers.find((c) => c.id === params.id && !c.is_deleted);
 
   if (!customer) {
