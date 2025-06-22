@@ -32,9 +32,21 @@ import {
 } from '@/components/ui/chart';
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from 'recharts';
 import { mockOrders, mockCustomers, mockProducts, mockOrderItems, mockChartData } from '@/lib/data';
-import { useMemo } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 
 export default function Dashboard() {
+  const [newOrdersThisMonth, setNewOrdersThisMonth] = useState(0);
+
+  useEffect(() => {
+    const today = new Date();
+    const newOrdersCount = mockOrders.filter(order => {
+        const orderDate = new Date(order.created_at);
+        return orderDate.getMonth() === today.getMonth() && orderDate.getFullYear() === today.getFullYear() && order.status !== 'Cancelled';
+    }).length;
+    setNewOrdersThisMonth(newOrdersCount);
+  }, []);
+
+
   const formatCurrency = (amount: number) => {
     if (isNaN(amount)) return '0 ₫';
     return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
@@ -44,7 +56,6 @@ export default function Dashboard() {
     totalRevenue,
     totalDebt,
     totalCustomers,
-    newOrdersThisMonth,
     recentOrders,
     bestSellingProducts
   } = useMemo(() => {
@@ -52,25 +63,22 @@ export default function Dashboard() {
     const totalDebt = mockCustomers.reduce((sum, customer) => sum + (customer.total_debt || 0), 0);
     const totalCustomers = mockCustomers.filter(c => !c.is_deleted).length;
     
-    const newOrdersThisMonth = mockOrders.filter(order => {
-        const orderDate = new Date(order.created_at);
-        const today = new Date();
-        return orderDate.getMonth() === today.getMonth() && orderDate.getFullYear() === today.getFullYear();
-    }).length;
-
     const recentOrders = [...mockOrders].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()).slice(0, 5);
 
     const productSales: { [key: string]: { quantity: number, product: any } } = {};
 
     mockOrderItems.forEach(item => {
-        if (!productSales[item.product_id]) {
-            const product = mockProducts.find(p => p.id === item.product_id);
-            if (product) {
-                productSales[item.product_id] = { product, quantity: 0 };
+        const order = mockOrders.find(o => o.id === item.order_id);
+        if (order && order.status !== 'Cancelled') {
+            if (!productSales[item.product_id]) {
+                const product = mockProducts.find(p => p.id === item.product_id);
+                if (product) {
+                    productSales[item.product_id] = { product, quantity: 0 };
+                }
             }
-        }
-        if (productSales[item.product_id]) {
-            productSales[item.product_id].quantity += item.quantity;
+            if (productSales[item.product_id]) {
+                productSales[item.product_id].quantity += item.quantity;
+            }
         }
     });
 
@@ -78,7 +86,7 @@ export default function Dashboard() {
         .sort((a, b) => b.quantity - a.quantity)
         .slice(0, 5);
         
-    return { totalRevenue, totalDebt, totalCustomers, newOrdersThisMonth, recentOrders, bestSellingProducts };
+    return { totalRevenue, totalDebt, totalCustomers, recentOrders, bestSellingProducts };
   }, []);
 
   const getCustomerName = (customerId: string) => {
@@ -151,7 +159,7 @@ export default function Dashboard() {
         <Card className="md:col-span-3">
             <CardHeader>
                 <CardTitle className="font-headline">Tổng quan doanh thu</CardTitle>
-                <CardDescription>Doanh thu 6 tháng gần nhất</CardDescription>
+                <CardDescription>Doanh thu 12 tháng gần nhất</CardDescription>
             </CardHeader>
             <CardContent className="pl-2">
                 <ChartContainer config={{ revenue: { label: "Doanh thu", color: "hsl(var(--primary))" } }} className="h-[300px] w-full">

@@ -33,6 +33,7 @@ import { useToast } from '@/hooks/use-toast';
 import { RecordPaymentDialog, type PaymentFormValues } from '@/components/RecordPaymentDialog';
 
 type Debtor = (typeof mockCustomers)[0];
+type DebtStatus = { text: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' };
 
 export default function DebtsPage() {
   const [debtors, setDebtors] = useState<Debtor[]>([]);
@@ -42,6 +43,7 @@ export default function DebtsPage() {
 
   const [isPaymentDialogOpen, setPaymentDialogOpen] = useState(false);
   const [selectedDebtor, setSelectedDebtor] = useState<Debtor | null>(null);
+  const [debtStatuses, setDebtStatuses] = useState<Record<string, DebtStatus>>({});
 
   useEffect(() => {
     const customersWithDebt = mockCustomers.filter(
@@ -49,6 +51,35 @@ export default function DebtsPage() {
     );
     setDebtors(customersWithDebt);
   }, []);
+
+  useEffect(() => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const newStatuses: Record<string, DebtStatus> = {};
+    debtors.forEach(debtor => {
+        if (!debtor.debt_due_date) {
+            newStatuses[debtor.id] = { text: 'Không rõ', variant: 'outline' };
+            return;
+        }
+        const dueDate = new Date(debtor.debt_due_date);
+        
+        if (dueDate < today) {
+            newStatuses[debtor.id] = { text: 'Quá hạn', variant: 'destructive' };
+            return;
+        }
+        
+        const diffTime = Math.abs(dueDate.getTime() - today.getTime());
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+        if (diffDays <= 7) {
+            newStatuses[debtor.id] = { text: 'Sắp đến hạn', variant: 'default' };
+        } else {
+            newStatuses[debtor.id] = { text: 'Trong hạn', variant: 'secondary' };
+        }
+    });
+    setDebtStatuses(newStatuses);
+  }, [debtors]);
 
   const filteredDebtors = useMemo(() => {
     if (!searchTerm) return debtors;
@@ -66,26 +97,6 @@ export default function DebtsPage() {
   const formatDate = (dateString: string | null) => {
     if (!dateString) return '-';
     return new Date(dateString).toLocaleDateString('vi-VN');
-  };
-
-  const getDebtStatus = (debtor: Debtor) => {
-    if (!debtor.debt_due_date) return { text: 'Không rõ', variant: 'outline' as const };
-    const dueDate = new Date(debtor.debt_due_date);
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
-    if (dueDate < today) {
-      return { text: 'Quá hạn', variant: 'destructive' as const };
-    }
-    
-    const diffTime = Math.abs(dueDate.getTime() - today.getTime());
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-    if (diffDays <= 7) {
-      return { text: 'Sắp đến hạn', variant: 'default' as const };
-    }
-
-    return { text: 'Trong hạn', variant: 'secondary' as const };
   };
 
   const handleOpenPaymentDialog = (debtor: Debtor) => {
@@ -153,7 +164,7 @@ export default function DebtsPage() {
             <TableBody>
               {filteredDebtors.length > 0 ? (
                 filteredDebtors.map((debtor) => {
-                  const status = getDebtStatus(debtor);
+                  const status = debtStatuses[debtor.id] || { text: '...', variant: 'outline' };
                   return (
                     <TableRow key={debtor.id}>
                       <TableCell className="font-medium">{debtor.name}</TableCell>
