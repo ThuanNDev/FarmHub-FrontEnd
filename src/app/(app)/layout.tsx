@@ -21,6 +21,9 @@ import {
   Landmark,
   Warehouse,
   Undo2,
+  HelpCircle,
+  Mail,
+  Phone,
 } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
@@ -52,6 +55,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { StoreProvider, useStore } from '@/contexts/StoreContext';
 import { useToast } from '@/hooks/use-toast';
+import { mockUsers } from '@/lib/data';
 
 const navItems = [
   { href: '/', label: 'Bảng điều khiển', icon: LayoutDashboard },
@@ -102,6 +106,8 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
   const { store } = useStore();
   const router = useRouter();
   const { toast } = useToast();
+
+  const appCreator = mockUsers.find(u => u.is_superadmin);
 
   const handleLogout = () => {
     toast({
@@ -190,7 +196,39 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
                   <span>Cài đặt</span>
                 </Link>
               </DropdownMenuItem>
-              <DropdownMenuItem>Hỗ trợ</DropdownMenuItem>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                    <HelpCircle className="mr-2 h-4 w-4" />
+                    <span>Hỗ trợ</span>
+                  </DropdownMenuItem>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Thông tin hỗ trợ</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Nếu bạn cần trợ giúp hoặc có thắc mắc về ứng dụng, vui lòng liên hệ với người tạo qua các thông tin dưới đây.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <div className="py-4 space-y-4">
+                    <div className="flex items-center gap-3">
+                      <Mail className="h-5 w-5 text-muted-foreground" />
+                      <a href={`mailto:${appCreator?.email}`} className="text-primary hover:underline">
+                        {appCreator?.email || 'Không có'}
+                      </a>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <Phone className="h-5 w-5 text-muted-foreground" />
+                      <a href={`tel:${appCreator?.phone}`} className="text-primary hover:underline">
+                        {appCreator?.phone || 'Không có'}
+                      </a>
+                    </div>
+                  </div>
+                  <AlertDialogFooter>
+                    <AlertDialogAction>Đóng</AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
               <DropdownMenuSeparator />
               <AlertDialog>
                 <AlertDialogTrigger asChild>
