@@ -26,6 +26,14 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
+import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
 import { useStore } from '@/contexts/StoreContext';
 
@@ -36,9 +44,27 @@ const settingsSchema = z.object({
   email: z.string().email("Email không hợp lệ."),
   opening_hours: z.string().optional(),
   is_active: z.boolean().default(true),
+  bank_info: z.object({
+    bank_id: z.string().min(1, "Vui lòng chọn ngân hàng."),
+    account_no: z.string().min(1, "Số tài khoản không được để trống."),
+    account_name: z.string().min(1, "Tên chủ tài khoản không được để trống."),
+  }).optional(),
 });
 
 type SettingsFormValues = z.infer<typeof settingsSchema>;
+
+const banks = [
+    { id: 'VIETCOMBANK', name: 'Vietcombank (VCB)' },
+    { id: 'TPBANK', name: 'TPBank' },
+    { id: 'MBBANK', name: 'MB Bank' },
+    { id: 'ACBBANK', name: 'ACB' },
+    { id: 'TECHCOMBANK', name: 'Techcombank' },
+    { id: 'BIDV', name: 'BIDV' },
+    { id: 'VIETINBANK', name: 'VietinBank' },
+    { id: 'AGRIBANK', name: 'Agribank' },
+    { id: 'VPBANK', name: 'VPBank' },
+    { id: 'SACOMBANK', name: 'Sacombank' },
+];
 
 export default function SettingsPage() {
   const { store, setStore } = useStore();
@@ -53,11 +79,15 @@ export default function SettingsPage() {
       email: store.email,
       opening_hours: store.opening_hours,
       is_active: store.is_active,
+      bank_info: store.bank_info || { bank_id: '', account_no: '', account_name: ''},
     },
   });
 
   useEffect(() => {
-    form.reset(store);
+    form.reset({
+        ...store,
+        bank_info: store.bank_info || { bank_id: '', account_no: '', account_name: ''}
+    });
   }, [store, form]);
 
   const onSubmit = (values: SettingsFormValues) => {
@@ -150,6 +180,71 @@ export default function SettingsPage() {
                 </FormItem>
               )}
             />
+            
+            <Separator />
+
+            <div>
+                <h3 className="text-lg font-medium font-headline">Thông tin thanh toán</h3>
+                <p className="text-sm text-muted-foreground">
+                    Cấu hình tài khoản ngân hàng để nhận thanh toán qua QR Code.
+                </p>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <FormField
+                    control={form.control}
+                    name="bank_info.bank_id"
+                    render={({ field }) => (
+                        <FormItem>
+                        <FormLabel>Ngân hàng</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                            <SelectTrigger>
+                                <SelectValue placeholder="Chọn ngân hàng" />
+                            </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                            {banks.map((bank) => (
+                                <SelectItem key={bank.id} value={bank.id}>
+                                {bank.name}
+                                </SelectItem>
+                            ))}
+                            </SelectContent>
+                        </Select>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                />
+                <FormField
+                    control={form.control}
+                    name="bank_info.account_no"
+                    render={({ field }) => (
+                        <FormItem>
+                        <FormLabel>Số tài khoản</FormLabel>
+                        <FormControl>
+                            <Input placeholder="Nhập số tài khoản" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                />
+                 <FormField
+                    control={form.control}
+                    name="bank_info.account_name"
+                    render={({ field }) => (
+                        <FormItem className="md:col-span-2">
+                        <FormLabel>Tên chủ tài khoản</FormLabel>
+                        <FormControl>
+                            <Input placeholder="Tên chủ tài khoản (viết hoa không dấu)" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                />
+            </div>
+            
+            <Separator />
+            
              <FormField
                 control={form.control}
                 name="is_active"
