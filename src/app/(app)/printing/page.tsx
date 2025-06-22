@@ -13,7 +13,7 @@ import {
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { mockOrders, mockProducts, mockCustomers, mockOrderItems, mockStores } from '@/lib/data';
+import { mockOrders, mockProducts, mockCustomers, mockOrderItems, mockStores, mockUsers } from '@/lib/data';
 import { Barcode } from '@/components/ui/barcode';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { ScrollArea } from '@/components/ui/scroll-area';
