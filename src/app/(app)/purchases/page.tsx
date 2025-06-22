@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
@@ -481,8 +482,8 @@ export default function PurchasesPage() {
 
 function AddProductForm({ onAddItem, currentItems }: { onAddItem: (item: PurchaseOrderItem) => void, currentItems: PurchaseOrderItem[] }) {
     const [selectedProductId, setSelectedProductId] = useState('');
-    const [quantity, setQuantity] = useState(1);
-    const [unitPrice, setUnitPrice] = useState(0);
+    const [quantity, setQuantity] = useState('1');
+    const [unitPrice, setUnitPrice] = useState('0');
     const [open, setOpen] = useState(false);
     const [search, setSearch] = useState("");
 
@@ -501,14 +502,17 @@ function AddProductForm({ onAddItem, currentItems }: { onAddItem: (item: Purchas
     useEffect(() => {
         const product = mockProducts.find(p => p.id === selectedProductId);
         if (product) {
-            setUnitPrice(product.import_price);
+            setUnitPrice(String(product.import_price));
         } else {
-            setUnitPrice(0);
+            setUnitPrice('0');
         }
     }, [selectedProductId]);
 
     const handleAdd = () => {
-        if (!selectedProductId || quantity <= 0 || unitPrice < 0) {
+        const numQuantity = parseInt(quantity, 10);
+        const numUnitPrice = parseFloat(unitPrice);
+
+        if (!selectedProductId || isNaN(numQuantity) || numQuantity <= 0 || isNaN(numUnitPrice) || numUnitPrice < 0) {
             // TODO: Add toast notification for validation
             return;
         }
@@ -517,14 +521,14 @@ function AddProductForm({ onAddItem, currentItems }: { onAddItem: (item: Purchas
             onAddItem({
                 productId: product.id,
                 productName: product.name,
-                quantity: quantity,
-                unitPrice: unitPrice,
+                quantity: numQuantity,
+                unitPrice: numUnitPrice,
             });
             // Reset form
             setSelectedProductId('');
             setSearch('');
-            setQuantity(1);
-            setUnitPrice(0);
+            setQuantity('1');
+            setUnitPrice('0');
         }
     };
 
@@ -582,11 +586,39 @@ function AddProductForm({ onAddItem, currentItems }: { onAddItem: (item: Purchas
             </div>
             <div className="md:col-span-2">
                 <Label>Số lượng</Label>
-                <Input type="number" value={quantity} onChange={e => setQuantity(Number(e.target.value) || 1)} onFocus={e => e.target.select()} min={1} />
+                <Input 
+                    type="text" 
+                    value={quantity} 
+                    onChange={e => setQuantity(e.target.value)}
+                    onBlur={e => {
+                        const num = parseInt(e.target.value, 10);
+                        if (isNaN(num) || num <= 0) {
+                            setQuantity('1');
+                        } else {
+                            setQuantity(String(num));
+                        }
+                    }}
+                    onFocus={e => e.target.select()} 
+                    inputMode="numeric" 
+                />
             </div>
             <div className="md:col-span-3">
                 <Label>Giá nhập</Label>
-                <Input type="number" value={unitPrice} onChange={e => setUnitPrice(Number(e.target.value) || 0)} onFocus={e => e.target.select()} min={0} />
+                <Input 
+                    type="text" 
+                    value={unitPrice} 
+                    onChange={e => setUnitPrice(e.target.value)}
+                    onBlur={e => {
+                        const num = parseFloat(e.target.value);
+                        if (isNaN(num) || num < 0) {
+                            setUnitPrice('0');
+                        } else {
+                            setUnitPrice(String(num));
+                        }
+                    }}
+                    onFocus={e => e.target.select()} 
+                    inputMode="numeric"
+                />
             </div>
             <Button type="button" onClick={handleAdd} className="md:col-span-2">Thêm vào đơn</Button>
         </div>
