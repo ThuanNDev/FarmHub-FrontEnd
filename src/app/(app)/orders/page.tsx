@@ -46,12 +46,14 @@ import {
 import { Input } from '@/components/ui/input';
 import { mockOrders, mockCustomers, mockOrderItems } from '@/lib/data';
 import { useToast } from '@/hooks/use-toast';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 type Order = typeof mockOrders[0];
 
 export default function OrdersPage() {
   const router = useRouter();
   const { toast } = useToast();
+  const { t } = useLanguage();
   
   const [orders, setOrders] = useState<Order[]>(mockOrders);
   const [activeTab, setActiveTab] = useState('all');
@@ -59,7 +61,7 @@ export default function OrdersPage() {
   const [orderToCancel, setOrderToCancel] = useState<Order | null>(null);
 
   const getCustomerName = (customerId: string) => {
-    return mockCustomers.find(c => c.id === customerId)?.name || 'Khách lẻ';
+    return mockCustomers.find(c => c.id === customerId)?.name || t('pos.guest');
   };
 
   const filteredOrders = useMemo(() => {
@@ -78,7 +80,7 @@ export default function OrdersPage() {
     }
     
     return ordersToFilter;
-  }, [orders, activeTab, searchTerm]);
+  }, [orders, activeTab, searchTerm, t]);
 
   const getStatusVariant = (status: string) => {
     switch (status) {
@@ -102,20 +104,20 @@ export default function OrdersPage() {
   }
 
   const handlePrint = (order: Order) => {
-    toast({ title: 'Tính năng đang phát triển', description: 'Chức năng in đơn hàng sẽ sớm ra mắt.' });
+    toast({ title: t('pages.order_details.wip_title'), description: t('pages.orders.action_print') + ' ' + t('pages.order_details.wip_description') });
   };
 
   const handleEdit = (order: Order) => {
     if (order.status !== 'Pending') {
-        toast({ variant: 'destructive', title: 'Không thể sửa', description: 'Chỉ có thể sửa đơn hàng đang chờ xử lý.'});
+        toast({ variant: 'destructive', title: t('pages.order_details.cannot_edit_title'), description: t('pages.orders.action_cannot_edit')});
         return;
     }
-    toast({ title: 'Tính năng đang phát triển', description: 'Chức năng sửa đơn hàng sẽ sớm ra mắt.' });
+    toast({ title: t('pages.order_details.wip_title'), description: 'Chức năng sửa đơn hàng sẽ sớm được ra mắt.' });
   };
 
   const handleOpenCancelDialog = (order: Order) => {
     if (order.status === 'Delivered' || order.status === 'Cancelled') {
-      toast({ variant: 'destructive', title: 'Không thể hủy', description: 'Không thể hủy đơn hàng đã giao hoặc đã bị hủy.' });
+      toast({ variant: 'destructive', title: 'Không thể hủy', description: t('pages.orders.action_cannot_cancel') });
       return;
     }
     setOrderToCancel(order);
@@ -128,7 +130,7 @@ export default function OrdersPage() {
         o.id === orderToCancel.id ? { ...o, status: 'Cancelled', delivery_status: 'Cancelled', updated_at: new Date().toISOString() } : o
       )
     );
-    toast({ title: 'Thành công', description: `Đơn hàng ${orderToCancel.order_code} đã được hủy.` });
+    toast({ title: t('common.success'), description: t('pages.orders.success_cancel', { code: orderToCancel.order_code }) });
     setOrderToCancel(null);
   };
 
@@ -159,8 +161,8 @@ export default function OrdersPage() {
     setOrders(prevOrders => [newOrder, ...prevOrders]);
 
     toast({
-      title: 'Thành công',
-      description: `Đơn hàng ${newOrder.order_code} đã được tái tạo thành công.`,
+      title: t('common.success'),
+      description: t('pages.orders.success_recreate', { code: newOrder.order_code }),
     });
   };
 
@@ -168,21 +170,21 @@ export default function OrdersPage() {
     if (filteredOrders.length === 0) {
       toast({
         variant: 'destructive',
-        title: 'Không có dữ liệu',
-        description: 'Không có đơn hàng nào để xuất file.',
+        title: t('common.error'),
+        description: t('pages.orders.error_no_export_data'),
       });
       return;
     }
 
     const headers = [
-      'Mã ĐH',
-      'Khách hàng',
-      'Ngày tạo',
-      'Trạng thái',
-      'Tổng tiền',
-      'Đã thanh toán',
-      'Còn lại',
-      'Phương thức TT'
+      t('pages.orders.table_code'),
+      t('pages.orders.table_customer'),
+      t('pages.orders.table_date'),
+      t('pages.orders.table_status'),
+      t('pages.orders.table_total'),
+      t('pages.order_details.paid'),
+      t('pages.order_details.remaining'),
+      t('pages.order_details.payment_method')
     ];
     
     const rows = filteredOrders.map(order => [
@@ -211,8 +213,8 @@ export default function OrdersPage() {
     document.body.removeChild(link);
     
     toast({
-        title: 'Xuất file thành công',
-        description: `Đã xuất ${filteredOrders.length} đơn hàng ra tệp ${fileName}`,
+        title: t('common.success'),
+        description: t('pages.orders.success_export', { count: filteredOrders.length, fileName }),
     });
   };
 
@@ -222,11 +224,11 @@ export default function OrdersPage() {
       <Tabs defaultValue="all" onValueChange={setActiveTab}>
         <div className="flex items-center">
           <TabsList>
-            <TabsTrigger value="all">Tất cả</TabsTrigger>
-            <TabsTrigger value="pending">Chờ xử lý</TabsTrigger>
-            <TabsTrigger value="delivered">Đã giao</TabsTrigger>
+            <TabsTrigger value="all">{t('pages.orders.tab_all')}</TabsTrigger>
+            <TabsTrigger value="pending">{t('pages.orders.tab_pending')}</TabsTrigger>
+            <TabsTrigger value="delivered">{t('pages.orders.tab_delivered')}</TabsTrigger>
             <TabsTrigger value="cancelled">
-              Đã hủy
+              {t('pages.orders.tab_cancelled')}
             </TabsTrigger>
           </TabsList>
           <div className="ml-auto flex items-center gap-2">
@@ -234,7 +236,7 @@ export default function OrdersPage() {
                 <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input
                     type="search"
-                    placeholder="Tìm theo mã ĐH, tên KH..."
+                    placeholder={t('pages.orders.search_placeholder')}
                     className="pl-8 sm:w-[200px] md:w-[300px]"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
@@ -243,7 +245,7 @@ export default function OrdersPage() {
             <Button size="sm" variant="outline" className="h-10 gap-1" onClick={handleExport}>
               <File className="h-3.5 w-3.5" />
               <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-                Xuất file
+                {t('common.export_file')}
               </span>
             </Button>
           </div>
@@ -251,22 +253,22 @@ export default function OrdersPage() {
         <TabsContent value={activeTab}>
           <Card>
             <CardHeader>
-              <CardTitle className="font-headline">Đơn hàng</CardTitle>
+              <CardTitle className="font-headline">{t('pages.orders.title')}</CardTitle>
               <CardDescription>
-                Danh sách các đơn hàng gần đây từ cửa hàng của bạn.
+                {t('pages.orders.description')}
               </CardDescription>
             </CardHeader>
             <CardContent>
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Mã ĐH</TableHead>
-                    <TableHead>Khách hàng</TableHead>
-                    <TableHead className="hidden md:table-cell">Ngày</TableHead>
-                    <TableHead>Trạng thái</TableHead>
-                    <TableHead className="text-right">Tổng tiền</TableHead>
+                    <TableHead>{t('pages.orders.table_code')}</TableHead>
+                    <TableHead>{t('pages.orders.table_customer')}</TableHead>
+                    <TableHead className="hidden md:table-cell">{t('pages.orders.table_date')}</TableHead>
+                    <TableHead>{t('pages.orders.table_status')}</TableHead>
+                    <TableHead className="text-right">{t('pages.orders.table_total')}</TableHead>
                     <TableHead>
-                      <span className="sr-only">Hành động</span>
+                      <span className="sr-only">{t('common.actions')}</span>
                     </TableHead>
                   </TableRow>
                 </TableHeader>
@@ -298,19 +300,19 @@ export default function OrdersPage() {
                             {order.status === 'Cancelled' ? (
                                 <DropdownMenuItem onSelect={() => handleRecreateOrder(order)}>
                                     <RefreshCw className="mr-2 h-4 w-4" />
-                                    <span>Tái tạo đơn</span>
+                                    <span>{t('pages.orders.action_recreate')}</span>
                                 </DropdownMenuItem>
                             ) : (
                                 <>
-                                    <DropdownMenuItem onSelect={() => handlePrint(order)}>In đơn</DropdownMenuItem>
-                                    <DropdownMenuItem onSelect={() => handleEdit(order)} disabled={order.status !== 'Pending'}>Sửa</DropdownMenuItem>
+                                    <DropdownMenuItem onSelect={() => handlePrint(order)}>{t('pages.orders.action_print')}</DropdownMenuItem>
+                                    <DropdownMenuItem onSelect={() => handleEdit(order)} disabled={order.status !== 'Pending'}>{t('common.edit')}</DropdownMenuItem>
                                     <DropdownMenuSeparator />
                                     <DropdownMenuItem 
                                         onSelect={() => handleOpenCancelDialog(order)} 
                                         className="text-destructive" 
                                         disabled={order.status === 'Delivered' || order.status === 'Cancelled'}
                                     >
-                                        Hủy đơn
+                                        {t('pages.orders.action_cancel')}
                                     </DropdownMenuItem>
                                 </>
                             )}
@@ -329,14 +331,14 @@ export default function OrdersPage() {
        <AlertDialog open={!!orderToCancel} onOpenChange={(open) => !open && setOrderToCancel(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Bạn có chắc chắn?</AlertDialogTitle>
+            <AlertDialogTitle>{t('common.are_you_sure')}</AlertDialogTitle>
             <AlertDialogDescription>
-              Hành động này sẽ hủy đơn hàng <strong>{orderToCancel?.order_code}</strong>. Bạn không thể hoàn tác hành động này.
+              {t('pages.orders.cancel_dialog_description', { code: orderToCancel?.order_code })}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => setOrderToCancel(null)}>Không</AlertDialogCancel>
-            <AlertDialogAction onClick={handleConfirmCancel} className="bg-destructive hover:bg-destructive/90">Xác nhận hủy</AlertDialogAction>
+            <AlertDialogCancel onClick={() => setOrderToCancel(null)}>{t('common.cancel')}</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmCancel} className="bg-destructive hover:bg-destructive/90">{t('common.confirm')}</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

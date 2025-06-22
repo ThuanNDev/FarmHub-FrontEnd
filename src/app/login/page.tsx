@@ -27,6 +27,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { mockUsers, mockStores } from '@/lib/data';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 const loginSchema = z.object({
   username: z.string().min(1, { message: 'Tên đăng nhập không được để trống.' }),
@@ -38,6 +39,7 @@ type LoginFormValues = z.infer<typeof loginSchema>;
 export default function LoginPage() {
   const router = useRouter();
   const { toast } = useToast();
+  const { t } = useLanguage();
   const [isLoading, setIsLoading] = React.useState(false);
 
   const form = useForm<LoginFormValues>({
@@ -61,31 +63,31 @@ export default function LoginPage() {
             if (user.last_login_at === null) {
                 // First time login, redirect to OTP verification
                 toast({
-                    title: 'Xác thực lần đầu',
-                    description: 'Vui lòng xác thực tài khoản của bạn.',
+                    title: t('login.first_login_title'),
+                    description: t('login.first_login_description'),
                 });
                 router.push(`/verify-otp?username=${values.username}`);
             } else {
                 // Subsequent login
                 user.last_login_at = new Date().toISOString();
                 toast({
-                    title: 'Đăng nhập thành công',
-                    description: `Chào mừng quay trở lại, ${user.full_name}!`,
+                    title: t('login.success'),
+                    description: t('login.welcome_back', { name: user.full_name }),
                 });
                 router.push('/');
             }
         } else if (user && !user.is_active) {
             toast({
                 variant: 'destructive',
-                title: 'Đăng nhập thất bại',
-                description: 'Tài khoản của bạn đã bị vô hiệu hóa.',
+                title: t('login.failure'),
+                description: t('login.account_disabled'),
             });
             setIsLoading(false);
         } else {
         toast({
             variant: 'destructive',
-            title: 'Đăng nhập thất bại',
-            description: 'Tên đăng nhập hoặc mật khẩu không chính xác.',
+            title: t('login.failure'),
+            description: t('login.wrong_credentials'),
         });
         setIsLoading(false);
         }
@@ -99,8 +101,8 @@ export default function LoginPage() {
             <Leaf className="h-8 w-8 text-primary" />
             <span className="font-headline text-3xl">{mockStores[0].name}</span>
         </div>
-        <CardTitle className="font-headline text-2xl">Đăng nhập</CardTitle>
-        <CardDescription>Nhập thông tin tài khoản của bạn để tiếp tục.</CardDescription>
+        <CardTitle className="font-headline text-2xl">{t('login.title')}</CardTitle>
+        <CardDescription>{t('login.description')}</CardDescription>
       </CardHeader>
       <CardContent className="p-6">
         <Form {...form}>
@@ -110,9 +112,9 @@ export default function LoginPage() {
               name="username"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Tên đăng nhập</FormLabel>
+                  <FormLabel>{t('login.username')}</FormLabel>
                   <FormControl>
-                    <Input placeholder="ví dụ: admin" {...field} disabled={isLoading} />
+                    <Input placeholder={t('login.username_placeholder')} {...field} disabled={isLoading} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -123,9 +125,9 @@ export default function LoginPage() {
               name="password"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Mật khẩu</FormLabel>
+                  <FormLabel>{t('login.password')}</FormLabel>
                   <FormControl>
-                    <Input type="password" placeholder="••••••••" {...field} disabled={isLoading} />
+                    <Input type="password" placeholder={t('login.password_placeholder')} {...field} disabled={isLoading} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -133,14 +135,14 @@ export default function LoginPage() {
             />
             <Button type="submit" className="w-full bg-primary hover:bg-primary/90 mt-2" disabled={isLoading}>
               {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Đăng nhập
+              {t('login.submit')}
             </Button>
           </form>
         </Form>
         <div className="mt-4 text-center text-sm">
-          Chưa có tài khoản?{" "}
+          {t('login.no_account')}{" "}
           <Link href="/register" className="underline hover:text-primary">
-            Đăng ký
+            {t('login.register_now')}
           </Link>
         </div>
       </CardContent>

@@ -4,6 +4,7 @@ import { Toaster } from "@/components/ui/toaster"
 import './globals.css';
 import { cn } from '@/lib/utils';
 import { mockStores } from '@/lib/data';
+import { LanguageProvider } from '@/contexts/LanguageContext';
 
 const poppins = Poppins({
   subsets: ['latin'],
@@ -30,10 +31,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={cn(poppins.variable, ptSans.variable)}>
+    <html lang="en" className={cn(poppins.variable, ptSans.variable)} suppressHydrationWarning>
       <head />
-      <body className="font-body antialiased" suppressHydrationWarning>
-        {children}
+      <body className="font-body antialiased">
+        <LanguageProvider>
+          {children}
+        </LanguageProvider>
         <Toaster />
       </body>
     </html>

@@ -36,6 +36,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
 import { useStore } from '@/contexts/StoreContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 type Order = typeof mockOrders[0];
 
@@ -43,6 +44,7 @@ export default function OrderDetailPage() {
   const router = useRouter();
   const params = useParams<{ id: string }>();
   const { store } = useStore();
+  const { t } = useLanguage();
   
   const initialOrder = React.useMemo(() => mockOrders.find((o) => o.id === params.id), [params.id]);
   
@@ -70,7 +72,7 @@ export default function OrderDetailPage() {
     }
     setOrder({ ...order, status: 'Cancelled' });
     toast({
-      title: 'Thành công',
+      title: t('common.success'),
       description: `Đơn hàng ${order.order_code} đã được hủy.`,
     });
   };
@@ -90,7 +92,7 @@ export default function OrderDetailPage() {
      if (!order || !processor) {
         toast({
             variant: "destructive",
-            title: "Lỗi",
+            title: t('common.error'),
             description: "Không thể tải dữ liệu để in."
         });
         return;
@@ -100,7 +102,7 @@ export default function OrderDetailPage() {
     if (!printWindow) {
       toast({
         variant: 'destructive',
-        title: 'Lỗi',
+        title: t('common.error'),
         description: 'Không thể mở cửa sổ in. Vui lòng cho phép pop-up.',
       });
       return;
@@ -316,12 +318,12 @@ export default function OrderDetailPage() {
 
   const handleEditOrder = () => {
      if (order.status !== 'Pending') {
-        toast({ variant: 'destructive', title: 'Không thể sửa', description: 'Chỉ có thể sửa đơn hàng đang chờ xử lý.'});
+        toast({ variant: 'destructive', title: t('pages.order_details.cannot_edit_title'), description: t('pages.order_details.cannot_edit_description')});
         return;
     }
     toast({
-      title: 'Tính năng đang phát triển',
-      description: 'Chức năng sửa đơn hàng sẽ sớm được ra mắt.',
+      title: t('pages.order_details.wip_title'),
+      description: t('pages.order_details.wip_description'),
     });
   }
 
@@ -344,33 +346,31 @@ export default function OrderDetailPage() {
         <Button asChild variant="outline" size="sm">
           <Link href="/orders">
             <ArrowLeft className="mr-2 h-4 w-4" />
-            Quay lại danh sách đơn hàng
+            {t('pages.order_details.back_to_list')}
           </Link>
         </Button>
          <div className="flex gap-2">
            <Button variant="outline" size="sm" onClick={handlePrintOrder}>
-             <Printer className="mr-2 h-4 w-4"/> In đơn
+             <Printer className="mr-2 h-4 w-4"/> {t('pages.order_details.print_order')}
            </Button>
            <Button variant="outline" size="sm" onClick={handleEditOrder} disabled={order.status !== 'Pending'}>
-             <Edit className="mr-2 h-4 w-4"/> Sửa
+             <Edit className="mr-2 h-4 w-4"/> {t('common.edit')}
            </Button>
            <AlertDialog>
               <AlertDialogTrigger asChild>
                 <Button variant="destructive" size="sm" disabled={order.status === 'Cancelled' || order.status === 'Delivered'}>
-                  <XCircle className="mr-2 h-4 w-4"/> Hủy đơn
+                  <XCircle className="mr-2 h-4 w-4"/> {t('pages.order_details.cancel_order')}
                 </Button>
               </AlertDialogTrigger>
               <AlertDialogContent>
                 <AlertDialogHeader>
-                  <AlertDialogTitle>Bạn có chắc chắn muốn hủy đơn hàng?</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    Hành động này không thể hoàn tác. Đơn hàng <strong>{order.order_code}</strong> sẽ được chuyển sang trạng thái "Đã hủy".
-                  </AlertDialogDescription>
+                  <AlertDialogTitle>{t('common.are_you_sure')}</AlertDialogTitle>
+                  <AlertDialogDescription dangerouslySetInnerHTML={{ __html: t('pages.order_details.cancel_dialog_description', { code: order.order_code }) }} />
                 </AlertDialogHeader>
                 <AlertDialogFooter>
-                  <AlertDialogCancel>Không</AlertDialogCancel>
+                  <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
                   <AlertDialogAction onClick={handleCancelOrder} className="bg-destructive hover:bg-destructive/90">
-                    Xác nhận hủy
+                    {t('pages.order_details.confirm_cancel')}
                   </AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>
@@ -382,9 +382,9 @@ export default function OrderDetailPage() {
         <CardHeader>
           <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
             <div>
-              <CardTitle className="font-headline text-2xl">Chi tiết đơn hàng {order.order_code}</CardTitle>
+              <CardTitle className="font-headline text-2xl">{t('pages.order_details.title', { code: order.order_code })}</CardTitle>
               <CardDescription>
-                Ngày tạo: {formatDate(order.created_at)}
+                {t('pages.order_details.created_date', { date: formatDate(order.created_at) })}
               </CardDescription>
             </div>
             <Badge className="text-base" variant={getStatusVariant(order.status) as any}>{order.status}</Badge>
@@ -397,43 +397,43 @@ export default function OrderDetailPage() {
                     <Card>
                         <CardHeader className="flex flex-row items-center gap-3 space-y-0 pb-2">
                            <User className="h-5 w-5 text-primary"/>
-                           <h3 className="font-headline text-lg">Khách hàng</h3>
+                           <h3 className="font-headline text-lg">{t('pages.order_details.customer_info')}</h3>
                         </CardHeader>
                         <CardContent>
                             <p className="font-semibold">{customer?.name || 'Khách lẻ'}</p>
                             <p className="text-sm text-muted-foreground">{customer?.phone}</p>
                             <p className="text-sm text-muted-foreground">{customer?.email}</p>
-                            {customer && <Button variant="link" size="sm" className="p-0 h-auto" onClick={() => router.push(`/customers/${customer.id}`)}>Xem chi tiết</Button>}
+                            {customer && <Button variant="link" size="sm" className="p-0 h-auto" onClick={() => router.push(`/customers/${customer.id}`)}>{t('pages.order_details.view_customer_details')}</Button>}
                         </CardContent>
                     </Card>
                      <Card>
                         <CardHeader className="flex flex-row items-center gap-3 space-y-0 pb-2">
                            <Truck className="h-5 w-5 text-primary"/>
-                           <h3 className="font-headline text-lg">Giao hàng</h3>
+                           <h3 className="font-headline text-lg">{t('pages.order_details.shipping_info')}</h3>
                         </CardHeader>
                         <CardContent className="space-y-1 text-sm">
-                            <p><span className="font-semibold">Địa chỉ:</span> {order.delivery_address || 'Nhận tại cửa hàng'}</p>
-                             <p><span className="font-semibold">Trạng thái:</span> {order.delivery_status}</p>
-                            <p><span className="font-semibold">Ngày dự kiến:</span> {formatDate(order.expected_delivery_date)}</p>
+                            <p><span className="font-semibold">{t('pages.order_details.shipping_address')}</span> {order.delivery_address || t('pages.order_details.shipping_address_pickup')}</p>
+                             <p><span className="font-semibold">{t('pages.order_details.shipping_status')}</span> {order.delivery_status}</p>
+                            <p><span className="font-semibold">{t('pages.order_details.shipping_expected_date')}</span> {formatDate(order.expected_delivery_date)}</p>
                         </CardContent>
                     </Card>
                      <Card>
                         <CardHeader className="flex flex-row items-center gap-3 space-y-0 pb-2">
                            <CreditCard className="h-5 w-5 text-primary"/>
-                           <h3 className="font-headline text-lg">Thanh toán</h3>
+                           <h3 className="font-headline text-lg">{t('pages.order_details.payment_info')}</h3>
                         </CardHeader>
                         <CardContent className="space-y-1 text-sm">
-                            <p><span className="font-semibold">Phương thức:</span> {order.payment_type}</p>
-                            <p><span className="font-semibold">Chi tiết:</span> {order.payment_details}</p>
+                            <p><span className="font-semibold">{t('pages.order_details.payment_method')}</span> {order.payment_type}</p>
+                            <p><span className="font-semibold">{t('pages.order_details.payment_details')}</span> {order.payment_details}</p>
                         </CardContent>
                     </Card>
                     <Card>
                         <CardHeader className="flex flex-row items-center gap-3 space-y-0 pb-2">
                            <StickyNote className="h-5 w-5 text-primary"/>
-                           <h3 className="font-headline text-lg">Ghi chú</h3>
+                           <h3 className="font-headline text-lg">{t('pages.order_details.note')}</h3>
                         </CardHeader>
                         <CardContent>
-                            <p className="text-sm text-muted-foreground">{order.note || 'Không có ghi chú.'}</p>
+                            <p className="text-sm text-muted-foreground">{order.note || t('pages.order_details.no_note')}</p>
                         </CardContent>
                     </Card>
                 </div>
@@ -442,16 +442,16 @@ export default function OrderDetailPage() {
                     <Card>
                         <CardHeader className="flex flex-row items-center gap-3 space-y-0 pb-2">
                             <Package className="h-5 w-5 text-primary"/>
-                            <h3 className="font-headline text-lg">Sản phẩm trong đơn</h3>
+                            <h3 className="font-headline text-lg">{t('pages.order_details.products_in_order')}</h3>
                         </CardHeader>
                         <CardContent>
                              <Table>
                                 <TableHeader>
                                 <TableRow>
-                                    <TableHead>Sản phẩm</TableHead>
-                                    <TableHead className="text-center">Số lượng</TableHead>
-                                    <TableHead className="text-right">Đơn giá</TableHead>
-                                    <TableHead className="text-right">Thành tiền</TableHead>
+                                    <TableHead>{t('pages.order_details.product_name')}</TableHead>
+                                    <TableHead className="text-center">{t('pages.order_details.quantity')}</TableHead>
+                                    <TableHead className="text-right">{t('pages.order_details.unit_price')}</TableHead>
+                                    <TableHead className="text-right">{t('pages.order_details.subtotal')}</TableHead>
                                 </TableRow>
                                 </TableHeader>
                                 <TableBody>
@@ -468,28 +468,28 @@ export default function OrderDetailPage() {
                             <Separator className="my-4"/>
                             <div className="space-y-2 text-right">
                                  <div className="flex justify-between">
-                                    <span className="text-muted-foreground">Tạm tính</span>
+                                    <span className="text-muted-foreground">{t('pages.order_details.subtotal')}</span>
                                     <span>{formatCurrency(items.reduce((sum, item) => sum + item.total_price, 0))}</span>
                                  </div>
                                  <div className="flex justify-between">
-                                    <span className="text-muted-foreground">Giảm giá</span>
+                                    <span className="text-muted-foreground">{t('pages.order_details.discount')}</span>
                                     <span>- {formatCurrency(order.discount_amount)}</span>
                                  </div>
                                   <div className="flex justify-between">
-                                    <span className="text-muted-foreground">Phí vận chuyển</span>
+                                    <span className="text-muted-foreground">{t('pages.order_details.shipping_fee')}</span>
                                     <span>{formatCurrency(order.shipping_fee)}</span>
                                  </div>
                                  <Separator className="my-2"/>
                                  <div className="flex justify-between font-bold text-lg">
-                                    <span>Tổng cộng</span>
+                                    <span>{t('pages.order_details.grand_total')}</span>
                                     <span>{formatCurrency(order.total_amount)}</span>
                                  </div>
                                  <div className="flex justify-between text-primary">
-                                    <span>Đã thanh toán</span>
+                                    <span>{t('pages.order_details.paid')}</span>
                                     <span>{formatCurrency(order.total_paid)}</span>
                                  </div>
                                  <div className="flex justify-between text-destructive font-semibold">
-                                    <span>Còn lại</span>
+                                    <span>{t('pages.order_details.remaining')}</span>
                                     <span>{formatCurrency(order.total_amount - order.total_paid)}</span>
                                  </div>
                             </div>

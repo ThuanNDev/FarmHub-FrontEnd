@@ -36,6 +36,7 @@ import { mockProducts, mockCustomers, mockCategories, mockStores, mockUsers, moc
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { useStore } from '@/contexts/StoreContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 type Product = typeof mockProducts[0];
 type CartItem = Product & { quantity: number };
@@ -71,6 +72,7 @@ export default function POSPage() {
   
   const { toast } = useToast();
   const { store } = useStore();
+  const { t } = useLanguage();
 
   const form = useForm<CustomerFormValues>({
     resolver: zodResolver(customerSchema),
@@ -155,19 +157,19 @@ export default function POSPage() {
       note: values.note || null,
     };
     setCustomers(prev => [newCustomer, ...prev]);
-    toast({ title: "Thành công", description: "Khách hàng mới đã được thêm." });
+    toast({ title: t('common.success'), description: t('pages.customers.success_add') });
     setAddCustomerDialogOpen(false);
   };
   
   const handleConfirmPayment = () => {
     if (cart.length === 0) {
-      toast({ variant: 'destructive', title: 'Giỏ hàng trống' });
+      toast({ variant: 'destructive', title: t('pos.error_empty_cart') });
       return;
     }
     
     const currentUser = mockUsers.find(u => u.is_active);
     if (!currentUser) {
-        toast({ variant: 'destructive', title: 'Lỗi', description: 'Không tìm thấy người dùng hiện tại.'});
+        toast({ variant: 'destructive', title: t('common.error'), description: t('pos.error_no_user')});
         return;
     }
 
@@ -217,7 +219,7 @@ export default function POSPage() {
     });
 
     const remaining = totalWithVat - amountPaid;
-    let description = `Đơn hàng ${newOrderCode} đã được tạo thành công.`;
+    let description = t('pos.success_order_created', { code: newOrderCode });
     
     if (remaining > 0 && selectedCustomer) {
       const customerInDb = mockCustomers.find(c => c.id === selectedCustomer.id);
@@ -225,7 +227,7 @@ export default function POSPage() {
           if (paymentMethod === 'Debt') {
               customerInDb.total_debt += remaining;
               customerInDb.last_purchase_date = now.toISOString();
-              description += ` Ghi nợ ${formatCurrency(remaining)} cho khách hàng ${selectedCustomer.name}.`;
+              description += t('pos.success_on_credit', { amount: formatCurrency(remaining), name: selectedCustomer.name });
           } else if (paymentMethod === 'Installment') {
               const termCount = 3; 
               const amountPerTerm = Math.ceil(remaining / termCount);
@@ -248,13 +250,13 @@ export default function POSPage() {
                 };
                 mockInstallmentTerms.push(newTerm);
               }
-              description += ` Trả góp ${formatCurrency(remaining)} trong ${termCount} kỳ.`;
+              description += t('pos.success_installment', { amount: formatCurrency(remaining), count: termCount });
           }
       }
     }
 
     toast({
-      title: "Tạo đơn hàng thành công!",
+      title: t('common.success'),
       description: description,
     });
 
@@ -267,7 +269,7 @@ export default function POSPage() {
     if (cart.length === 0) {
       toast({
         variant: 'destructive',
-        title: 'Giỏ hàng trống',
+        title: t('pos.error_empty_cart'),
         description: 'Vui lòng thêm sản phẩm vào giỏ hàng trước khi in.',
       });
       return;
@@ -277,7 +279,7 @@ export default function POSPage() {
     if (!printWindow) {
       toast({
         variant: 'destructive',
-        title: 'Lỗi',
+        title: t('common.error'),
         description: 'Không thể mở cửa sổ in. Vui lòng cho phép pop-up.',
       });
       return;
@@ -441,7 +443,7 @@ export default function POSPage() {
             <div class="info">
               <p><strong>Hóa đơn bán lẻ:</strong> ${orderCode}</p>
               <p><strong>Ngày:</strong> ${invoiceDate}</p>
-              <p><strong>Khách hàng:</strong> ${selectedCustomer?.name || 'Khách lẻ'}</p>
+              <p><strong>Khách hàng:</strong> ${selectedCustomer?.name || t('pos.guest')}</p>
               ${selectedCustomer ? `<p><strong>SĐT:</strong> ${selectedCustomer.phone}</p>` : ''}
             </div>
 
@@ -459,11 +461,11 @@ export default function POSPage() {
 
             <div class="totals">
                <div class="row">
-                <span>Tạm tính:</span>
+                <span>${t('pos.subtotal')}:</span>
                 <span>${formatCurrency(subtotal)}</span>
               </div>
               <div class="row">
-                <span>Giảm giá:</span>
+                <span>${t('pos.discount')}:</span>
                 <span>-${formatCurrency(discount)}</span>
               </div>
               ${vatHtml}
@@ -587,14 +589,14 @@ export default function POSPage() {
               <Button asChild variant="outline" size="icon" className="h-10 w-10">
                   <Link href="/">
                       <ArrowLeft className="h-5 w-5" />
-                      <span className="sr-only">Quay lại Dashboard</span>
+                      <span className="sr-only">{t('pos.back_to_dashboard')}</span>
                   </Link>
               </Button>
               <div className="relative flex-1">
                   <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                   <Input
                     type="search"
-                    placeholder="Tìm sản phẩm bằng tên hoặc mã vạch..."
+                    placeholder={t('pos.search_placeholder')}
                     className="pl-8"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
@@ -604,7 +606,7 @@ export default function POSPage() {
           <main className="flex flex-1 flex-col gap-4 rounded-lg bg-background p-4 shadow-sm">
             <Tabs defaultValue="all" onValueChange={(val) => setActiveCategory(val === 'all' ? null : val)}>
                   <TabsList>
-                      <TabsTrigger value="all">Tất cả</TabsTrigger>
+                      <TabsTrigger value="all">{t('pos.all_categories')}</TabsTrigger>
                       {categories.map(cat => (
                       <TabsTrigger key={cat.id} value={cat.id}>{cat.name}</TabsTrigger>
                       ))}
@@ -627,7 +629,7 @@ export default function POSPage() {
                               data-ai-hint={product.hint}
                               />
                               <div className="absolute top-1 right-1 bg-background/80 text-foreground text-xs font-bold px-2 py-1 rounded-full">
-                                  Tồn kho: {product.stock}
+                                  {t('pos.stock', { stock: product.stock })}
                               </div>
                           </div>
                           <CardContent className="p-2 text-center">
@@ -649,16 +651,16 @@ export default function POSPage() {
               <div className="flex items-center gap-2">
                   <Select value={selectedCustomerId} onValueChange={(value) => setSelectedCustomerId(value || 'guest')}>
                       <SelectTrigger>
-                          <SelectValue placeholder="Chọn một khách hàng" />
+                          <SelectValue placeholder={t('pos.select_customer_placeholder')} />
                       </SelectTrigger>
                       <SelectContent>
-                          <SelectItem value="guest">Khách lẻ</SelectItem>
+                          <SelectItem value="guest">{t('pos.guest')}</SelectItem>
                           {customers.filter(c => !c.is_deleted && c.status === 'Active').map(customer => (
                               <SelectItem key={customer.id} value={customer.id}>{customer.name} - {customer.phone}</SelectItem>
                           ))}
                       </SelectContent>
                   </Select>
-                  <Button variant="outline" size="icon" onClick={handleAddNewCustomer}>
+                  <Button variant="outline" size="icon" onClick={handleAddNewCustomer} aria-label={t('pos.add_customer')}>
                       <UserPlus className="h-4 w-4" />
                   </Button>
               </div>
@@ -667,7 +669,7 @@ export default function POSPage() {
               <ScrollArea className="h-[calc(100vh-320px)]">
                   {cart.length === 0 ? (
                       <div className="flex h-full items-center justify-center">
-                          <p className="text-center text-muted-foreground">Chọn sản phẩm để thêm vào giỏ hàng.</p>
+                          <p className="text-center text-muted-foreground">{t('pos.empty_cart')}</p>
                       </div>
                   ) : (
                   <div className="grid gap-4 p-4">
@@ -704,11 +706,11 @@ export default function POSPage() {
             <CardFooter className="flex flex-col gap-4 p-4 border-t bg-muted/40">
               <div className="w-full space-y-2 text-sm">
                   <div className="flex justify-between">
-                      <span>Tạm tính</span>
+                      <span>{t('pos.subtotal')}</span>
                       <span className="font-medium">{formatCurrency(subtotal)}</span>
                   </div>
                   <div className="flex items-center justify-between">
-                      <Label htmlFor="discount">Giảm giá</Label>
+                      <Label htmlFor="discount">{t('pos.discount')}</Label>
                       <Input 
                           id="discount"
                           type="number"
@@ -720,18 +722,18 @@ export default function POSPage() {
                   </div>
                   {store.is_vat_enabled && store.vat_rate > 0 && (
                     <div className="flex justify-between">
-                        <span>VAT ({store.vat_rate}%)</span>
+                        <span>{t('pos.vat_rate', { rate: store.vat_rate })}</span>
                         <span className="font-medium">{formatCurrency(vatAmount)}</span>
                     </div>
                   )}
                   <Separator />
                   <div className="flex justify-between font-bold text-lg">
-                      <span>Khách phải trả</span>
+                      <span>{t('pos.total_due')}</span>
                       <span>{formatCurrency(totalWithVat)}</span>
                   </div>
               </div>
               <Button className="w-full bg-accent hover:bg-accent/90" size="lg" disabled={cart.length === 0} onClick={() => setPaymentDialogOpen(true)}>
-                Tạo đơn hàng
+                {t('pos.create_order')}
               </Button>
             </CardFooter>
           </Card>
@@ -741,9 +743,9 @@ export default function POSPage() {
       <Dialog open={isAddCustomerDialogOpen} onOpenChange={setAddCustomerDialogOpen}>
         <DialogContent className="sm:max-w-2xl">
           <DialogHeader>
-            <DialogTitle className="font-headline">Thêm khách hàng mới</DialogTitle>
+            <DialogTitle className="font-headline">{t('pos.add_customer_title')}</DialogTitle>
             <DialogDescription>
-              Điền thông tin chi tiết của khách hàng.
+              {t('pos.add_customer_description')}
             </DialogDescription>
           </DialogHeader>
           <Form {...form}>
@@ -753,8 +755,8 @@ export default function POSPage() {
                 name="name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Tên khách hàng</FormLabel>
-                    <FormControl><Input placeholder="Nguyễn Văn A" {...field} /></FormControl>
+                    <FormLabel>{t('pages.customers.form_name')}</FormLabel>
+                    <FormControl><Input placeholder={t('pages.customers.form_name_placeholder')} {...field} /></FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -764,8 +766,8 @@ export default function POSPage() {
                 name="phone"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Số điện thoại</FormLabel>
-                    <FormControl><Input placeholder="0901234567" {...field} /></FormControl>
+                    <FormLabel>{t('pages.customers.form_phone')}</FormLabel>
+                    <FormControl><Input placeholder={t('pages.customers.form_phone_placeholder')} {...field} /></FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -775,8 +777,8 @@ export default function POSPage() {
                 name="email"
                 render={({ field }) => (
                   <FormItem className="md:col-span-2">
-                    <FormLabel>Email</FormLabel>
-                    <FormControl><Input type="email" placeholder="nguyenvana@example.com" {...field} /></FormControl>
+                    <FormLabel>{t('pages.customers.form_email')}</FormLabel>
+                    <FormControl><Input type="email" placeholder={t('pages.customers.form_email_placeholder')} {...field} /></FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -786,8 +788,8 @@ export default function POSPage() {
                 name="address"
                 render={({ field }) => (
                   <FormItem className="md:col-span-2">
-                    <FormLabel>Địa chỉ</FormLabel>
-                    <FormControl><Textarea placeholder="Số nhà, đường, phường/xã, quận/huyện, tỉnh/thành" {...field} /></FormControl>
+                    <FormLabel>{t('pages.customers.form_address')}</FormLabel>
+                    <FormControl><Textarea placeholder={t('pages.customers.form_address_placeholder')} {...field} /></FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -797,8 +799,8 @@ export default function POSPage() {
                 name="tax_code"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Mã số thuế</FormLabel>
-                    <FormControl><Input placeholder="Tùy chọn" {...field} /></FormControl>
+                    <FormLabel>{t('pages.customers.form_tax_code')}</FormLabel>
+                    <FormControl><Input placeholder={t('pages.customers.form_tax_code_placeholder')} {...field} /></FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -808,7 +810,7 @@ export default function POSPage() {
                 name="credit_limit"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Hạn mức công nợ</FormLabel>
+                    <FormLabel>{t('pages.customers.form_credit_limit')}</FormLabel>
                     <FormControl><Input type="number" placeholder="0" {...field} /></FormControl>
                     <FormMessage />
                   </FormItem>
@@ -819,14 +821,14 @@ export default function POSPage() {
                 name="customer_type"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Loại khách hàng</FormLabel>
+                    <FormLabel>{t('pages.customers.form_type')}</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                         <FormControl>
-                          <SelectTrigger><SelectValue placeholder="Chọn loại khách" /></SelectTrigger>
+                          <SelectTrigger><SelectValue placeholder={t('pages.customers.form_type_placeholder')} /></SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="Retail">Khách lẻ</SelectItem>
-                          <SelectItem value="Wholesale">Khách sỉ</SelectItem>
+                          <SelectItem value="Retail">{t('pages.customers.form_type_retail')}</SelectItem>
+                          <SelectItem value="Wholesale">{t('pages.customers.form_type_wholesale')}</SelectItem>
                         </SelectContent>
                       </Select>
                     <FormMessage />
@@ -838,15 +840,15 @@ export default function POSPage() {
                 name="status"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Trạng thái</FormLabel>
+                    <FormLabel>{t('pages.customers.form_status')}</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                         <FormControl>
-                          <SelectTrigger><SelectValue placeholder="Chọn trạng thái" /></SelectTrigger>
+                          <SelectTrigger><SelectValue placeholder={t('pages.customers.form_status_placeholder')} /></SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="Active">Hoạt động</SelectItem>
-                          <SelectItem value="Inactive">Không hoạt động</SelectItem>
-                          <SelectItem value="Blocked">Bị chặn</SelectItem>
+                          <SelectItem value="Active">{t('pages.customers.form_status_active')}</SelectItem>
+                          <SelectItem value="Inactive">{t('pages.customers.form_status_inactive')}</SelectItem>
+                          <SelectItem value="Blocked">{t('pages.customers.form_status_blocked')}</SelectItem>
                         </SelectContent>
                       </Select>
                     <FormMessage />
@@ -858,14 +860,14 @@ export default function POSPage() {
                 name="note"
                 render={({ field }) => (
                   <FormItem className="md:col-span-2">
-                    <FormLabel>Ghi chú</FormLabel>
-                    <FormControl><Textarea placeholder="Thông tin thêm về khách hàng..." {...field} /></FormControl>
+                    <FormLabel>{t('pages.customers.form_note')}</FormLabel>
+                    <FormControl><Textarea placeholder={t('pages.customers.form_note_placeholder')} {...field} /></FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
               <DialogFooter className="md:col-span-2">
-                <Button type="submit" className="bg-primary hover:bg-primary/90">Lưu khách hàng</Button>
+                <Button type="submit" className="bg-primary hover:bg-primary/90">{t('common.save')}</Button>
               </DialogFooter>
             </form>
           </Form>
@@ -875,26 +877,26 @@ export default function POSPage() {
       <Dialog open={isPaymentDialogOpen} onOpenChange={setPaymentDialogOpen}>
         <DialogContent className="sm:max-w-md">
             <DialogHeader>
-                <DialogTitle className="font-headline">Hoàn tất đơn hàng</DialogTitle>
+                <DialogTitle className="font-headline">{t('pos.payment_dialog_title')}</DialogTitle>
                 <DialogDescription>
-                    Kiểm tra thông tin, phương thức thanh toán và tạo đơn hàng.
+                    {t('pos.payment_dialog_description')}
                 </DialogDescription>
             </DialogHeader>
             <div className="space-y-4">
                 <div className="space-y-2 text-sm">
                     <div className="flex justify-between">
-                        <span>Khách hàng</span>
-                        <span className="font-medium">{selectedCustomer?.name || 'Khách lẻ'}</span>
+                        <span>{t('pos.customer')}</span>
+                        <span className="font-medium">{selectedCustomer?.name || t('pos.guest')}</span>
                     </div>
                     <div className="flex justify-between font-bold text-lg">
-                        <span>Tổng cộng</span>
+                        <span>{t('pages.order_details.grand_total')}</span>
                         <span>{formatCurrency(totalWithVat)}</span>
                     </div>
                 </div>
                 <Separator />
                 <div className="grid gap-2">
                      <div>
-                        <Label htmlFor="amount-paid">Số tiền thanh toán</Label>
+                        <Label htmlFor="amount-paid">{t('pos.amount_to_pay')}</Label>
                         <Input
                             id="amount-paid"
                             type="number"
@@ -905,7 +907,7 @@ export default function POSPage() {
                     </div>
                     {(totalWithVat - amountPaid) > 0 && (
                         <div className="flex justify-between text-sm text-destructive font-semibold text-right">
-                            <span>Còn lại</span>
+                            <span>{t('pos.remaining_amount')}</span>
                             <span>{formatCurrency(totalWithVat - amountPaid)}</span>
                         </div>
                     )}
@@ -913,24 +915,24 @@ export default function POSPage() {
 
                 <div className="space-y-4">
                     <div>
-                        <Label>Phương thức thanh toán</Label>
+                        <Label>{t('pos.payment_method')}</Label>
                         <RadioGroup value={paymentMethod} onValueChange={setPaymentMethod} className="mt-2 grid grid-cols-3 gap-2">
                             <div>
                                 <RadioGroupItem value="Cash" id="cash" className="peer sr-only" />
                                 <Label htmlFor="cash" className="flex cursor-pointer flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary">
-                                    Tiền mặt
+                                    {t('pos.cash')}
                                 </Label>
                             </div>
                             <div>
                                 <RadioGroupItem value="Card" id="card" className="peer sr-only" />
                                 <Label htmlFor="card" className="flex cursor-pointer flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary">
-                                    Thẻ
+                                    {t('pos.card')}
                                 </Label>
                             </div>
                             <div>
                                 <RadioGroupItem value="Transfer" id="transfer" className="peer sr-only" />
                                 <Label htmlFor="transfer" className="flex cursor-pointer flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary">
-                                    C.Khoản
+                                    {t('pos.transfer')}
                                 </Label>
                             </div>
                              <div>
@@ -942,7 +944,7 @@ export default function POSPage() {
                                         !selectedCustomer && "cursor-not-allowed opacity-50"
                                     )}
                                 >
-                                    Ghi nợ
+                                    {t('pos.debt')}
                                 </Label>
                             </div>
                             <div>
@@ -954,7 +956,7 @@ export default function POSPage() {
                                         !selectedCustomer && "cursor-not-allowed opacity-50"
                                     )}
                                 >
-                                    Trả góp
+                                    {t('pos.installment')}
                                 </Label>
                             </div>
                         </RadioGroup>
@@ -971,17 +973,17 @@ export default function POSPage() {
                             />
                            ) : (
                             <div className="flex h-[250px] w-[250px] items-center justify-center rounded-md bg-muted">
-                                <p className="text-center text-sm text-muted-foreground">Không thể tạo mã QR.</p>
+                                <p className="text-center text-sm text-muted-foreground">{t('pos.qr_code_error')}</p>
                             </div>
                            )}
-                            <p className="text-sm text-muted-foreground">Quét mã để thanh toán</p>
+                            <p className="text-sm text-muted-foreground">{t('pos.qr_code_scan')}</p>
                         </div>
                     )}
                     <div>
-                        <Label htmlFor="delivery-address">Địa chỉ giao hàng (nếu có)</Label>
+                        <Label htmlFor="delivery-address">{t('pos.shipping_address')}</Label>
                         <Textarea 
                             id="delivery-address" 
-                            placeholder="Để trống nếu nhận tại cửa hàng"
+                            placeholder={t('pos.shipping_address_placeholder')}
                             defaultValue={selectedCustomer?.address || ''}
                         />
                     </div>
@@ -990,11 +992,11 @@ export default function POSPage() {
             <DialogFooter className="flex-col sm:flex-row sm:justify-between gap-2 mt-4">
                 <Button variant="outline" onClick={handleQuickPrint}>
                     <Printer className="mr-2 h-4 w-4"/>
-                    Hoá đơn in nhanh
+                    {t('pos.quick_print')}
                 </Button>
                 <div className="flex justify-end gap-2">
-                    <Button variant="ghost" onClick={() => setPaymentDialogOpen(false)}>Hủy</Button>
-                    <Button onClick={handleConfirmPayment} className="bg-primary hover:bg-primary/90">Xác nhận & Tạo đơn</Button>
+                    <Button variant="ghost" onClick={() => setPaymentDialogOpen(false)}>{t('common.cancel')}</Button>
+                    <Button onClick={handleConfirmPayment} className="bg-primary hover:bg-primary/90">{t('pos.confirm_and_create')}</Button>
                 </div>
             </DialogFooter>
         </DialogContent>

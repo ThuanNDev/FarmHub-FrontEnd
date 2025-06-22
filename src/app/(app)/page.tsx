@@ -33,8 +33,10 @@ import {
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from 'recharts';
 import { mockOrders, mockCustomers, mockProducts, mockOrderItems, mockChartData } from '@/lib/data';
 import { useMemo, useState, useEffect } from 'react';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export default function Dashboard() {
+  const { t } = useLanguage();
   const [newOrdersThisMonth, setNewOrdersThisMonth] = useState(0);
 
   useEffect(() => {
@@ -110,45 +112,45 @@ export default function Dashboard() {
         {/* Total Revenue */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Tổng doanh thu</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('pages.dashboard.total_revenue')}</CardTitle>
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{formatCurrency(totalRevenue)}</div>
-            <p className="text-xs text-muted-foreground">+20.1% so với tháng trước</p>
+            <p className="text-xs text-muted-foreground">{t('pages.dashboard.revenue_comparison')}</p>
           </CardContent>
         </Card>
         {/* Total Debt */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Tổng công nợ</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('pages.dashboard.total_debt')}</CardTitle>
             <CreditCard className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{formatCurrency(totalDebt)}</div>
-            <p className="text-xs text-muted-foreground">Tổng nợ từ các khách hàng</p>
+            <p className="text-xs text-muted-foreground">{t('pages.dashboard.debt_description')}</p>
           </CardContent>
         </Card>
         {/* Total Customers */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Khách hàng</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('pages.dashboard.customers')}</CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">+{totalCustomers}</div>
-            <p className="text-xs text-muted-foreground">Tổng số khách hàng</p>
+            <p className="text-xs text-muted-foreground">{t('pages.dashboard.customers_description')}</p>
           </CardContent>
         </Card>
         {/* New Orders */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Đơn hàng mới</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('pages.dashboard.new_orders')}</CardTitle>
             <ShoppingCart className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">+{newOrdersThisMonth}</div>
-            <p className="text-xs text-muted-foreground">Trong tháng này</p>
+            <p className="text-xs text-muted-foreground">{t('pages.dashboard.new_orders_description')}</p>
           </CardContent>
         </Card>
       </div>
@@ -158,8 +160,8 @@ export default function Dashboard() {
         {/* Revenue Chart */}
         <Card className="md:col-span-3">
             <CardHeader>
-                <CardTitle className="font-headline">Tổng quan doanh thu</CardTitle>
-                <CardDescription>Doanh thu 12 tháng gần nhất</CardDescription>
+                <CardTitle className="font-headline">{t('pages.dashboard.revenue_overview')}</CardTitle>
+                <CardDescription>{t('pages.dashboard.revenue_overview_description')}</CardDescription>
             </CardHeader>
             <CardContent className="pl-2">
                 <ChartContainer config={{ revenue: { label: "Doanh thu", color: "hsl(var(--primary))" } }} className="h-[300px] w-full">
@@ -196,14 +198,14 @@ export default function Dashboard() {
         <Card className="md:col-span-2">
           <CardHeader className="flex flex-row items-center">
             <div className="grid gap-2">
-                <CardTitle className="font-headline">Đơn hàng gần đây</CardTitle>
+                <CardTitle className="font-headline">{t('pages.dashboard.recent_orders')}</CardTitle>
                 <CardDescription>
-                    Bạn có {mockOrders.filter(o => o.status === 'Pending').length} đơn hàng đang chờ xử lý.
+                    {t('pages.dashboard.recent_orders_description', { count: mockOrders.filter(o => o.status === 'Pending').length })}
                 </CardDescription>
             </div>
             <Button asChild size="sm" className="ml-auto gap-1 bg-accent hover:bg-accent/90">
                 <Link href="/orders">
-                    Xem tất cả
+                    {t('pages.dashboard.view_all')}
                     <ArrowUpRight className="h-4 w-4" />
                 </Link>
             </Button>
@@ -212,10 +214,10 @@ export default function Dashboard() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Khách hàng</TableHead>
-                  <TableHead className="hidden sm:table-cell">Ngày</TableHead>
-                  <TableHead>Trạng thái</TableHead>
-                  <TableHead className="text-right">Tổng tiền</TableHead>
+                  <TableHead>{t('pages.dashboard.recent_orders_customer')}</TableHead>
+                  <TableHead className="hidden sm:table-cell">{t('pages.dashboard.recent_orders_date')}</TableHead>
+                  <TableHead>{t('pages.dashboard.recent_orders_status')}</TableHead>
+                  <TableHead className="text-right">{t('pages.dashboard.recent_orders_total')}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -243,8 +245,8 @@ export default function Dashboard() {
         {/* Best Selling Products */}
         <Card>
           <CardHeader>
-            <CardTitle className="font-headline">Sản phẩm bán chạy</CardTitle>
-            <CardDescription>Top 5 sản phẩm bán chạy nhất.</CardDescription>
+            <CardTitle className="font-headline">{t('pages.dashboard.best_selling_products')}</CardTitle>
+            <CardDescription>{t('pages.dashboard.best_selling_products_description')}</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
@@ -258,10 +260,10 @@ export default function Dashboard() {
                         <p className="text-sm font-medium leading-none">{product.name}</p>
                         <p className="text-sm text-muted-foreground">{product.brand}</p>
                     </div>
-                    <div className="ml-auto font-medium">+{quantity}</div>
+                    <div className="ml-auto font-medium">{t('pages.dashboard.sold_plus', { count: quantity })}</div>
                 </div>
               )) : (
-                <p className="text-sm text-muted-foreground text-center py-4">Chưa có dữ liệu bán hàng.</p>
+                <p className="text-sm text-muted-foreground text-center py-4">{t('pages.dashboard.no_sales_data')}</p>
               )}
             </div>
           </CardContent>
