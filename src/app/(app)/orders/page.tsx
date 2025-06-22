@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useMemo } from 'react';
@@ -191,7 +192,7 @@ export default function OrdersPage() {
       `"${order.order_code}"`,
       `"${getCustomerName(order.customer_id)}"`,
       `"${formatDate(order.created_at)}"`,
-      `"${order.status}"`,
+      `"${t(`status.${order.status.toLowerCase()}`)}"`,
       order.total_amount,
       order.total_paid,
       order.total_amount - order.total_paid,
@@ -282,7 +283,7 @@ export default function OrdersPage() {
                       </TableCell>
                       <TableCell>
                         <Badge variant={getStatusVariant(order.status) as any}>
-                          {order.status}
+                          {t(`status.${order.status.toLowerCase()}`)}
                         </Badge>
                       </TableCell>
                       <TableCell className="text-right">

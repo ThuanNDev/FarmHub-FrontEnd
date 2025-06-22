@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -247,7 +248,7 @@ export default function OrderDetailPage() {
             <div class="header">
               <h1>${storeInfo.name}</h1>
               <p>${storeInfo.address}</p>
-              <p>SĐT: ${storeInfo.phone}</p>
+              <p>${storeInfo.phone}</p>
             </div>
 
             <div class="info">
@@ -387,7 +388,7 @@ export default function OrderDetailPage() {
                 {t('pages.order_details.created_date', { date: formatDate(order.created_at) })}
               </CardDescription>
             </div>
-            <Badge className="text-base" variant={getStatusVariant(order.status) as any}>{order.status}</Badge>
+            <Badge className="text-base" variant={getStatusVariant(order.status) as any}>{t(`status.${order.status.toLowerCase()}`)}</Badge>
           </div>
         </CardHeader>
         <CardContent>
