@@ -115,7 +115,7 @@ export default function UsersPage() {
 
   // For demonstration: Mock the currently logged-in user.
   // In a real app, this would come from an authentication context.
-  const currentUser = mockUsers[1]; // Changed to 'Staff' user to demonstrate non-admin view.
+  const currentUser = mockUsers[0]; // 'Admin' user
 
   const form = useForm<UserFormValues>({
     resolver: zodResolver(userSchema),
