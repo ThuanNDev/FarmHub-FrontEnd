@@ -82,7 +82,3 @@
     @apply bg-background text-foreground;
   }
 }
-
-.flex-col > main.flex-1 {
-    min-height: 0;
-}
