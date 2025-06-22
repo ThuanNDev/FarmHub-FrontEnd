@@ -295,6 +295,10 @@
     "error_no_user": "Không tìm thấy người dùng hiện tại.",
     "success_order_created": "Đơn hàng {{code}} đã được tạo thành công.",
     "success_on_credit": " Ghi nợ {{amount}} cho khách hàng {{name}}.",
-    "success_installment": " Trả góp {{amount}} trong {{count}} kỳ."
+    "success_installment": " Trả góp {{amount}} trong {{count}} kỳ.",
+    "select_price_tier": "Chọn mức giá",
+    "price_tier_retail": "Giá bán lẻ",
+    "price_tier_wholesale": "Giá bán sỉ",
+    "price_tier_credit": "Giá ghi nợ"
   }
 }

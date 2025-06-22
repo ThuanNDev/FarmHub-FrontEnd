@@ -43,7 +43,6 @@ type PriceTier = 'retail' | 'wholesale' | 'credit';
 type CartItem = Product & {
   quantity: number;
   appliedPrice: number;
-  priceTier: PriceTier;
 };
 type Customer = typeof mockCustomers[0];
 
@@ -74,6 +73,7 @@ export default function POSPage() {
   const [paymentMethod, setPaymentMethod] = useState('Cash');
   const [amountPaid, setAmountPaid] = useState(0);
   const [qrCodeUrl, setQrCodeUrl] = useState('');
+  const [globalPriceTier, setGlobalPriceTier] = useState<PriceTier>('retail');
   
   const { toast } = useToast();
   const { store } = useStore();
@@ -101,6 +101,22 @@ export default function POSPage() {
     return customers.find(c => c.id === selectedCustomerId);
   }, [selectedCustomerId, customers]);
 
+  // Set global price tier based on customer type
+  useEffect(() => {
+    const customer = customers.find(c => c.id === selectedCustomerId);
+    const newTier = customer?.customer_type === 'Wholesale' ? 'wholesale' : 'retail';
+    setGlobalPriceTier(newTier);
+  }, [selectedCustomerId, customers]);
+
+  // Update all cart item prices when global price tier changes
+  useEffect(() => {
+    setCart(prevCart => prevCart.map(item => ({
+        ...item,
+        appliedPrice: getPriceByTier(item, globalPriceTier)
+    })));
+  }, [globalPriceTier]);
+
+
   const getPriceByTier = (product: Product, tier: PriceTier): number => {
     switch(tier) {
       case 'wholesale': return product.wholesale_price || product.price;
@@ -126,14 +142,10 @@ export default function POSPage() {
         return prevCart;
       }
       if (product.stock > 0) {
-        const customerType = selectedCustomer?.customer_type;
-        const defaultPriceTier: PriceTier = customerType === 'Wholesale' ? 'wholesale' : 'retail';
-        
         const newCartItem: CartItem = { 
             ...product, 
             quantity: 1,
-            priceTier: defaultPriceTier,
-            appliedPrice: getPriceByTier(product, defaultPriceTier),
+            appliedPrice: getPriceByTier(product, globalPriceTier),
         };
         return [...prevCart, newCartItem];
       }
@@ -144,19 +156,6 @@ export default function POSPage() {
       });
       return prevCart;
     });
-  };
-
-  const handlePriceTierChange = (productId: string, tier: PriceTier) => {
-    setCart(prevCart => prevCart.map(item => {
-        if (item.id === productId) {
-            return {
-                ...item,
-                priceTier: tier,
-                appliedPrice: getPriceByTier(item, tier),
-            };
-        }
-        return item;
-    }));
   };
 
   const updateQuantity = (productId: string, newQuantity: number) => {
@@ -706,21 +705,35 @@ export default function POSPage() {
         <div className="col-span-4">
           <Card className="flex h-full flex-col shadow-sm">
             <CardHeader className="p-4 border-b">
-              <div className="flex items-center gap-2">
-                  <Select value={selectedCustomerId} onValueChange={(value) => setSelectedCustomerId(value || 'guest')}>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="flex items-center gap-2">
+                    <Select value={selectedCustomerId} onValueChange={(value) => setSelectedCustomerId(value || 'guest')}>
+                        <SelectTrigger>
+                            <SelectValue placeholder={t('pos.select_customer_placeholder')} />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="guest">{t('pos.guest')}</SelectItem>
+                            {customers.filter(c => !c.is_deleted && c.status === 'Active').map(customer => (
+                                <SelectItem key={customer.id} value={customer.id}>{customer.name} - {customer.phone}</SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                    <Button variant="outline" size="icon" onClick={handleAddNewCustomer} aria-label={t('pos.add_customer')}>
+                        <UserPlus className="h-4 w-4" />
+                    </Button>
+                </div>
+                <div>
+                  <Select value={globalPriceTier} onValueChange={(value) => setGlobalPriceTier(value as PriceTier)}>
                       <SelectTrigger>
-                          <SelectValue placeholder={t('pos.select_customer_placeholder')} />
+                          <SelectValue placeholder={t('pos.select_price_tier')} />
                       </SelectTrigger>
                       <SelectContent>
-                          <SelectItem value="guest">{t('pos.guest')}</SelectItem>
-                          {customers.filter(c => !c.is_deleted && c.status === 'Active').map(customer => (
-                              <SelectItem key={customer.id} value={customer.id}>{customer.name} - {customer.phone}</SelectItem>
-                          ))}
+                          <SelectItem value="retail">{t('pos.price_tier_retail')}</SelectItem>
+                          <SelectItem value="wholesale">{t('pos.price_tier_wholesale')}</SelectItem>
+                          <SelectItem value="credit">{t('pos.price_tier_credit')}</SelectItem>
                       </SelectContent>
                   </Select>
-                  <Button variant="outline" size="icon" onClick={handleAddNewCustomer} aria-label={t('pos.add_customer')}>
-                      <UserPlus className="h-4 w-4" />
-                  </Button>
+                </div>
               </div>
             </CardHeader>
             <CardContent className="flex-1 p-0">
@@ -730,45 +743,33 @@ export default function POSPage() {
                           <p className="text-center text-muted-foreground">{t('pos.empty_cart')}</p>
                       </div>
                   ) : (
-                  <div className="grid gap-4 p-4">
+                  <div className="grid gap-y-2 p-4">
                       {cart.map((item) => (
-                        <div key={item.id} className="grid grid-cols-12 items-start gap-2 border-b pb-3 mb-3">
-                            <div className="col-span-12">
-                                <p className="font-medium text-sm truncate">{item.name}</p>
-                            </div>
-                            <div className="col-span-5">
-                                <Select
-                                    value={item.priceTier}
-                                    onValueChange={(value) => handlePriceTierChange(item.id, value as PriceTier)}
-                                >
-                                    <SelectTrigger className="h-8 text-xs">
-                                        <SelectValue placeholder="Chọn giá" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="retail">Lẻ: {formatCurrency(item.price)}</SelectItem>
-                                        {item.wholesale_price && <SelectItem value="wholesale">Sỉ: {formatCurrency(item.wholesale_price)}</SelectItem>}
-                                        {item.credit_price && <SelectItem value="credit">Ghi nợ: {formatCurrency(item.credit_price)}</SelectItem>}
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                            <div className="col-span-4 flex items-center justify-center gap-1 pt-1">
-                                <Button size="icon" variant="outline" className="h-6 w-6" onClick={() => updateQuantity(item.id, item.quantity - 1)}>
-                                    <Minus className="h-3 w-3" />
-                                </Button>
-                                <Input 
-                                    type="number" 
-                                    value={item.quantity} 
-                                    onChange={(e) => updateQuantity(item.id, parseInt(e.target.value) || 0)}
-                                    className="h-6 w-10 text-center p-0 border-0 shadow-none focus-visible:ring-0"
-                                />
-                                <Button size="icon" variant="outline" className="h-6 w-6" onClick={() => updateQuantity(item.id, item.quantity + 1)}>
-                                    <Plus className="h-3 w-3" />
-                                </Button>
-                            </div>
-                            <p className="col-span-2 text-right font-medium text-sm pt-1">{formatCurrency(item.appliedPrice * item.quantity)}</p>
-                            <Button size="icon" variant="ghost" className="col-span-1 h-6 w-6 text-muted-foreground hover:text-destructive" onClick={() => updateQuantity(item.id, 0)}>
-                                <X className="h-4 w-4" />
-                            </Button>
+                        <div key={item.id} className="grid grid-cols-12 items-center gap-2 border-b pb-2 last:border-b-0 last:pb-0">
+                          <div className="col-span-6">
+                              <p className="font-medium text-sm truncate">{item.name}</p>
+                              <p className="text-xs text-muted-foreground">{formatCurrency(item.appliedPrice)}</p>
+                          </div>
+                          <div className="col-span-3 flex items-center justify-center gap-1">
+                              <Button size="icon" variant="outline" className="h-6 w-6" onClick={() => updateQuantity(item.id, item.quantity - 1)}>
+                                  <Minus className="h-3 w-3" />
+                              </Button>
+                              <Input 
+                                  type="number" 
+                                  value={item.quantity} 
+                                  onChange={(e) => updateQuantity(item.id, parseInt(e.target.value) || 0)}
+                                  className="h-6 w-10 text-center p-0 border-0 shadow-none focus-visible:ring-0"
+                              />
+                              <Button size="icon" variant="outline" className="h-6 w-6" onClick={() => updateQuantity(item.id, item.quantity + 1)}>
+                                  <Plus className="h-3 w-3" />
+                              </Button>
+                          </div>
+                          <p className="col-span-2 text-right font-medium text-sm">{formatCurrency(item.appliedPrice * item.quantity)}</p>
+                          <div className="col-span-1 flex justify-end">
+                              <Button size="icon" variant="ghost" className="h-6 w-6 text-muted-foreground hover:text-destructive" onClick={() => updateQuantity(item.id, 0)}>
+                                  <X className="h-4 w-4" />
+                              </Button>
+                          </div>
                         </div>
                       ))}
                   </div>

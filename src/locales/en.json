@@ -295,6 +295,10 @@
     "error_no_user": "Current user not found.",
     "success_order_created": "Order {{code}} has been created successfully.",
     "success_on_credit": " Added {{amount}} to {{name}}'s debt.",
-    "success_installment": " Installment plan for {{amount}} over {{count}} periods."
+    "success_installment": " Installment plan for {{amount}} over {{count}} periods.",
+    "select_price_tier": "Select price tier",
+    "price_tier_retail": "Retail Price",
+    "price_tier_wholesale": "Wholesale Price",
+    "price_tier_credit": "Credit Price"
   }
 }
