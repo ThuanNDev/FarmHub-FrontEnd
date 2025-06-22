@@ -36,11 +36,15 @@ import { mockOrders, mockCustomers, mockProducts, mockOrderItems } from '@/lib/d
 import { useRouter } from 'next/navigation';
 
 export default function ReportsPage() {
-  const [date, setDate] = React.useState<DateRange | undefined>({
-    from: addDays(new Date(), -29),
-    to: new Date(),
-  });
+  const [date, setDate] = React.useState<DateRange | undefined>(undefined);
   const router = useRouter();
+  
+  React.useEffect(() => {
+    setDate({
+      from: addDays(new Date(), -29),
+      to: new Date(),
+    });
+  }, []);
 
   const formatCurrency = (amount: number) => {
     if (isNaN(amount)) return '0 ₫';
