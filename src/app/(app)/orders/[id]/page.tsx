@@ -4,7 +4,7 @@ import * as React from 'react';
 import Link from 'next/link';
 import { notFound, useRouter, useParams } from 'next/navigation';
 import { ArrowLeft, User, MapPin, Truck, Calendar, Hash, CreditCard, StickyNote, Package, Printer, Edit, XCircle } from 'lucide-react';
-import { mockOrders, mockCustomers, mockUsers, mockOrderItems, mockProducts, mockStores } from '@/lib/data';
+import { mockOrders, mockCustomers, mockUsers, mockOrderItems, mockProducts } from '@/lib/data';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -35,12 +35,14 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
+import { useStore } from '@/contexts/StoreContext';
 
 type Order = typeof mockOrders[0];
 
 export default function OrderDetailPage() {
   const router = useRouter();
   const params = useParams<{ id: string }>();
+  const { store } = useStore();
   
   const initialOrder = React.useMemo(() => mockOrders.find((o) => o.id === params.id), [params.id]);
   
@@ -73,6 +75,17 @@ export default function OrderDetailPage() {
     });
   };
 
+  const formatCurrency = (amount: number | null) => {
+    if (amount === null || amount === undefined) return '-';
+    return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
+  };
+  
+  const formatDate = (dateString: string | null) => {
+    if (!dateString) return '-';
+    const options: Intl.DateTimeFormatOptions = { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' };
+    return new Date(dateString).toLocaleDateString('vi-VN', options);
+  }
+
   const handlePrintOrder = () => {
      if (!order || !processor) {
         toast({
@@ -93,9 +106,19 @@ export default function OrderDetailPage() {
       return;
     }
     
-    const storeInfo = mockStores[0];
+    const storeInfo = store;
+    const paperSize = store.printing_preferences?.default_paper_size || 'k80';
     
-    const itemsHtml = items.map(item => `
+    const itemsHtmlA5 = items.map(item => `
+        <tr key=${item.id} class="border-b">
+            <td class="p-2">${item.product_name}</td>
+            <td class="p-2 text-center">${item.quantity}</td>
+            <td class="p-2 text-right">${formatCurrency(item.unit_price)}</td>
+            <td class="p-2 text-right">${formatCurrency(item.total_price)}</td>
+        </tr>
+    `).join('');
+
+    const itemsHtmlThermal = items.map(item => `
       <tr class="item">
         <td>
           <div class="item-name">${item.product_name}</div>
@@ -105,7 +128,90 @@ export default function OrderDetailPage() {
       </tr>
     `).join('');
     
-    const invoiceHtml = `
+    let invoiceHtml = '';
+    
+    if (paperSize === 'a5') {
+       invoiceHtml = `
+        <html>
+        <head>
+          <title>Hóa đơn ${order.order_code}</title>
+          <style>
+            body { font-family: Arial, sans-serif; font-size: 14px; line-height: 1.6; color: #000; background: #fff;}
+            .a5-preview { background-color: white; color: black; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1); margin: 0 auto; padding: 2rem; width: 148mm; min-height: 210mm; }
+            header { display: flex; justify-content: space-between; align-items: flex-start; padding-bottom: 1rem; border-bottom: 1px solid #000; }
+            header .text-left { text-align: left; }
+            header .text-right { text-align: right; }
+            h1 { font-weight: bold; font-size: 1.5rem; line-height: 2rem; }
+            h2 { font-weight: bold; font-size: 1.25rem; line-height: 1.75rem; text-transform: uppercase; }
+            .text-xs { font-size: 0.75rem; line-height: 1rem; }
+            section { margin-top: 1.5rem; margin-bottom: 1.5rem; }
+            section h3 { font-weight: 600; margin-bottom: 0.5rem; }
+            .text-sm { font-size: 0.875rem; line-height: 1.25rem; }
+            table { width: 100%; text-align: left; font-size: 0.875rem; line-height: 1.25rem; border-collapse: collapse;}
+            thead { background-color: #f3f4f6 !important; }
+            th { padding: 0.5rem; font-weight: 600; }
+            td { padding: 0.5rem; }
+            .text-center { text-align: center; }
+            .text-right { text-align: right; }
+            .border-b { border-bottom: 1px solid #ddd; }
+            .total-container { width: 40%; margin-left: auto; margin-top: 1.5rem; font-size: 0.875rem; line-height: 1.25rem; }
+            .total-row { display: flex; justify-content: space-between; }
+            .total-main { border-top: 1px solid #000; padding-top: 0.5rem; margin-top: 0.5rem; font-size: 1rem; line-height: 1.5rem; }
+            .text-red-600 { color: #dc2626; }
+            footer { margin-top: 3rem; text-align: center; font-size: 0.75rem; line-height: 1rem; color: #6b7281; border-top: 1px solid #000; padding-top: 1rem; }
+            @media print { body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
+          </style>
+        </head>
+        <body>
+          <div class="a5-preview">
+            <header>
+                <div class="text-left">
+                    <h1 class="font-bold text-2xl">${storeInfo.name}</h1>
+                    <p class="text-xs">${storeInfo.address}</p>
+                    <p class="text-xs">SĐT: ${storeInfo.phone}</p>
+                </div>
+                <div class="text-right">
+                    <h2 class="font-bold text-xl uppercase">Hóa Đơn Bán Hàng</h2>
+                    <p class="text-xs">Mã ĐH: ${order.order_code}</p>
+                    <p class="text-xs">Ngày: ${formatDate(order.created_at)}</p>
+                </div>
+            </header>
+            <section class="my-6">
+                <h3 class="font-semibold mb-2">Thông tin khách hàng:</h3>
+                <p class="text-sm"><strong>Tên:</strong> ${customer?.name || 'Khách lẻ'}</p>
+                <p class="text-sm"><strong>SĐT:</strong> ${customer?.phone || 'N/A'}</p>
+                <p class="text-sm"><strong>Địa chỉ:</strong> ${order.delivery_address || customer?.address || 'N/A'}</p>
+            </section>
+            <table class="w-full text-sm">
+                <thead class="bg-gray-100">
+                    <tr>
+                        <th class="p-2 text-left font-semibold">Sản phẩm</th>
+                        <th class="p-2 text-center font-semibold">SL</th>
+                        <th class="p-2 text-right font-semibold">Đơn giá</th>
+                        <th class="p-2 text-right font-semibold">Thành tiền</th>
+                    </tr>
+                </thead>
+                <tbody>${itemsHtmlA5}</tbody>
+            </table>
+             <div class="total-container">
+                <div class="total-row"><span style="color: #6b7281;">Tạm tính:</span> <strong>${formatCurrency(items.reduce((s, i) => s + i.total_price, 0))}</strong></div>
+                <div class="total-row"><span style="color: #6b7281;">Giảm giá:</span> <strong>-${formatCurrency(order.discount_amount)}</strong></div>
+                <div class="total-row"><span style="color: #6b7281;">Phí VC:</span> <strong>${formatCurrency(order.shipping_fee)}</strong></div>
+                <div class="total-row total-main"><span style="font-weight: bold;">Tổng cộng:</span> <strong style="font-size: 1.125rem; line-height: 1.75rem;">${formatCurrency(order.total_amount)}</strong></div>
+                <div class="total-row"><span style="color: #6b7281;">Đã trả:</span> <strong>${formatCurrency(order.total_paid)}</strong></div>
+                <div class="total-row" style="color: #dc2626; font-weight: 600;"><span class="">Còn lại:</span> <strong>${formatCurrency(order.total_amount - order.total_paid)}</strong></div>
+            </div>
+            <footer class="mt-12 text-center text-xs text-gray-500 border-t pt-4">
+                <p>${storeInfo.invoice_footer || 'Cảm ơn quý khách!'}</p>
+                <p>Nhân viên: ${processor?.full_name || 'N/A'}</p>
+            </footer>
+          </div>
+        </body>
+        </html>
+       `;
+   } else {
+       const thermalClass = paperSize === 'k58' ? 'invoice-wrapper-k58' : 'invoice-wrapper-k80';
+       invoiceHtml = `
         <html>
         <head>
           <title>Hóa đơn ${order.order_code}</title>
@@ -113,8 +219,9 @@ export default function OrderDetailPage() {
             @page { margin: 0mm; }
             @media print { body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
             * { box-sizing: border-box; }
-            body { font-family: Arial, sans-serif; font-size: 10pt; color: #000; background: #fff; line-height: 1.4; margin: 0; padding: 0; }
-            .invoice-wrapper { width: 280px; margin: 0 auto; padding: 10px 5px; }
+            body { font-family: 'Courier New', Courier, monospace; font-size: 10pt; color: #000; background: #fff; line-height: 1.4; margin: 0; padding: 0; }
+            .invoice-wrapper-k80 { width: 280px; margin: 0 auto; padding: 10px 5px; }
+            .invoice-wrapper-k58 { width: 200px; margin: 0 auto; padding: 8px 3px; font-size: 9pt; }
             .header { text-align: center; margin-bottom: 10px; }
             .header h1 { font-size: 14pt; margin: 0; font-weight: bold; }
             .header p { margin: 2px 0; font-size: 9pt; }
@@ -134,7 +241,7 @@ export default function OrderDetailPage() {
           </style>
         </head>
         <body>
-          <div class="invoice-wrapper">
+          <div class="${thermalClass}">
             <div class="header">
               <h1>${storeInfo.name}</h1>
               <p>${storeInfo.address}</p>
@@ -142,11 +249,11 @@ export default function OrderDetailPage() {
             </div>
 
             <div class="info">
-              <p><strong>Hóa đơn bán lẻ:</strong> ${order.order_code}</p>
+              <p><strong>Hóa đơn:</strong> ${order.order_code}</p>
               <p><strong>Ngày:</strong> ${formatDate(order.created_at)}</p>
-              <p><strong>Khách hàng:</strong> ${customer?.name || 'Khách lẻ'}</p>
+              <p><strong>KH:</strong> ${customer?.name || 'Khách lẻ'}</p>
               ${customer ? `<p><strong>SĐT:</strong> ${customer.phone}</p>` : ''}
-              <p><strong>Nhân viên:</strong> ${processor?.full_name || 'N/A'}</p>
+              <p><strong>NV:</strong> ${processor?.full_name || 'N/A'}</p>
             </div>
 
             <table class="items-table">
@@ -157,7 +264,7 @@ export default function OrderDetailPage() {
                 </tr>
               </thead>
               <tbody>
-                ${itemsHtml}
+                ${itemsHtmlThermal}
               </tbody>
             </table>
 
@@ -170,7 +277,7 @@ export default function OrderDetailPage() {
                 <span>Giảm giá:</span>
                 <span>-${formatCurrency(order.discount_amount)}</span>
               </div>
-              <div class="row">
+               <div class="row">
                 <span>Phí VC:</span>
                 <span>${formatCurrency(order.shipping_fee)}</span>
               </div>
@@ -183,7 +290,7 @@ export default function OrderDetailPage() {
                 <span>${formatCurrency(order.total_paid)}</span>
               </div>
               <div class="row">
-                <span>Còn lại:</span>
+                <span style="font-weight: bold;">Còn lại:</span>
                 <span style="font-weight: bold;">${formatCurrency(order.total_amount - order.total_paid)}</span>
               </div>
             </div>
@@ -196,6 +303,7 @@ export default function OrderDetailPage() {
         </body>
       </html>
     `;
+   }
 
     printWindow.document.write(invoiceHtml);
     printWindow.document.close();
@@ -215,17 +323,6 @@ export default function OrderDetailPage() {
       title: 'Tính năng đang phát triển',
       description: 'Chức năng sửa đơn hàng sẽ sớm được ra mắt.',
     });
-  }
-
-  const formatCurrency = (amount: number | null) => {
-    if (amount === null || amount === undefined) return '-';
-    return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
-  };
-  
-  const formatDate = (dateString: string | null) => {
-    if (!dateString) return '-';
-    const options: Intl.DateTimeFormatOptions = { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' };
-    return new Date(dateString).toLocaleDateString('vi-VN', options);
   }
 
   const getStatusVariant = (status: string) => {

@@ -23,6 +23,9 @@ export const mockStores = [
     is_vat_enabled: false,
     vat_rate: 8,
     invoice_footer: 'Cảm ơn quý khách và hẹn gặp lại!',
+    printing_preferences: {
+      default_paper_size: 'k80' as 'k80' | 'a5' | 'k58'
+    },
     backup_schedule: 'daily_2am',
     defaults: {
         unit: 'cái',

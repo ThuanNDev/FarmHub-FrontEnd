@@ -1,16 +1,14 @@
 'use client';
-import React, { useState, useMemo, useRef, useEffect } from 'react';
-import Image from 'next/image';
-import { Search, Printer, ChevronsUpDown, Trash2, Plus, Minus } from 'lucide-react';
+import React, { useState, useMemo, useRef } from 'react';
+import { Search, Printer, ChevronsUpDown, Trash2 } from 'lucide-react';
 import {
-  Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle,
+  Card, CardContent, CardDescription, CardHeader, CardTitle,
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
   Tabs, TabsContent, TabsList, TabsTrigger,
 } from '@/components/ui/tabs';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { mockOrders, mockProducts, mockCustomers, mockOrderItems, mockStores, mockUsers } from '@/lib/data';
@@ -19,6 +17,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
+import { useStore } from '@/contexts/StoreContext';
 
 type Order = typeof mockOrders[0];
 type Product = typeof mockProducts[0];
@@ -27,11 +26,12 @@ type ProductToPrint = Product & { labelCount: number };
 export default function PrintingPage() {
   const { toast } = useToast();
   const printRef = useRef<HTMLDivElement>(null);
+  const { store } = useStore();
+  const paperSize = store.printing_preferences?.default_paper_size || 'k80';
 
   // Invoice State
   const [orderCode, setOrderCode] = useState('');
   const [foundOrder, setFoundOrder] = useState<Order | null>(null);
-  const [paperSize, setPaperSize] = useState<'k80' | 'a5'>('k80');
 
   // Barcode State
   const [productsToPrint, setProductsToPrint] = useState<ProductToPrint[]>([]);
@@ -64,7 +64,6 @@ export default function PrintingPage() {
     `;
     document.head.appendChild(style);
     
-    // Temporarily add the printable content to the body for printing
     const printDiv = document.createElement('div');
     printDiv.id = "printable-content";
     printDiv.innerHTML = printableArea.innerHTML;
@@ -72,7 +71,6 @@ export default function PrintingPage() {
     
     window.print();
     
-    // Clean up
     document.body.removeChild(printDiv);
     document.head.removeChild(style);
   };
@@ -109,14 +107,14 @@ export default function PrintingPage() {
           <Printer /> Công cụ in ấn
         </CardTitle>
         <CardDescription>
-          In hóa đơn, biên lai, hoặc mã vạch cho sản phẩm.
+          In hóa đơn, biên lai, hoặc mã vạch cho sản phẩm. Khổ giấy mặc định được cài đặt trong trang Cài đặt.
         </CardDescription>
       </CardHeader>
       <CardContent>
         <Tabs defaultValue="invoice">
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="invoice">In Hóa Đơn / Biên Lai</TabsTrigger>
-            <TabsTrigger value="barcode">In Mã Vạch Sản Phẩm</TabsTrigger>
+            <TabsTrigger value="barcode">In Tem Mã Vạch</TabsTrigger>
           </TabsList>
           
           {/* Invoice Printing Tab */}
@@ -136,17 +134,9 @@ export default function PrintingPage() {
                       </div>
                     </div>
                      <div className="space-y-2">
-                      <Label>Chọn khổ giấy</Label>
-                        <RadioGroup defaultValue="k80" value={paperSize} onValueChange={(val: 'k80' | 'a5') => setPaperSize(val)}>
-                            <div className="flex items-center space-x-2">
-                                <RadioGroupItem value="k80" id="k80" />
-                                <Label htmlFor="k80">Giấy in nhiệt (K80 - 80mm)</Label>
-                            </div>
-                            <div className="flex items-center space-x-2">
-                                <RadioGroupItem value="a5" id="a5" />
-                                <Label htmlFor="a5">Giấy A5</Label>
-                            </div>
-                        </RadioGroup>
+                      <Label>Khổ giấy mặc định</Label>
+                      <p className="text-sm font-semibold text-primary">{paperSize === 'k80' ? 'K80 (80mm)' : paperSize === 'a5' ? 'A5' : 'K58 (58mm)'}</p>
+                      <p className="text-xs text-muted-foreground">Thay đổi trong trang Cài đặt.</p>
                      </div>
                   </CardContent>
                 </Card>
@@ -288,7 +278,7 @@ const BarcodePreview = ({ products }: { products: ProductToPrint[] }) => {
 };
 
 
-const InvoicePreview = ({ order, paperSize }: { order: Order | null, paperSize: 'k80' | 'a5' }) => {
+const InvoicePreview = ({ order, paperSize }: { order: Order | null, paperSize: 'k80' | 'a5' | 'k58' }) => {
     if (!order) {
         return <p className="text-center text-muted-foreground pt-20">Tìm kiếm một đơn hàng để xem trước.</p>;
     }
@@ -357,8 +347,9 @@ const InvoicePreview = ({ order, paperSize }: { order: Order | null, paperSize: 
         );
     }
 
+    const thermalClass = paperSize === 'k58' ? 'w-[58mm]' : 'w-[80mm]';
     return (
-        <div className="bg-white text-black p-2 font-mono w-[80mm] mx-auto k80-preview shadow-lg">
+        <div className={cn("bg-white text-black p-2 font-mono mx-auto shadow-lg", thermalClass)}>
             <div className="text-center">
                 <h1 className="font-bold text-lg">{storeInfo.name}</h1>
                 <p className="text-[10px]">{storeInfo.address}</p>

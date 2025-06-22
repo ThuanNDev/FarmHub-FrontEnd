@@ -53,6 +53,9 @@ const settingsSchema = z.object({
   is_vat_enabled: z.boolean().default(true),
   vat_rate: z.coerce.number().min(0, "VAT không được âm.").max(100, "VAT không thể lớn hơn 100%").optional(),
   invoice_footer: z.string().optional(),
+  printing_preferences: z.object({
+      default_paper_size: z.enum(['k80', 'a5', 'k58']),
+  }).optional(),
   backup_schedule: z.string().optional(),
   defaults: z.object({
     unit: z.string().optional(),
@@ -76,6 +79,7 @@ export default function SettingsPage() {
       vat_rate: store.vat_rate || 0,
       invoice_footer: store.invoice_footer || '',
       backup_schedule: store.backup_schedule || 'daily_2am',
+      printing_preferences: store.printing_preferences || { default_paper_size: 'k80' },
       defaults: store.defaults || { unit: 'cái', discount: 0, shipping_fee: 0 },
     },
   });
@@ -88,6 +92,7 @@ export default function SettingsPage() {
         vat_rate: store.vat_rate || 0,
         invoice_footer: store.invoice_footer || '',
         backup_schedule: store.backup_schedule || 'daily_2am',
+        printing_preferences: store.printing_preferences || { default_paper_size: 'k80' },
         defaults: store.defaults || { unit: 'cái', discount: 0, shipping_fee: 0 },
     });
   }, [store, form]);
@@ -241,6 +246,41 @@ export default function SettingsPage() {
                     <FormControl>
                         <Textarea placeholder="Cảm ơn quý khách và hẹn gặp lại!" {...field} />
                     </FormControl>
+                    <FormMessage />
+                    </FormItem>
+                )}
+            />
+
+            <Separator />
+            
+            <div>
+                <h3 className="text-lg font-medium font-headline">Cài đặt In ấn</h3>
+                <p className="text-sm text-muted-foreground">
+                    Chọn khổ giấy mặc định cho toàn bộ hệ thống.
+                </p>
+            </div>
+
+            <FormField
+                control={form.control}
+                name="printing_preferences.default_paper_size"
+                render={({ field }) => (
+                    <FormItem>
+                    <FormLabel>Khổ giấy mặc định</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                        <SelectTrigger>
+                            <SelectValue placeholder="Chọn khổ giấy" />
+                        </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                            <SelectItem value="k80">Giấy in nhiệt K80 (80mm)</SelectItem>
+                            <SelectItem value="a5">Giấy A5</SelectItem>
+                            <SelectItem value="k58">Giấy in nhiệt K58 (58mm)</SelectItem>
+                        </SelectContent>
+                    </Select>
+                    <FormDescription>
+                        Lựa chọn này sẽ được áp dụng cho chức năng in hóa đơn.
+                    </FormDescription>
                     <FormMessage />
                     </FormItem>
                 )}
