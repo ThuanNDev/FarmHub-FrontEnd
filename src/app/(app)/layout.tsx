@@ -24,6 +24,7 @@ import {
   HelpCircle,
   Mail,
   Phone,
+  Printer,
 } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
@@ -70,6 +71,7 @@ const navItems = [
   { href: '/debts', label: 'Công nợ', icon: CreditCard },
   { href: '/installments', label: 'Trả góp', icon: Landmark },
   { href: '/reports', label: 'Báo cáo', icon: BarChart3 },
+  { href: '/printing', label: 'In ấn', icon: Printer },
   { href: '/users', label: 'Nhân viên', icon: UsersRound },
   { href: '/settings', label: 'Cài đặt', icon: Settings },
 ];
