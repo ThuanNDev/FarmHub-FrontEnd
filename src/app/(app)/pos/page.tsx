@@ -10,21 +10,22 @@ import { Label } from '@/components/ui/label';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { Tabs, TabsList, TabsContent } from '@/components/ui/tabs';
 import { mockProducts, mockCustomers } from '@/lib/data';
 
-type CartItem = typeof mockProducts[0] & { quantity: number };
+type Product = typeof mockProducts[0];
+type CartItem = Product & { quantity: number };
 
 export default function POSPage() {
   const [cart, setCart] = useState<CartItem[]>([]);
-  const [activeCategory, setActiveCategory] = useState('all');
+  const [activeCategory, setActiveCategory] = useState('Tất cả');
 
-  const addToCart = (product: typeof mockProducts[0]) => {
+  const addToCart = (product: Product) => {
     setCart((prevCart) => {
-      const existingItem = prevCart.find((item) => item.id === product.id);
+      const existingItem = prevCart.find((item) => item.productCode === product.productCode);
       if (existingItem) {
         return prevCart.map((item) =>
-          item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item
+          item.productCode === product.productCode ? { ...item, quantity: item.quantity + 1 } : item
         );
       }
       return [...prevCart, { ...product, quantity: 1 }];
@@ -33,11 +34,11 @@ export default function POSPage() {
 
   const updateQuantity = (productId: string, newQuantity: number) => {
     if (newQuantity <= 0) {
-      setCart((prevCart) => prevCart.filter((item) => item.id !== productId));
+      setCart((prevCart) => prevCart.filter((item) => item.productCode !== productId));
     } else {
       setCart((prevCart) =>
         prevCart.map((item) =>
-          item.id === productId ? { ...item, quantity: newQuantity } : item
+          item.productCode === productId ? { ...item, quantity: newQuantity } : item
         )
       );
     }
@@ -45,8 +46,21 @@ export default function POSPage() {
 
   const cartTotal = cart.reduce((total, item) => total + item.price * item.quantity, 0);
 
-  const categories = ['all', ...Array.from(new Set(mockProducts.map((p) => p.category)))];
-  const filteredProducts = activeCategory === 'all' ? mockProducts : mockProducts.filter(p => p.category === activeCategory);
+  const categories = ['Tất cả', ...Array.from(new Set(mockProducts.map((p) => p.brand)))];
+  const filteredProducts = activeCategory === 'Tất cả' ? mockProducts : mockProducts.filter(p => p.brand === activeCategory);
+  
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
+  }
+
+  const getImageUrl = (imagesJson: string) => {
+    try {
+      const images = JSON.parse(imagesJson);
+      return images[0] || 'https://placehold.co/300x300.png';
+    } catch (e) {
+      return 'https://placehold.co/300x300.png';
+    }
+  }
 
   return (
     <div className="grid h-screen w-full grid-cols-1 gap-4 bg-background p-4 md:grid-cols-3 lg:grid-cols-4 lg:gap-6">
@@ -55,15 +69,15 @@ export default function POSPage() {
             <Button asChild variant="outline" size="icon" className="h-10 w-10">
                 <Link href="/">
                     <ArrowLeft className="h-5 w-5" />
-                    <span className="sr-only">Back to Dashboard</span>
+                    <span className="sr-only">Quay lại Dashboard</span>
                 </Link>
             </Button>
-            <h1 className="text-lg font-semibold md:text-2xl font-headline">Point of Sale</h1>
+            <h1 className="text-lg font-semibold md:text-2xl font-headline">Bán hàng tại quầy (POS)</h1>
         </div>
-        <Tabs defaultValue="all" onValueChange={setActiveCategory} className="flex flex-1 flex-col">
+        <Tabs defaultValue="Tất cả" onValueChange={setActiveCategory} className="flex flex-1 flex-col">
           <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 md:grid-cols-5">
             {categories.map(cat => (
-              <TabsTrigger key={cat} value={cat}>{cat.charAt(0).toUpperCase() + cat.slice(1)}</TabsTrigger>
+              <TabsTrigger key={cat} value={cat}>{cat}</TabsTrigger>
             ))}
           </TabsList>
           <div className="mt-4 flex-1 overflow-hidden">
@@ -71,12 +85,12 @@ export default function POSPage() {
               <div className="grid grid-cols-2 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 pr-4">
                 {filteredProducts.map((product) => (
                   <Card
-                    key={product.id}
+                    key={product.productCode}
                     className="overflow-hidden transition-all hover:shadow-lg cursor-pointer"
                     onClick={() => addToCart(product)}
                   >
                     <Image
-                      src={product.imageUrl}
+                      src={getImageUrl(product.images)}
                       alt={product.name}
                       width={300}
                       height={300}
@@ -85,7 +99,7 @@ export default function POSPage() {
                     />
                     <CardHeader className="p-4">
                       <CardTitle className="text-base">{product.name}</CardTitle>
-                      <p className="text-sm text-muted-foreground">${product.price.toFixed(2)}</p>
+                      <p className="text-sm text-muted-foreground">{formatCurrency(product.price)}</p>
                     </CardHeader>
                   </Card>
                 ))}
@@ -97,30 +111,30 @@ export default function POSPage() {
       <div className="col-span-1">
         <Card className="flex h-full flex-col">
           <CardHeader>
-            <CardTitle className="font-headline">Cart</CardTitle>
+            <CardTitle className="font-headline">Giỏ hàng</CardTitle>
           </CardHeader>
           <CardContent className="flex-1 overflow-auto p-4">
             {cart.length === 0 ? (
-              <p className="text-center text-muted-foreground">Your cart is empty.</p>
+              <p className="text-center text-muted-foreground">Giỏ hàng của bạn đang trống.</p>
             ) : (
               <div className="grid gap-4">
                 {cart.map((item) => (
-                  <div key={item.id} className="flex items-center gap-4">
+                  <div key={item.productCode} className="flex items-center gap-4">
                     <div className="flex-1">
                       <p className="font-medium">{item.name}</p>
-                      <p className="text-sm text-muted-foreground">${item.price.toFixed(2)}</p>
+                      <p className="text-sm text-muted-foreground">{formatCurrency(item.price)}</p>
                     </div>
                     <div className="flex items-center gap-2">
-                      <Button size="icon" variant="outline" className="h-6 w-6" onClick={() => updateQuantity(item.id, item.quantity - 1)}>
+                      <Button size="icon" variant="outline" className="h-6 w-6" onClick={() => updateQuantity(item.productCode, item.quantity - 1)}>
                         <MinusCircle className="h-4 w-4" />
                       </Button>
                       <span>{item.quantity}</span>
-                      <Button size="icon" variant="outline" className="h-6 w-6" onClick={() => updateQuantity(item.id, item.quantity + 1)}>
+                      <Button size="icon" variant="outline" className="h-6 w-6" onClick={() => updateQuantity(item.productCode, item.quantity + 1)}>
                         <PlusCircle className="h-4 w-4" />
                       </Button>
                     </div>
-                    <p className="w-16 text-right font-medium">${(item.price * item.quantity).toFixed(2)}</p>
-                     <Button size="icon" variant="ghost" className="h-6 w-6" onClick={() => updateQuantity(item.id, 0)}>
+                    <p className="w-24 text-right font-medium">{formatCurrency(item.price * item.quantity)}</p>
+                     <Button size="icon" variant="ghost" className="h-6 w-6" onClick={() => updateQuantity(item.productCode, 0)}>
                         <X className="h-4 w-4" />
                       </Button>
                   </div>
@@ -130,10 +144,10 @@ export default function POSPage() {
           </CardContent>
           <CardFooter className="flex flex-col gap-4 p-4 border-t">
              <div className="w-full">
-                <Label htmlFor="customer">Customer</Label>
+                <Label htmlFor="customer">Khách hàng</Label>
                 <Select>
                     <SelectTrigger>
-                        <SelectValue placeholder="Select a customer" />
+                        <SelectValue placeholder="Chọn một khách hàng" />
                     </SelectTrigger>
                     <SelectContent>
                         {mockCustomers.map(customer => (
@@ -144,11 +158,11 @@ export default function POSPage() {
              </div>
             <Separator />
             <div className="flex w-full justify-between font-semibold">
-              <span>Total</span>
-              <span>${cartTotal.toFixed(2)}</span>
+              <span>Tổng cộng</span>
+              <span>{formatCurrency(cartTotal)}</span>
             </div>
             <Button className="w-full bg-accent hover:bg-accent/90" size="lg" disabled={cart.length === 0}>
-              Complete Order
+              Hoàn tất đơn hàng
             </Button>
           </CardFooter>
         </Card>
