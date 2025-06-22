@@ -76,10 +76,10 @@ type Product = typeof mockProducts[0];
 
 const productSchema = z.object({
   productCode: z.string(), 
-  name: z.string().min(1, { message: "Product name cannot be empty." }),
-  brand: z.string().min(1, { message: "Brand cannot be empty." }),
-  price: z.coerce.number().positive({ message: "Price must be a positive number." }),
-  stock: z.coerce.number().int().min(0, { message: "Stock must be a non-negative integer." }),
+  name: z.string().min(1, { message: "Tên sản phẩm không được để trống." }),
+  brand: z.string().min(1, { message: "Thương hiệu không được để trống." }),
+  price: z.coerce.number().positive({ message: "Giá phải là một số dương." }),
+  stock: z.coerce.number().int().min(0, { message: "Tồn kho phải là số nguyên không âm." }),
 });
 
 type ProductFormValues = z.infer<typeof productSchema>;
@@ -87,7 +87,7 @@ type ProductFormValues = z.infer<typeof productSchema>;
 export default function ProductsPage() {
   const [products, setProducts] = useState<Product[]>(mockProducts);
   const [searchTerm, setSearchTerm] = useState('');
-  const [activeTab, setActiveTab] = useState('All');
+  const [activeTab, setActiveTab] = useState('Tất cả');
   
   const [isAddEditDialogOpen, setAddEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -146,7 +146,7 @@ export default function ProductsPage() {
   const confirmDelete = () => {
     if (selectedProduct) {
       setProducts(products.filter(p => p.productCode !== selectedProduct.productCode));
-      toast({ title: "Success", description: "Product has been deleted." });
+      toast({ title: "Thành công", description: "Sản phẩm đã được xóa." });
     }
     setDeleteDialogOpen(false);
     setSelectedProduct(null);
@@ -158,7 +158,7 @@ export default function ProductsPage() {
         p.productCode === selectedProduct.productCode ? { ...p, ...values } : p
       );
       setProducts(updatedProducts);
-      toast({ title: "Success", description: "Product has been updated." });
+      toast({ title: "Thành công", description: "Sản phẩm đã được cập nhật." });
     } else {
       const newProduct: Product = {
         ...values,
@@ -178,17 +178,17 @@ export default function ProductsPage() {
         productCode: `P${Math.floor(1000 + Math.random() * 9000)}`
       };
       setProducts([newProduct, ...products]);
-      toast({ title: "Success", description: "New product has been added." });
+      toast({ title: "Thành công", description: "Sản phẩm mới đã được thêm." });
     }
     setAddEditDialogOpen(false);
     setSelectedProduct(null);
   };
 
   const filteredProducts = products.filter(p => p.name.toLowerCase().includes(searchTerm.toLowerCase()));
-  const categories = ['All', ...Array.from(new Set(products.map((p) => p.brand)))];
+  const categories = ['Tất cả', ...Array.from(new Set(products.map((p) => p.brand)))];
 
   const getProductsForTab = (tab: string) => {
-    if(tab === 'All') return filteredProducts;
+    if(tab === 'Tất cả') return filteredProducts;
     return filteredProducts.filter(p => p.brand === tab);
   }
   
@@ -213,7 +213,7 @@ export default function ProductsPage() {
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
               type="search"
-              placeholder="Search products..."
+              placeholder="Tìm kiếm sản phẩm..."
               className="w-full rounded-lg bg-background pl-8 md:w-[200px] lg:w-[336px]"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -223,20 +223,20 @@ export default function ProductsPage() {
              <Button size="sm" className="h-10 gap-1 bg-accent hover:bg-accent/90" onClick={handleAddNew}>
                 <PlusCircle className="h-3.5 w-3.5" />
                 <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-                  Add Product
+                  Thêm sản phẩm
                 </span>
               </Button>
           </div>
         </div>
        <Card className="mt-4">
           <CardHeader>
-            <CardTitle className="font-headline">Products</CardTitle>
+            <CardTitle className="font-headline">Sản phẩm</CardTitle>
             <CardDescription>
-              Manage your products and view their stock status.
+              Quản lý sản phẩm và xem tình trạng tồn kho của chúng.
             </CardDescription>
              <TabsList>
                 {categories.map(cat => (
-                     <TabsTrigger key={cat} value={cat}>{cat === 'Tất cả' ? 'All' : cat}</TabsTrigger>
+                     <TabsTrigger key={cat} value={cat}>{cat}</TabsTrigger>
                 ))}
             </TabsList>
           </CardHeader>
@@ -247,19 +247,19 @@ export default function ProductsPage() {
                   <TableHeader>
                     <TableRow>
                       <TableHead className="hidden w-[100px] sm:table-cell">
-                        <span className="sr-only">Image</span>
+                        <span className="sr-only">Ảnh</span>
                       </TableHead>
-                      <TableHead>Name</TableHead>
-                      <TableHead>Brand</TableHead>
-                      <TableHead className="hidden md:table-cell">Price</TableHead>
-                      <TableHead className="hidden md:table-cell">Stock</TableHead>
+                      <TableHead>Tên</TableHead>
+                      <TableHead>Thương hiệu</TableHead>
+                      <TableHead className="hidden md:table-cell">Giá</TableHead>
+                      <TableHead className="hidden md:table-cell">Tồn kho</TableHead>
                       <TableHead>
-                        <span className="sr-only">Actions</span>
+                        <span className="sr-only">Hành động</span>
                       </TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {getProductsForTab(cat === 'All' ? 'Tất cả' : cat).map((product) => (
+                    {getProductsForTab(cat).map((product) => (
                       <TableRow key={product.productCode}>
                         <TableCell className="hidden sm:table-cell">
                            <Link href={`/products/${product.slug}`}>
@@ -290,8 +290,8 @@ export default function ProductsPage() {
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
-                              <DropdownMenuItem onClick={() => handleEdit(product)}>Edit</DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => handleDelete(product)} className="text-destructive">Delete</DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => handleEdit(product)}>Sửa</DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => handleDelete(product)} className="text-destructive">Xóa</DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>
                         </TableCell>
@@ -308,9 +308,9 @@ export default function ProductsPage() {
       <Dialog open={isAddEditDialogOpen} onOpenChange={setAddEditDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle className="font-headline">{selectedProduct ? 'Edit Product' : 'Add New Product'}</DialogTitle>
+            <DialogTitle className="font-headline">{selectedProduct ? 'Sửa sản phẩm' : 'Thêm sản phẩm mới'}</DialogTitle>
             <DialogDescription>
-              {selectedProduct ? 'Update the details for this product.' : 'Fill in the information to add a new product.'}
+              {selectedProduct ? 'Cập nhật thông tin chi tiết cho sản phẩm này.' : 'Điền thông tin để thêm một sản phẩm mới.'}
             </DialogDescription>
           </DialogHeader>
           <Form {...form}>
@@ -320,10 +320,10 @@ export default function ProductsPage() {
                 name="name"
                 render={({ field }) => (
                   <FormItem className="grid grid-cols-4 items-center gap-4">
-                    <FormLabel className="text-right">Name</FormLabel>
+                    <FormLabel className="text-right">Tên</FormLabel>
                     <div className="col-span-3">
                       <FormControl>
-                        <Input placeholder="Kubota Tiller" {...field} />
+                        <Input placeholder="Máy xới đất Kubota" {...field} />
                       </FormControl>
                       <FormMessage className="mt-1 text-xs" />
                     </div>
@@ -335,7 +335,7 @@ export default function ProductsPage() {
                 name="brand"
                 render={({ field }) => (
                   <FormItem className="grid grid-cols-4 items-center gap-4">
-                    <FormLabel className="text-right">Brand</FormLabel>
+                    <FormLabel className="text-right">Thương hiệu</FormLabel>
                      <div className="col-span-3">
                       <FormControl>
                         <Input placeholder="Kubota" {...field} />
@@ -350,7 +350,7 @@ export default function ProductsPage() {
                 name="price"
                 render={({ field }) => (
                   <FormItem className="grid grid-cols-4 items-center gap-4">
-                    <FormLabel className="text-right">Price</FormLabel>
+                    <FormLabel className="text-right">Giá</FormLabel>
                     <div className="col-span-3">
                       <FormControl>
                         <Input type="number" placeholder="15000000" {...field} />
@@ -365,7 +365,7 @@ export default function ProductsPage() {
                 name="stock"
                 render={({ field }) => (
                   <FormItem className="grid grid-cols-4 items-center gap-4">
-                    <FormLabel className="text-right">Stock</FormLabel>
+                    <FormLabel className="text-right">Tồn kho</FormLabel>
                     <div className="col-span-3">
                       <FormControl>
                         <Input type="number" placeholder="25" {...field} />
@@ -376,7 +376,7 @@ export default function ProductsPage() {
                 )}
               />
               <DialogFooter>
-                <Button type="submit" className="bg-primary hover:bg-primary/90">Save Product</Button>
+                <Button type="submit" className="bg-primary hover:bg-primary/90">Lưu sản phẩm</Button>
               </DialogFooter>
             </form>
           </Form>
@@ -386,16 +386,16 @@ export default function ProductsPage() {
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogTitle>Bạn có chắc chắn không?</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the product
+              Hành động này không thể hoàn tác. Thao tác này sẽ xóa vĩnh viễn sản phẩm
                <strong> "{selectedProduct?.name}"</strong>.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>Hủy</AlertDialogCancel>
             <AlertDialogAction onClick={confirmDelete} className="bg-destructive hover:bg-destructive/90">
-              Delete
+              Xóa
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
