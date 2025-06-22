@@ -80,19 +80,19 @@ export default function ProductsPage() {
               <div className="grid gap-4 py-4">
                 <div className="grid grid-cols-4 items-center gap-4">
                   <Label htmlFor="name" className="text-right">Name</Label>
-                  <Input id="name" placeholder="Organic Apples" className="col-span-3" />
+                  <Input id="name" placeholder="Compact Tractor" className="col-span-3" />
                 </div>
                 <div className="grid grid-cols-4 items-center gap-4">
                   <Label htmlFor="category" className="text-right">Category</Label>
-                  <Input id="category" placeholder="Fruits" className="col-span-3" />
+                  <Input id="category" placeholder="Tractors" className="col-span-3" />
                 </div>
                  <div className="grid grid-cols-4 items-center gap-4">
                   <Label htmlFor="price" className="text-right">Price</Label>
-                  <Input id="price" type="number" placeholder="2.99" className="col-span-3" />
+                  <Input id="price" type="number" placeholder="25000" className="col-span-3" />
                 </div>
                  <div className="grid grid-cols-4 items-center gap-4">
                   <Label htmlFor="stock" className="text-right">Stock</Label>
-                  <Input id="stock" type="number" placeholder="150" className="col-span-3" />
+                  <Input id="stock" type="number" placeholder="10" className="col-span-3" />
                 </div>
               </div>
               <DialogFooter>

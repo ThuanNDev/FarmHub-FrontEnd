@@ -7,14 +7,14 @@ export const mockCustomers = [
 ];
 
 export const mockProducts = [
-  { id: 'PROD001', name: 'Organic Apples', category: 'Fruits', price: 2.99, stock: 150, unit: 'kg', imageUrl: 'https://placehold.co/300x300.png', hint: 'green apple' },
-  { id: 'PROD002', name: 'Carrots', category: 'Vegetables', price: 1.49, stock: 200, unit: 'kg', imageUrl: 'https://placehold.co/300x300.png', hint: 'fresh carrots' },
-  { id: 'PROD003', name: 'Whole Wheat Bread', category: 'Bakery', price: 3.99, stock: 80, unit: 'loaf', imageUrl: 'https://placehold.co/300x300.png', hint: 'artisan bread' },
-  { id: 'PROD004', name: 'Free-Range Eggs', category: 'Dairy & Eggs', price: 4.99, stock: 120, unit: 'dozen', imageUrl: 'https://placehold.co/300x300.png', hint: 'egg carton' },
-  { id: 'PROD005', name: 'Organic Milk', category: 'Dairy & Eggs', price: 3.50, stock: 100, unit: 'gallon', imageUrl: 'https://placehold.co/300x300.png', hint: 'milk bottle' },
-  { id: 'PROD006', name: 'Tomatoes', category: 'Vegetables', price: 2.29, stock: 180, unit: 'kg', imageUrl: 'https://placehold.co/300x300.png', hint: 'ripe tomatoes' },
-  { id: 'PROD007', name: 'Bananas', category: 'Fruits', price: 0.99, stock: 250, unit: 'kg', imageUrl: 'https://placehold.co/300x300.png', hint: 'banana bunch' },
-  { id: 'PROD008', name: 'Croissants', category: 'Bakery', price: 2.50, stock: 60, unit: 'piece', imageUrl: 'https://placehold.co/300x300.png', hint: 'buttery croissant' },
+  { id: 'PROD001', name: 'Compact Tractor', category: 'Tractors', price: 25000, stock: 10, unit: 'piece', imageUrl: 'https://placehold.co/300x300.png', hint: 'compact tractor' },
+  { id: 'PROD002', name: 'Combine Harvester', category: 'Harvesters', price: 450000, stock: 3, unit: 'piece', imageUrl: 'https://placehold.co/300x300.png', hint: 'combine harvester' },
+  { id: 'PROD003', name: 'Moldboard Plow', category: 'Tillage', price: 7500, stock: 25, unit: 'piece', imageUrl: 'https://placehold.co/300x300.png', hint: 'tractor plow' },
+  { id: 'PROD004', name: 'Air Seeder', category: 'Seeding', price: 120000, stock: 5, unit: 'piece', imageUrl: 'https://placehold.co/300x300.png', hint: 'air seeder' },
+  { id: 'PROD005', name: 'Farm Sprayer', category: 'Sprayers', price: 85000, stock: 8, unit: 'piece', imageUrl: 'https://placehold.co/300x300.png', hint: 'farm sprayer' },
+  { id: 'PROD006', name: 'Hay Baler', category: 'Hay & Forage', price: 35000, stock: 15, unit: 'piece', imageUrl: 'https://placehold.co/300x300.png', hint: 'hay baler' },
+  { id: 'PROD007', name: 'Skid Steer', category: 'Loaders', price: 45000, stock: 12, unit: 'piece', imageUrl: 'https://placehold.co/300x300.png', hint: 'skid steer' },
+  { id: 'PROD008', name: 'Grain Auger', category: 'Grain Handling', price: 12500, stock: 30, unit: 'piece', imageUrl: 'https://placehold.co/300x300.png', hint: 'grain auger' },
 ];
 
 export const mockOrders = [

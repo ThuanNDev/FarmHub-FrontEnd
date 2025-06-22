@@ -79,7 +79,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           <div className="flex h-14 items-center border-b px-4 lg:h-[60px] lg:px-6">
             <Link href="/" className="flex items-center gap-2 font-semibold">
               <Leaf className="h-6 w-6 text-primary" />
-              <span className="font-headline text-xl">SaleWise</span>
+              <span className="font-headline text-xl">AgriTrack</span>
             </Link>
           </div>
           <div className="flex-1">
@@ -111,7 +111,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                   className="flex items-center gap-2 text-lg font-semibold"
                 >
                   <Leaf className="h-6 w-6 text-primary" />
-                  <span className="font-headline text-xl">SaleWise</span>
+                  <span className="font-headline text-xl">AgriTrack</span>
                 </Link>
                 {navItems.map((item) => (
                   <NavLink key={item.href} {...item} />

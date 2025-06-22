@@ -33,12 +33,12 @@ import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Tooltip } from 'recharts';
 import { mockOrders } from '@/lib/data';
 
 const chartData = [
-  { month: 'Jan', revenue: 12000 },
-  { month: 'Feb', revenue: 15500 },
-  { month: 'Mar', revenue: 13200 },
-  { month: 'Apr', revenue: 18900 },
-  { month: 'May', revenue: 21300 },
-  { month: 'Jun', revenue: 24500 },
+  { month: 'Jan', revenue: 120000 },
+  { month: 'Feb', revenue: 155000 },
+  { month: 'Mar', revenue: 132000 },
+  { month: 'Apr', revenue: 189000 },
+  { month: 'May', revenue: 213000 },
+  { month: 'Jun', revenue: 245000 },
 ];
 
 export default function Dashboard() {
@@ -53,7 +53,7 @@ export default function Dashboard() {
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">$45,231.89</div>
+            <div className="text-2xl font-bold">$1,450,231.89</div>
             <p className="text-xs text-muted-foreground">
               +20.1% from last month
             </p>
@@ -89,9 +89,9 @@ export default function Dashboard() {
             <Activity className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">Organic Apples</div>
+            <div className="text-2xl font-bold">Compact Tractor</div>
             <p className="text-xs text-muted-foreground">
-              +201 sold this month
+              +5 sold this month
             </p>
           </CardContent>
         </Card>
