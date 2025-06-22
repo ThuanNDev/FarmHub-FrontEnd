@@ -31,7 +31,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={cn(poppins.variable, ptSans.variable)}>
       <head />
-      <body className={cn('font-body antialiased')} suppressHydrationWarning>
+      <body className="font-body antialiased" suppressHydrationWarning>
         {children}
         <Toaster />
       </body>
