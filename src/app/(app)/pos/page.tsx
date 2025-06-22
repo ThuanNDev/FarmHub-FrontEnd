@@ -39,7 +39,12 @@ import { useStore } from '@/contexts/StoreContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 type Product = typeof mockProducts[0];
-type CartItem = Product & { quantity: number };
+type PriceTier = 'retail' | 'wholesale' | 'credit';
+type CartItem = Product & {
+  quantity: number;
+  appliedPrice: number;
+  priceTier: PriceTier;
+};
 type Customer = typeof mockCustomers[0];
 
 const customerSchema = z.object({
@@ -96,6 +101,14 @@ export default function POSPage() {
     return customers.find(c => c.id === selectedCustomerId);
   }, [selectedCustomerId, customers]);
 
+  const getPriceByTier = (product: Product, tier: PriceTier): number => {
+    switch(tier) {
+      case 'wholesale': return product.wholesale_price || product.price;
+      case 'credit': return product.credit_price || product.price;
+      default: return product.price;
+    }
+  }
+
   const addToCart = (product: Product) => {
     setCart((prevCart) => {
       const existingItem = prevCart.find((item) => item.id === product.id);
@@ -105,13 +118,45 @@ export default function POSPage() {
             item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item
           );
         }
+        toast({
+          variant: 'destructive',
+          title: 'Hết hàng',
+          description: `Số lượng sản phẩm ${product.name} trong kho không đủ.`
+        });
         return prevCart;
       }
       if (product.stock > 0) {
-        return [...prevCart, { ...product, quantity: 1 }];
+        const customerType = selectedCustomer?.customer_type;
+        const defaultPriceTier: PriceTier = customerType === 'Wholesale' ? 'wholesale' : 'retail';
+        
+        const newCartItem: CartItem = { 
+            ...product, 
+            quantity: 1,
+            priceTier: defaultPriceTier,
+            appliedPrice: getPriceByTier(product, defaultPriceTier),
+        };
+        return [...prevCart, newCartItem];
       }
+      toast({
+        variant: 'destructive',
+        title: 'Hết hàng',
+        description: `Sản phẩm ${product.name} đã hết hàng.`
+      });
       return prevCart;
     });
+  };
+
+  const handlePriceTierChange = (productId: string, tier: PriceTier) => {
+    setCart(prevCart => prevCart.map(item => {
+        if (item.id === productId) {
+            return {
+                ...item,
+                priceTier: tier,
+                appliedPrice: getPriceByTier(item, tier),
+            };
+        }
+        return item;
+    }));
   };
 
   const updateQuantity = (productId: string, newQuantity: number) => {
@@ -150,6 +195,8 @@ export default function POSPage() {
       total_debt: 0,
       debt_due_date: null,
       last_purchase_date: null,
+      loyalty_points: 0,
+      loyalty_tier: 'Bronze',
       created_at: now,
       updated_at: now,
       is_deleted: false,
@@ -208,8 +255,8 @@ export default function POSPage() {
         product_name: item.name,
         product_unit: item.unit,
         quantity: item.quantity,
-        unit_price: item.price,
-        total_price: item.price * item.quantity,
+        unit_price: item.appliedPrice,
+        total_price: item.appliedPrice * item.quantity,
       };
       mockOrderItems.push(newOrderItem);
       
@@ -295,9 +342,9 @@ export default function POSPage() {
       <tr class="item">
         <td>
           <div class="item-name">${item.name}</div>
-          <div class="item-details">SL: ${item.quantity} x ${formatCurrency(item.price)}</div>
+          <div class="item-details">SL: ${item.quantity} x ${formatCurrency(item.appliedPrice)}</div>
         </td>
-        <td class="text-right">${formatCurrency(item.price * item.quantity)}</td>
+        <td class="text-right">${formatCurrency(item.appliedPrice * item.quantity)}</td>
       </tr>
     `).join('');
   
@@ -498,7 +545,7 @@ export default function POSPage() {
 
 
   const subtotal = useMemo(() => {
-    return cart.reduce((total, item) => total + item.price * item.quantity, 0);
+    return cart.reduce((total, item) => total + item.appliedPrice * item.quantity, 0);
   }, [cart]);
 
   const total = useMemo(() => {
@@ -685,30 +732,44 @@ export default function POSPage() {
                   ) : (
                   <div className="grid gap-4 p-4">
                       {cart.map((item) => (
-                      <div key={item.id} className="grid grid-cols-12 items-center gap-2">
-                          <div className="col-span-5">
-                              <p className="font-medium text-sm truncate">{item.name}</p>
-                              <p className="text-xs text-muted-foreground">{formatCurrency(item.price)}</p>
-                          </div>
-                          <div className="col-span-4 flex items-center justify-center gap-1">
-                          <Button size="icon" variant="outline" className="h-6 w-6" onClick={() => updateQuantity(item.id, item.quantity - 1)}>
-                              <Minus className="h-3 w-3" />
-                          </Button>
-                          <Input 
-                              type="number" 
-                              value={item.quantity} 
-                              onChange={(e) => updateQuantity(item.id, parseInt(e.target.value) || 0)}
-                              className="h-6 w-10 text-center p-0 border-0 shadow-none focus-visible:ring-0"
-                          />
-                          <Button size="icon" variant="outline" className="h-6 w-6" onClick={() => updateQuantity(item.id, item.quantity + 1)}>
-                              <Plus className="h-3 w-3" />
-                          </Button>
-                          </div>
-                          <p className="col-span-2 text-right font-medium text-sm">{formatCurrency(item.price * item.quantity)}</p>
-                          <Button size="icon" variant="ghost" className="col-span-1 h-6 w-6 text-muted-foreground hover:text-destructive" onClick={() => updateQuantity(item.id, 0)}>
-                              <X className="h-4 w-4" />
-                          </Button>
-                      </div>
+                        <div key={item.id} className="grid grid-cols-12 items-start gap-2 border-b pb-3 mb-3">
+                            <div className="col-span-12">
+                                <p className="font-medium text-sm truncate">{item.name}</p>
+                            </div>
+                            <div className="col-span-5">
+                                <Select
+                                    value={item.priceTier}
+                                    onValueChange={(value) => handlePriceTierChange(item.id, value as PriceTier)}
+                                >
+                                    <SelectTrigger className="h-8 text-xs">
+                                        <SelectValue placeholder="Chọn giá" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="retail">Lẻ: {formatCurrency(item.price)}</SelectItem>
+                                        {item.wholesale_price && <SelectItem value="wholesale">Sỉ: {formatCurrency(item.wholesale_price)}</SelectItem>}
+                                        {item.credit_price && <SelectItem value="credit">Ghi nợ: {formatCurrency(item.credit_price)}</SelectItem>}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div className="col-span-4 flex items-center justify-center gap-1 pt-1">
+                                <Button size="icon" variant="outline" className="h-6 w-6" onClick={() => updateQuantity(item.id, item.quantity - 1)}>
+                                    <Minus className="h-3 w-3" />
+                                </Button>
+                                <Input 
+                                    type="number" 
+                                    value={item.quantity} 
+                                    onChange={(e) => updateQuantity(item.id, parseInt(e.target.value) || 0)}
+                                    className="h-6 w-10 text-center p-0 border-0 shadow-none focus-visible:ring-0"
+                                />
+                                <Button size="icon" variant="outline" className="h-6 w-6" onClick={() => updateQuantity(item.id, item.quantity + 1)}>
+                                    <Plus className="h-3 w-3" />
+                                </Button>
+                            </div>
+                            <p className="col-span-2 text-right font-medium text-sm pt-1">{formatCurrency(item.appliedPrice * item.quantity)}</p>
+                            <Button size="icon" variant="ghost" className="col-span-1 h-6 w-6 text-muted-foreground hover:text-destructive" onClick={() => updateQuantity(item.id, 0)}>
+                                <X className="h-4 w-4" />
+                            </Button>
+                        </div>
                       ))}
                   </div>
                   )}
