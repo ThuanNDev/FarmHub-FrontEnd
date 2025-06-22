@@ -5,6 +5,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { Leaf, Loader2 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -123,6 +124,12 @@ export default function LoginPage() {
             </Button>
           </form>
         </Form>
+        <div className="mt-4 text-center text-sm">
+          Chưa có tài khoản?{" "}
+          <Link href="/register" className="underline hover:text-primary">
+            Đăng ký
+          </Link>
+        </div>
       </CardContent>
     </Card>
   );
