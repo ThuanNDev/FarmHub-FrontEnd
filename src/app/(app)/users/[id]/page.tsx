@@ -20,18 +20,27 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 export default function UserDetailPage() {
   const params = useParams<{ id: string }>();
   const user = mockUsers.find((u) => u.id === params.id);
+  
+  const [createdAt, setCreatedAt] = React.useState('');
+  const [lastLoginAt, setLastLoginAt] = React.useState('');
+
+  React.useEffect(() => {
+    const formatDate = (dateString: string | null) => {
+        if (!dateString) return 'Chưa đăng nhập';
+        const options: Intl.DateTimeFormatOptions = { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' };
+        return new Date(dateString).toLocaleDateString('vi-VN', options);
+    }
+    if (user) {
+        setCreatedAt(formatDate(user.created_at));
+        setLastLoginAt(formatDate(user.last_login_at));
+    }
+  }, [user]);
 
   if (!user) {
     notFound();
   }
   
   const associatedStores = mockStores.filter(store => user.associated_store_ids.includes(store.id));
-  
-  const formatDate = (dateString: string | null) => {
-    if (!dateString) return 'Chưa đăng nhập';
-    const options: Intl.DateTimeFormatOptions = { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' };
-    return new Date(dateString).toLocaleDateString('vi-VN', options);
-  }
 
   return (
     <div className="flex flex-col gap-4">
@@ -83,11 +92,11 @@ export default function UserDetailPage() {
                 </div>
                 <div className="flex items-center gap-3">
                     <CalendarCheck className="h-5 w-5 text-muted-foreground" />
-                    <span className="text-sm">Ngày tạo: {formatDate(user.created_at)}</span>
+                    <span className="text-sm">Ngày tạo: {createdAt || '...'}</span>
                 </div>
                 <div className="flex items-center gap-3">
                     <Clock className="h-5 w-5 text-muted-foreground" />
-                    <span className="text-sm">Đăng nhập lần cuối: {formatDate(user.last_login_at)}</span>
+                    <span className="text-sm">Đăng nhập lần cuối: {lastLoginAt || '...'}</span>
                 </div>
             </div>
         </CardContent>
