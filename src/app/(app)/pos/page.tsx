@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { Plus, Minus, X, Search, ArrowLeft, UserPlus } from 'lucide-react';
+import { Plus, Minus, X, Search, ArrowLeft, UserPlus, Printer } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -165,12 +165,19 @@ export default function POSPage() {
     }
 
     toast({
-      title: "Thanh toán thành công!",
+      title: "Tạo đơn hàng thành công!",
       description: description,
     });
     setPaymentDialogOpen(false);
     clearCart();
     setSelectedCustomerId('guest');
+  };
+
+  const handleQuickPrint = () => {
+    toast({
+      title: 'Tính năng đang phát triển',
+      description: 'Chức năng in nhanh hóa đơn sẽ sớm được ra mắt.',
+    });
   };
 
   const subtotal = useMemo(() => {
@@ -394,7 +401,7 @@ export default function POSPage() {
                   </div>
               </div>
               <Button className="w-full bg-accent hover:bg-accent/90" size="lg" disabled={cart.length === 0} onClick={() => setPaymentDialogOpen(true)}>
-                Thanh toán
+                Tạo đơn hàng
               </Button>
             </CardFooter>
           </Card>
@@ -538,9 +545,9 @@ export default function POSPage() {
       <Dialog open={isPaymentDialogOpen} onOpenChange={setPaymentDialogOpen}>
         <DialogContent className="sm:max-w-md">
             <DialogHeader>
-                <DialogTitle className="font-headline">Xác nhận thanh toán</DialogTitle>
+                <DialogTitle className="font-headline">Hoàn tất đơn hàng</DialogTitle>
                 <DialogDescription>
-                    Kiểm tra lại thông tin đơn hàng và hoàn tất thanh toán.
+                    Kiểm tra thông tin, phương thức thanh toán và tạo đơn hàng.
                 </DialogDescription>
             </DialogHeader>
             <div className="space-y-4">
@@ -638,9 +645,15 @@ export default function POSPage() {
                     </div>
                 </div>
             </div>
-            <DialogFooter>
-                <Button variant="outline" onClick={() => setPaymentDialogOpen(false)}>Hủy</Button>
-                <Button onClick={handleConfirmPayment} className="bg-primary hover:bg-primary/90">Xác nhận thanh toán</Button>
+            <DialogFooter className="flex-col sm:flex-row sm:justify-between gap-2 mt-4">
+                <Button variant="outline" onClick={handleQuickPrint}>
+                    <Printer className="mr-2 h-4 w-4"/>
+                    Hoá đơn in nhanh
+                </Button>
+                <div className="flex justify-end gap-2">
+                    <Button variant="ghost" onClick={() => setPaymentDialogOpen(false)}>Hủy</Button>
+                    <Button onClick={handleConfirmPayment} className="bg-primary hover:bg-primary/90">Xác nhận & Tạo đơn</Button>
+                </div>
             </DialogFooter>
         </DialogContent>
       </Dialog>
