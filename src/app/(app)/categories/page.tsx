@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -75,6 +74,7 @@ import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { mockCategories } from '@/lib/data';
 import { useToast } from '@/hooks/use-toast';
+import { slugify } from '@/lib/utils';
 
 type Category = typeof mockCategories[0];
 
@@ -159,7 +159,7 @@ export default function CategoriesPage() {
   };
 
   const onSubmit = (values: CategoryFormValues) => {
-    const slug = values.name.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, '');
+    const slug = slugify(values.name);
     if (selectedCategory) {
       const updatedCategories = categories.map(c => 
         c.id === selectedCategory.id ? { 
@@ -318,7 +318,7 @@ export default function CategoriesPage() {
                     <FormLabel>Danh mục cha</FormLabel>
                     <Select
                       onValueChange={(value) => field.onChange(value === '_ROOT_' ? '' : value)}
-                      value={field.value === '' ? '_ROOT_' : field.value}
+                      value={field.value || '_ROOT_'}
                     >
                       <FormControl>
                         <SelectTrigger>

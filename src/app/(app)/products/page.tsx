@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -84,6 +85,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { mockProducts, mockCategories, mockSuppliers } from '@/lib/data';
 import { useToast } from '@/hooks/use-toast';
+import { slugify } from '@/lib/utils';
 
 type Product = (typeof mockProducts)[0];
 
@@ -233,7 +235,7 @@ export default function ProductsPage() {
               ...p, 
               ...values,
               images: imagesAsJsonString,
-              slug: values.name.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, ''),
+              slug: slugify(values.name),
               credit_price: values.credit_price || values.price,
               description: values.description || '',
               warranty_info: values.warranty_info || 'Không có',
@@ -247,7 +249,7 @@ export default function ProductsPage() {
       const newProduct: Product = {
         id: `prod-${Math.floor(1000 + Math.random() * 9000)}`,
         ...values,
-        slug: values.name.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, ''),
+        slug: slugify(values.name),
         credit_price: values.credit_price || values.price,
         images: imagesAsJsonString.length > 2 ? imagesAsJsonString : '["https://placehold.co/600x600.png"]',
         specs: '{}',
