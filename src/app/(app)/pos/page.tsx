@@ -1,5 +1,5 @@
 'use client';
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useForm } from 'react-hook-form';
@@ -34,6 +34,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { mockProducts, mockCustomers, mockCategories } from '@/lib/data';
 import { useToast } from '@/hooks/use-toast';
+import { cn } from '@/lib/utils';
 
 type Product = typeof mockProducts[0];
 type CartItem = Product & { quantity: number };
@@ -63,6 +64,8 @@ export default function POSPage() {
   const [isAddCustomerDialogOpen, setAddCustomerDialogOpen] = useState(false);
   const [isPaymentDialogOpen, setPaymentDialogOpen] = useState(false);
   const [selectedCustomerId, setSelectedCustomerId] = useState('guest');
+  const [paymentMethod, setPaymentMethod] = useState('Cash');
+  const [amountPaid, setAmountPaid] = useState(0);
   
   const { toast } = useToast();
 
@@ -154,9 +157,15 @@ export default function POSPage() {
   };
   
   const handleConfirmPayment = () => {
+    const remaining = total - amountPaid;
+    let description = `Đơn hàng đã được tạo.`;
+    if (remaining > 0 && selectedCustomer) {
+        description += ` Ghi nợ ${formatCurrency(remaining)} cho khách hàng ${selectedCustomer.name}.`;
+    }
+
     toast({
       title: "Thanh toán thành công!",
-      description: `Đơn hàng đã được tạo.`,
+      description: description,
     });
     setPaymentDialogOpen(false);
     clearCart();
@@ -171,6 +180,19 @@ export default function POSPage() {
     const finalTotal = subtotal - discount;
     return finalTotal > 0 ? finalTotal : 0;
   }, [subtotal, discount]);
+
+  useEffect(() => {
+    if (isPaymentDialogOpen) {
+      setAmountPaid(total);
+      setPaymentMethod('Cash');
+    }
+  }, [isPaymentDialogOpen, total]);
+
+  useEffect(() => {
+    if (paymentMethod === 'Debt') {
+      setAmountPaid(0);
+    }
+  }, [paymentMethod]);
 
 
   const categories = mockCategories.filter(c => !c.is_deleted && c.is_active);
@@ -511,10 +533,29 @@ export default function POSPage() {
                     </div>
                 </div>
                 <Separator />
+                <div className="grid gap-2">
+                     <div>
+                        <Label htmlFor="amount-paid">Số tiền thanh toán</Label>
+                        <Input
+                            id="amount-paid"
+                            type="number"
+                            value={amountPaid}
+                            onChange={(e) => setAmountPaid(Number(e.target.value) || 0)}
+                            className="text-right text-lg font-bold"
+                        />
+                    </div>
+                    {(total - amountPaid) > 0 && (
+                        <div className="flex justify-between text-sm text-destructive font-semibold text-right">
+                            <span>Còn lại (ghi nợ)</span>
+                            <span>{formatCurrency(total - amountPaid)}</span>
+                        </div>
+                    )}
+                </div>
+
                 <div className="space-y-4">
                     <div>
                         <Label>Phương thức thanh toán</Label>
-                        <RadioGroup defaultValue="Cash" className="mt-2 grid grid-cols-3 gap-2">
+                        <RadioGroup value={paymentMethod} onValueChange={setPaymentMethod} className="mt-2 grid grid-cols-4 gap-2">
                             <div>
                                 <RadioGroupItem value="Cash" id="cash" className="peer sr-only" />
                                 <Label htmlFor="cash" className="flex cursor-pointer flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary">
@@ -533,8 +574,32 @@ export default function POSPage() {
                                     C.Khoản
                                 </Label>
                             </div>
+                             <div>
+                                <RadioGroupItem value="Debt" id="debt" className="peer sr-only" disabled={!selectedCustomer} />
+                                <Label 
+                                    htmlFor="debt" 
+                                    className={cn(
+                                        "flex cursor-pointer flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary",
+                                        !selectedCustomer && "cursor-not-allowed opacity-50"
+                                    )}
+                                >
+                                    Ghi nợ
+                                </Label>
+                            </div>
                         </RadioGroup>
                     </div>
+                    {paymentMethod === 'Transfer' && (
+                        <div className="flex flex-col items-center gap-2 pt-4">
+                            <Image
+                                src="https://placehold.co/250x250.png"
+                                width={250}
+                                height={250}
+                                alt="QR Code"
+                                data-ai-hint="payment qr code"
+                            />
+                            <p className="text-sm text-muted-foreground">Quét mã để thanh toán</p>
+                        </div>
+                    )}
                     <div>
                         <Label htmlFor="delivery-address">Địa chỉ giao hàng (nếu có)</Label>
                         <Textarea 
