@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -60,6 +61,8 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
+import { Badge } from '@/components/ui/badge';
+import { Switch } from '@/components/ui/switch';
 import { mockCategories } from '@/lib/data';
 import { useToast } from '@/hooks/use-toast';
 
@@ -68,6 +71,7 @@ type Category = typeof mockCategories[0];
 const categorySchema = z.object({
   name: z.string().min(1, { message: "Tên thể loại không được để trống." }),
   description: z.string().optional(),
+  is_active: z.boolean().default(true),
 });
 
 type CategoryFormValues = z.infer<typeof categorySchema>;
@@ -85,6 +89,7 @@ export default function CategoriesPage() {
     defaultValues: {
       name: '',
       description: '',
+      is_active: true,
     },
   });
 
@@ -94,11 +99,13 @@ export default function CategoriesPage() {
             form.reset({
                 name: selectedCategory.name,
                 description: selectedCategory.description,
+                is_active: selectedCategory.is_active,
             });
         } else {
             form.reset({
                 name: '',
                 description: '',
+                is_active: true,
             });
         }
     }
@@ -137,9 +144,14 @@ export default function CategoriesPage() {
       toast({ title: "Thành công", description: "Thể loại đã được cập nhật." });
     } else {
       const newCategory: Category = {
-        ...values,
         id: `cate-${Math.floor(1000 + Math.random() * 9000)}`,
-        description: values.description || ''
+        name: values.name,
+        slug: values.name.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, ''),
+        description: values.description || '',
+        parent_id: null,
+        image: 'https://placehold.co/100x100.png',
+        order: categories.length + 1,
+        is_active: values.is_active,
       };
       setCategories([newCategory, ...categories]);
       toast({ title: "Thành công", description: "Thể loại mới đã được thêm." });
@@ -171,8 +183,11 @@ export default function CategoriesPage() {
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead className="hidden w-[64px] sm:table-cell">
+                    <span className="sr-only">Ảnh</span>
+                </TableHead>
                 <TableHead>Tên</TableHead>
-                <TableHead>Mô tả</TableHead>
+                <TableHead>Trạng thái</TableHead>
                 <TableHead>
                   <span className="sr-only">Hành động</span>
                 </TableHead>
@@ -181,8 +196,22 @@ export default function CategoriesPage() {
             <TableBody>
               {categories.map((category) => (
                 <TableRow key={category.id}>
+                  <TableCell className="hidden sm:table-cell">
+                    <Image
+                        alt={category.name}
+                        className="aspect-square rounded-md object-cover"
+                        height="64"
+                        src={category.image || 'https://placehold.co/64x64.png'}
+                        width="64"
+                        data-ai-hint="category icon"
+                    />
+                  </TableCell>
                   <TableCell className="font-medium">{category.name}</TableCell>
-                  <TableCell className="hidden md:table-cell">{category.description}</TableCell>
+                  <TableCell>
+                      <Badge variant={category.is_active ? 'default' : 'secondary'}>
+                        {category.is_active ? 'Hoạt động' : 'Không hoạt động'}
+                      </Badge>
+                  </TableCell>
                   <TableCell>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
@@ -245,6 +274,27 @@ export default function CategoriesPage() {
                         <Textarea placeholder="Mô tả ngắn về thể loại..." {...field} />
                       </FormControl>
                       <FormMessage className="mt-1 text-xs" />
+                    </div>
+                  </FormItem>
+                )}
+              />
+               <FormField
+                control={form.control}
+                name="is_active"
+                render={({ field }) => (
+                  <FormItem className="grid grid-cols-4 items-center gap-4">
+                    <FormLabel className="text-right">Trạng thái</FormLabel>
+                    <div className="col-span-3 flex items-center space-x-2">
+                      <FormControl>
+                        <Switch
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                          id="is_active"
+                        />
+                      </FormControl>
+                       <Label htmlFor="is_active" className="font-normal cursor-pointer">
+                         {field.value ? "Hoạt động" : "Không hoạt động"}
+                      </Label>
                     </div>
                   </FormItem>
                 )}

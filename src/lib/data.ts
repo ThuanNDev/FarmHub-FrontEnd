@@ -119,7 +119,34 @@ export const mockOrders = [
 ];
 
 export const mockCategories = [
-  { id: 'cate-001', name: 'Máy làm đất', description: 'Các loại máy xới, máy cày phục vụ công tác làm đất.' },
-  { id: 'cate-002', name: 'Máy thu hoạch', description: 'Máy gặt đập, máy tuốt lúa và các thiết bị thu hoạch khác.' },
-  { id: 'cate-003', name: 'Dụng cụ & Thiết bị', description: 'Các loại máy móc, dụng cụ cầm tay hỗ trợ nông nghiệp.' },
+  { 
+    id: 'cate-001', 
+    name: 'Máy làm đất', 
+    slug: 'may-lam-dat',
+    description: 'Các loại máy xới, máy cày phục vụ công tác làm đất.',
+    parent_id: null,
+    image: 'https://placehold.co/100x100.png',
+    order: 1,
+    is_active: true
+  },
+  { 
+    id: 'cate-002', 
+    name: 'Máy thu hoạch', 
+    slug: 'may-thu-hoach',
+    description: 'Máy gặt đập, máy tuốt lúa và các thiết bị thu hoạch khác.',
+    parent_id: null,
+    image: 'https://placehold.co/100x100.png',
+    order: 2,
+    is_active: true
+  },
+  { 
+    id: 'cate-003', 
+    name: 'Dụng cụ & Thiết bị',
+    slug: 'dung-cu-thiet-bi', 
+    description: 'Các loại máy móc, dụng cụ cầm tay hỗ trợ nông nghiệp.',
+    parent_id: null,
+    image: 'https://placehold.co/100x100.png',
+    order: 3,
+    is_active: false
+  },
 ];
