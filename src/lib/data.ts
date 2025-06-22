@@ -596,3 +596,68 @@ export const mockPurchaseOrders = [
     },
   ];
 
+export const mockStockAdjustments: {
+  id: string;
+  product_id: string;
+  adjustment_type: 'increase' | 'decrease';
+  quantity_change: number;
+  reason: string;
+  adjusted_by_user_id: string;
+  created_at: string;
+}[] = [
+  {
+    id: 'adj-001',
+    product_id: 'prod-001',
+    adjustment_type: 'decrease',
+    quantity_change: -1,
+    reason: 'Hàng mẫu bị hư hỏng khi trưng bày',
+    adjusted_by_user_id: 'user-001',
+    created_at: '2024-07-30T10:00:00Z',
+  }
+];
+
+export const mockReturnOrders: {
+    id: string;
+    order_id: string;
+    customer_id: string;
+    return_date: string;
+    total_refund_amount: number;
+    reason: string | null;
+    status: 'pending' | 'approved' | 'rejected' | 'refunded' | 'restocked';
+    processed_by_user_id: string;
+    created_at: string;
+    updated_at: string;
+}[] = [
+    {
+        id: 'ret-001',
+        order_id: 'ord-001',
+        customer_id: 'cust-001',
+        return_date: '2024-07-28T11:00:00Z',
+        total_refund_amount: 2800000,
+        reason: 'Khách đổi ý, muốn mua sản phẩm khác.',
+        status: 'refunded',
+        processed_by_user_id: 'user-002',
+        created_at: '2024-07-28T10:45:00Z',
+        updated_at: '2024-07-28T11:30:00Z',
+    }
+];
+
+export const mockReturnOrderItems: {
+    id: string;
+    return_order_id: string;
+    product_id: string;
+    quantity: number;
+    unit_price: number;
+    condition: 'new' | 'used' | 'damaged';
+    restocked: boolean;
+}[] = [
+    {
+        id: 'item-ret-001',
+        return_order_id: 'ret-001',
+        product_id: 'prod-001',
+        quantity: 1,
+        unit_price: 2800000,
+        condition: 'new',
+        restocked: true,
+    }
+];

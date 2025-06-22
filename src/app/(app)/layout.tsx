@@ -19,6 +19,8 @@ import {
   PackagePlus,
   LogOut,
   Landmark,
+  Warehouse,
+  Undo2,
 } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
@@ -54,10 +56,12 @@ import { useToast } from '@/hooks/use-toast';
 const navItems = [
   { href: '/', label: 'Bảng điều khiển', icon: LayoutDashboard },
   { href: '/orders', label: 'Đơn hàng', icon: ShoppingCart },
+  { href: '/returns', label: 'Trả hàng', icon: Undo2 },
   { href: '/products', label: 'Sản phẩm', icon: Package },
   { href: '/customers', label: 'Khách hàng', icon: Users },
   { href: '/suppliers', label: 'Nhà cung cấp', icon: Truck },
   { href: '/purchases', label: 'Nhập hàng', icon: PackagePlus },
+  { href: '/stock-adjustments', label: 'Kiểm kho', icon: Warehouse },
   { href: '/categories', label: 'Thể loại', icon: Tags },
   { href: '/debts', label: 'Công nợ', icon: CreditCard },
   { href: '/installments', label: 'Trả góp', icon: Landmark },
