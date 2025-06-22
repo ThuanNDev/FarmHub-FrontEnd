@@ -305,6 +305,10 @@
     "order_summary": "Order Summary",
     "customer_tender": "Amount Tendered",
     "change_due": "Change Due",
-    "exact_amount": "Exact Amount"
+    "exact_amount": "Exact Amount",
+    "debt_notice": "The remaining amount of {{amount}} will be recorded as debt for {{name}}.",
+    "debt_notice_guest": "Please select a customer to record the remaining amount as debt.",
+    "error_debt_for_guest_title": "Cannot Create Debt",
+    "error_debt_for_guest_desc": "A guest cannot have a debt. Please select a customer or pay the full amount."
   }
 }

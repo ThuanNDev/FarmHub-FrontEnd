@@ -305,6 +305,10 @@
     "order_summary": "Tóm tắt đơn hàng",
     "customer_tender": "Số tiền khách đưa",
     "change_due": "Tiền thối lại",
-    "exact_amount": "Tiền đủ"
+    "exact_amount": "Tiền đủ",
+    "debt_notice": "Số tiền còn lại {{amount}} sẽ được ghi nợ cho khách hàng {{name}}.",
+    "debt_notice_guest": "Vui lòng chọn một khách hàng để ghi nợ số tiền còn lại.",
+    "error_debt_for_guest_title": "Không thể ghi nợ",
+    "error_debt_for_guest_desc": "Khách lẻ không thể ghi nợ. Vui lòng chọn một khách hàng hoặc thanh toán đủ."
   }
 }

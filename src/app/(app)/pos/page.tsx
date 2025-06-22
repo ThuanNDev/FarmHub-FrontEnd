@@ -7,7 +7,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { Plus, Minus, X, Search, ArrowLeft, UserPlus, Printer, Leaf, User, ChevronsUpDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -17,7 +17,6 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -239,7 +238,18 @@ export default function POSPage() {
     const newOrderCode = `DH${now.toISOString().slice(2, 10).replace(/-/g, '')}${Math.floor(100 + Math.random() * 900)}`;
     const deliveryAddress = (document.getElementById('delivery-address') as HTMLTextAreaElement)?.value || selectedCustomer?.address || '';
 
-    const finalAmountPaid = paymentMethod === 'Cash' ? totalWithVat : amountPaid;
+    const finalAmountPaid = paymentMethod === 'Cash' ? Math.min(customerTender, totalWithVat) : amountPaid;
+    const remaining = totalWithVat - finalAmountPaid;
+    let description = t('pos.success_order_created', { code: newOrderCode });
+
+    if (remaining > 0 && !selectedCustomer) {
+        toast({
+            variant: 'destructive',
+            title: t('pos.error_debt_for_guest_title'),
+            description: t('pos.error_debt_for_guest_desc'),
+        });
+        return;
+    }
 
     const newOrder: (typeof mockOrders)[0] = {
       id: `ord-${now.getTime()}`,
@@ -282,40 +292,37 @@ export default function POSPage() {
       }
     });
 
-    const remaining = totalWithVat - finalAmountPaid;
-    let description = t('pos.success_order_created', { code: newOrderCode });
-    
     if (remaining > 0 && selectedCustomer) {
       const customerInDb = mockCustomers.find(c => c.id === selectedCustomer.id);
       if (customerInDb) {
-          if (paymentMethod === 'Debt') {
-              customerInDb.total_debt += remaining;
-              customerInDb.last_purchase_date = now.toISOString();
-              description += t('pos.success_on_credit', { amount: formatCurrency(remaining), name: selectedCustomer.name });
-          } else if (paymentMethod === 'Installment') {
-              const termCount = 3; 
-              const amountPerTerm = Math.ceil(remaining / termCount);
-              for (let i = 1; i <= termCount; i++) {
-                const dueDate = new Date(now);
-                dueDate.setMonth(dueDate.getMonth() + i);
-                const newTerm: (typeof mockInstallmentTerms)[0] = {
-                    id: `inst-${newOrder.id}-${i}`,
-                    order_id: newOrder.id,
-                    installment_number: i,
-                    due_date: dueDate.toISOString(),
-                    amount: amountPerTerm,
-                    paid_at: null,
-                    payment_method: null,
-                    is_late: false,
-                    note: `Kỳ ${i}/${termCount}`,
-                    collected_by_user_id: null,
-                    created_at: now.toISOString(),
-                    updatedAt: now.toISOString(),
-                };
-                mockInstallmentTerms.push(newTerm);
-              }
-              description += t('pos.success_installment', { amount: formatCurrency(remaining), count: termCount });
-          }
+        if (paymentMethod === 'Installment') {
+            const termCount = 3; 
+            const amountPerTerm = Math.ceil(remaining / termCount);
+            for (let i = 1; i <= termCount; i++) {
+              const dueDate = new Date(now);
+              dueDate.setMonth(dueDate.getMonth() + i);
+              const newTerm: (typeof mockInstallmentTerms)[0] = {
+                  id: `inst-${newOrder.id}-${i}`,
+                  order_id: newOrder.id,
+                  installment_number: i,
+                  due_date: dueDate.toISOString(),
+                  amount: amountPerTerm,
+                  paid_at: null,
+                  payment_method: null,
+                  is_late: false,
+                  note: `Kỳ ${i}/${termCount}`,
+                  collected_by_user_id: null,
+                  created_at: now.toISOString(),
+                  updatedAt: now.toISOString(),
+              };
+              mockInstallmentTerms.push(newTerm);
+            }
+            description += t('pos.success_installment', { amount: formatCurrency(remaining), count: termCount });
+        } else {
+            customerInDb.total_debt += remaining;
+            customerInDb.last_purchase_date = now.toISOString();
+            description += t('pos.success_on_credit', { amount: formatCurrency(remaining), name: selectedCustomer.name });
+        }
       }
     }
 
@@ -580,6 +587,14 @@ export default function POSPage() {
     return total + vatAmount;
   }, [total, vatAmount]);
 
+  const remainingAmountInDialog = useMemo(() => {
+    if (!isPaymentDialogOpen) return 0;
+    const remaining = paymentMethod === 'Cash' 
+        ? totalWithVat - customerTender
+        : totalWithVat - amountPaid;
+    return remaining > 0 ? remaining : 0;
+  }, [isPaymentDialogOpen, paymentMethod, totalWithVat, customerTender, amountPaid]);
+
 
   // Effect to initialize payment dialog state
   useEffect(() => {
@@ -593,10 +608,11 @@ export default function POSPage() {
 
   // Effect to handle payment method changes (e.g., Debt)
   useEffect(() => {
-    if (paymentMethod === 'Debt') {
+    if (paymentMethod === 'Debt' || paymentMethod === 'Installment') {
       setAmountPaid(0);
     } else {
       setAmountPaid(totalWithVat);
+      setCustomerTender(totalWithVat);
     }
   }, [paymentMethod, totalWithVat]);
 
@@ -1137,6 +1153,17 @@ export default function POSPage() {
                             )}
                         </div>
                     )}
+
+                    {remainingAmountInDialog > 0 && (
+                        <Card className="mt-4 p-3 bg-background border-primary/50">
+                            <CardDescription className="text-xs text-center">
+                                {selectedCustomer
+                                    ? t('pos.debt_notice', { amount: formatCurrency(remainingAmountInDialog), name: selectedCustomer.name })
+                                    : t('pos.debt_notice_guest')
+                                }
+                            </CardDescription>
+                        </Card>
+                    )}
                 </div>
             </div>
             <DialogFooter className="flex-col sm:flex-row sm:justify-between gap-2 mt-4">
@@ -1146,7 +1173,13 @@ export default function POSPage() {
                 </Button>
                 <div className="flex justify-end gap-2">
                     <Button variant="ghost" onClick={() => setPaymentDialogOpen(false)}>{t('common.cancel')}</Button>
-                    <Button onClick={handleConfirmPayment} className="bg-primary hover:bg-primary/90">{t('pos.confirm_and_create')}</Button>
+                    <Button 
+                      onClick={handleConfirmPayment} 
+                      className="bg-primary hover:bg-primary/90"
+                      disabled={remainingAmountInDialog > 0 && !selectedCustomer}
+                    >
+                      {t('pos.confirm_and_create')}
+                    </Button>
                 </div>
             </DialogFooter>
         </DialogContent>
