@@ -264,6 +264,8 @@
     "all_categories": "Tất cả",
     "stock": "Tồn kho: {{stock}}",
     "select_customer_placeholder": "Chọn một khách hàng",
+    "search_customer_placeholder": "Tìm theo tên hoặc SĐT...",
+    "show_qr": "Hiển thị mã QR",
     "guest": "Khách lẻ",
     "add_customer": "Thêm khách hàng",
     "empty_cart": "Chọn sản phẩm để thêm vào giỏ hàng.",

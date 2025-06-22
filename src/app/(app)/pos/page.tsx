@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { Plus, Minus, X, Search, ArrowLeft, UserPlus, Printer, Leaf, User } from 'lucide-react';
+import { Plus, Minus, X, Search, ArrowLeft, UserPlus, Printer, Leaf, User, ChevronsUpDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -32,6 +32,7 @@ import {
 } from '@/components/ui/form';
 import { Textarea } from '@/components/ui/textarea';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { mockProducts, mockCustomers, mockCategories, mockStores, mockUsers, mockOrders, mockOrderItems, mockInstallmentTerms } from '@/lib/data';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
@@ -74,6 +75,9 @@ export default function POSPage() {
   const [amountPaid, setAmountPaid] = useState(0);
   const [qrCodeUrl, setQrCodeUrl] = useState('');
   const [globalPriceTier, setGlobalPriceTier] = useState<PriceTier>('retail');
+  const [isCustomerPopoverOpen, setCustomerPopoverOpen] = useState(false);
+  const [customerSearch, setCustomerSearch] = useState("");
+  const [showQrCode, setShowQrCode] = useState(false);
   
   const { toast } = useToast();
   const { store } = useStore();
@@ -100,6 +104,16 @@ export default function POSPage() {
     if (selectedCustomerId === 'guest') return null;
     return customers.find(c => c.id === selectedCustomerId);
   }, [selectedCustomerId, customers]);
+
+  const filteredCustomersForSearch = useMemo(() => {
+    const activeCustomers = customers.filter(c => !c.is_deleted && c.status === 'Active');
+    if (!customerSearch) return activeCustomers;
+    return activeCustomers.filter(c => 
+        c.name.toLowerCase().includes(customerSearch.toLowerCase()) || 
+         c.phone.includes(customerSearch)
+    );
+}, [customers, customerSearch]);
+
 
   // Set global price tier based on customer type
   useEffect(() => {
@@ -569,6 +583,7 @@ export default function POSPage() {
     if (isPaymentDialogOpen) {
       setAmountPaid(totalWithVat);
       setPaymentMethod('Cash');
+      setShowQrCode(false);
     }
   }, [isPaymentDialogOpen, totalWithVat]);
 
@@ -709,17 +724,33 @@ export default function POSPage() {
             <CardHeader className="p-4 border-b">
               <div className="grid grid-cols-2 gap-4">
                 <div className="flex items-center gap-2">
-                    <Select value={selectedCustomerId} onValueChange={(value) => setSelectedCustomerId(value || 'guest')}>
-                        <SelectTrigger>
-                            <SelectValue placeholder={t('pos.select_customer_placeholder')} />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="guest">{t('pos.guest')}</SelectItem>
-                            {customers.filter(c => !c.is_deleted && c.status === 'Active').map(customer => (
-                                <SelectItem key={customer.id} value={customer.id}>{customer.name} - {customer.phone}</SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
+                    <Popover open={isCustomerPopoverOpen} onOpenChange={setCustomerPopoverOpen}>
+                        <PopoverTrigger asChild>
+                            <Button variant="outline" role="combobox" className="w-full justify-between font-normal">
+                                {selectedCustomer ? `${selectedCustomer.name} - ${selectedCustomer.phone}` : t('pos.select_customer_placeholder')}
+                                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                            </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
+                             <Input placeholder={t('pos.search_customer_placeholder')} value={customerSearch} onChange={e => setCustomerSearch(e.target.value)} className="m-2 w-[calc(100%-1rem)]" />
+                             <Separator/>
+                             <ScrollArea className="h-60">
+                                <div className="p-2 space-y-1">
+                                <Button variant="ghost" className="w-full justify-start font-normal" onClick={() => { setSelectedCustomerId('guest'); setCustomerPopoverOpen(false); }}>
+                                    {t('pos.guest')}
+                                </Button>
+                                {filteredCustomersForSearch.map(customer => (
+                                    <Button key={customer.id} variant="ghost" className="w-full justify-start font-normal h-auto py-2 text-left" onClick={() => { setSelectedCustomerId(customer.id); setCustomerPopoverOpen(false); setCustomerSearch(''); }}>
+                                        <div>
+                                            <p>{customer.name}</p>
+                                            <p className="text-xs text-muted-foreground">{customer.phone}</p>
+                                        </div>
+                                    </Button>
+                                ))}
+                                </div>
+                             </ScrollArea>
+                        </PopoverContent>
+                    </Popover>
                     <Button variant="outline" size="icon" onClick={handleAddNewCustomer} aria-label={t('pos.add_customer')}>
                         <UserPlus className="h-4 w-4" />
                     </Button>
@@ -1038,20 +1069,25 @@ export default function POSPage() {
                     </div>
                     {paymentMethod === 'Transfer' && (
                         <div className="flex flex-col items-center gap-2 pt-4">
-                           {qrCodeUrl ? (
-                            <Image
-                                src={qrCodeUrl}
-                                width={250}
-                                height={250}
-                                alt="QR Code"
-                                data-ai-hint="payment qr code"
-                            />
-                           ) : (
-                            <div className="flex h-[250px] w-[250px] items-center justify-center rounded-md bg-muted">
+                            {!showQrCode && (
+                                <Button type="button" variant="outline" onClick={() => setShowQrCode(true)}>
+                                    {t('pos.show_qr')}
+                                </Button>
+                            )}
+                            {showQrCode && qrCodeUrl ? (
+                                <Image
+                                    src={qrCodeUrl}
+                                    width={250}
+                                    height={250}
+                                    alt="QR Code"
+                                    data-ai-hint="payment qr code"
+                                />
+                            ) : showQrCode ? (
+                                <div className="flex h-[250px] w-[250px] items-center justify-center rounded-md bg-muted">
                                 <p className="text-center text-sm text-muted-foreground">{t('pos.qr_code_error')}</p>
-                            </div>
-                           )}
-                            <p className="text-sm text-muted-foreground">{t('pos.qr_code_scan')}</p>
+                                </div>
+                            ) : null}
+                            {showQrCode && <p className="text-sm text-muted-foreground">{t('pos.qr_code_scan')}</p>}
                         </div>
                     )}
                     <div>

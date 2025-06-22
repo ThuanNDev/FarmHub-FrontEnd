@@ -234,10 +234,10 @@
       "shipping_fee": "Shipping Fee"
     },
     "returns": {
-      "success_approve": "Return order has been approved.",
-      "success_reject": "Return order has been rejected.",
-      "success_refund": "Refund has been confirmed.",
-      "success_restock": "{{count}} products have been restocked."
+        "success_approve": "Return order has been approved.",
+        "success_reject": "Return order has been rejected.",
+        "success_refund": "Refund has been confirmed.",
+        "success_restock": "{{count}} products have been restocked."
     }
   },
   "login": {
@@ -264,6 +264,8 @@
     "all_categories": "All",
     "stock": "Stock: {{stock}}",
     "select_customer_placeholder": "Select a customer",
+    "search_customer_placeholder": "Search by name or phone...",
+    "show_qr": "Show QR Code",
     "guest": "Guest",
     "add_customer": "Add customer",
     "empty_cart": "Select a product to add to the cart.",
