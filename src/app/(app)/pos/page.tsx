@@ -162,8 +162,13 @@ export default function POSPage() {
   const handleConfirmPayment = () => {
     const remaining = totalWithVat - amountPaid;
     let description = `Đơn hàng đã được tạo.`;
+
     if (remaining > 0 && selectedCustomer) {
-        description += ` Ghi nợ ${formatCurrency(remaining)} cho khách hàng ${selectedCustomer.name}.`;
+        if (paymentMethod === 'Installment') {
+            description += ` Trả trước ${formatCurrency(amountPaid)}, còn lại ${formatCurrency(remaining)} cho khách hàng ${selectedCustomer.name}.`;
+        } else { // Assumes 'Debt'
+            description += ` Ghi nợ ${formatCurrency(remaining)} cho khách hàng ${selectedCustomer.name}.`;
+        }
     }
 
     toast({
@@ -799,7 +804,7 @@ export default function POSPage() {
                     </div>
                     {(totalWithVat - amountPaid) > 0 && (
                         <div className="flex justify-between text-sm text-destructive font-semibold text-right">
-                            <span>Còn lại (ghi nợ)</span>
+                            <span>Còn lại</span>
                             <span>{formatCurrency(totalWithVat - amountPaid)}</span>
                         </div>
                     )}
@@ -808,7 +813,7 @@ export default function POSPage() {
                 <div className="space-y-4">
                     <div>
                         <Label>Phương thức thanh toán</Label>
-                        <RadioGroup value={paymentMethod} onValueChange={setPaymentMethod} className="mt-2 grid grid-cols-4 gap-2">
+                        <RadioGroup value={paymentMethod} onValueChange={setPaymentMethod} className="mt-2 grid grid-cols-3 gap-2">
                             <div>
                                 <RadioGroupItem value="Cash" id="cash" className="peer sr-only" />
                                 <Label htmlFor="cash" className="flex cursor-pointer flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary">
@@ -837,6 +842,18 @@ export default function POSPage() {
                                     )}
                                 >
                                     Ghi nợ
+                                </Label>
+                            </div>
+                            <div>
+                                <RadioGroupItem value="Installment" id="installment" className="peer sr-only" disabled={!selectedCustomer} />
+                                <Label 
+                                    htmlFor="installment" 
+                                    className={cn(
+                                        "flex cursor-pointer flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary",
+                                        !selectedCustomer && "cursor-not-allowed opacity-50"
+                                    )}
+                                >
+                                    Trả góp
                                 </Label>
                             </div>
                         </RadioGroup>

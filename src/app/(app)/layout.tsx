@@ -18,6 +18,7 @@ import {
   Truck,
   PackagePlus,
   LogOut,
+  Landmark,
 } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
@@ -59,6 +60,7 @@ const navItems = [
   { href: '/purchases', label: 'Nhập hàng', icon: PackagePlus },
   { href: '/categories', label: 'Thể loại', icon: Tags },
   { href: '/debts', label: 'Công nợ', icon: CreditCard },
+  { href: '/installments', label: 'Trả góp', icon: Landmark },
   { href: '/reports', label: 'Báo cáo', icon: BarChart3 },
   { href: '/users', label: 'Nhân viên', icon: UsersRound },
   { href: '/settings', label: 'Cài đặt', icon: Settings },
