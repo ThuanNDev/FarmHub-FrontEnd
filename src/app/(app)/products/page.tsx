@@ -409,7 +409,7 @@ export default function ProductsPage() {
       </Tabs>
 
       <Dialog open={isAddEditDialogOpen} onOpenChange={setAddEditDialogOpen}>
-        <DialogContent className="sm:max-w-3xl">
+        <DialogContent className="sm:max-w-4xl">
           <DialogHeader>
             <DialogTitle className="font-headline">{selectedProduct ? 'Sửa sản phẩm' : 'Thêm sản phẩm mới'}</DialogTitle>
             <DialogDescription>
@@ -417,43 +417,15 @@ export default function ProductsPage() {
             </DialogDescription>
           </DialogHeader>
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-4 py-4 max-h-[70vh] overflow-y-auto pr-6">
-               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <FormField
-                    control={form.control}
-                    name="name"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Tên sản phẩm</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Máy xới đất Kubota" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                   <FormField
-                    control={form.control}
-                    name="brand"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Thương hiệu</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Kubota" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-               </div>
-               <FormField
+            <form onSubmit={form.handleSubmit(onSubmit)} className="grid grid-cols-1 md:grid-cols-3 gap-6 py-4 max-h-[70vh] overflow-y-auto pr-6">
+                <FormField
                   control={form.control}
-                  name="description"
+                  name="name"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Mô tả</FormLabel>
+                      <FormLabel>Tên sản phẩm</FormLabel>
                       <FormControl>
-                        <Textarea placeholder="Mô tả chi tiết về sản phẩm..." {...field} />
+                        <Input placeholder="Máy xới đất Kubota" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -461,22 +433,18 @@ export default function ProductsPage() {
                 />
                 <FormField
                   control={form.control}
-                  name="images"
+                  name="brand"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Hình ảnh</FormLabel>
+                      <FormLabel>Thương hiệu</FormLabel>
                       <FormControl>
-                        <Textarea placeholder="Dán các URL hình ảnh, cách nhau bằng dấu phẩy" {...field} />
+                        <Input placeholder="Kubota" {...field} />
                       </FormControl>
-                      <FormDescription>
-                        Cung cấp một hoặc nhiều URL hình ảnh, phân tách bằng dấu phẩy.
-                      </FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <FormField
+                <FormField
                     control={form.control}
                     name="category_id"
                     render={({ field }) => (
@@ -500,21 +468,35 @@ export default function ProductsPage() {
                       </FormItem>
                     )}
                   />
-                  <FormField
-                    control={form.control}
-                    name="unit"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Đơn vị</FormLabel>
-                        <FormControl>
-                          <Input placeholder="chiếc, kg, lít..." {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+               <FormField
+                  control={form.control}
+                  name="description"
+                  render={({ field }) => (
+                    <FormItem className="md:col-span-3">
+                      <FormLabel>Mô tả</FormLabel>
+                      <FormControl>
+                        <Textarea placeholder="Mô tả chi tiết về sản phẩm..." {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="images"
+                  render={({ field }) => (
+                    <FormItem className="md:col-span-3">
+                      <FormLabel>Hình ảnh</FormLabel>
+                      <FormControl>
+                        <Textarea placeholder="Dán các URL hình ảnh, cách nhau bằng dấu phẩy" {...field} />
+                      </FormControl>
+                      <FormDescription>
+                        Cung cấp một hoặc nhiều URL hình ảnh, phân tách bằng dấu phẩy.
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
                  <FormField
                     control={form.control}
                     name="price"
@@ -541,8 +523,19 @@ export default function ProductsPage() {
                       </FormItem>
                     )}
                   />
-              </div>
-               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="unit"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Đơn vị</FormLabel>
+                        <FormControl>
+                          <Input placeholder="chiếc, kg, lít..." {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                  <FormField
                     control={form.control}
                     name="stock"
@@ -569,7 +562,6 @@ export default function ProductsPage() {
                       </FormItem>
                     )}
                   />
-              </div>
                <FormField
                   control={form.control}
                   name="warranty_info"
@@ -611,7 +603,7 @@ export default function ProductsPage() {
                   control={form.control}
                   name="is_active"
                   render={({ field }) => (
-                    <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
+                    <FormItem className="md:col-span-3 flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
                        <div className="space-y-0.5">
                         <FormLabel>Trạng thái</FormLabel>
                         <FormDescription>
@@ -627,7 +619,7 @@ export default function ProductsPage() {
                     </FormItem>
                   )}
                 />
-              <DialogFooter>
+              <DialogFooter className="md:col-span-3">
                 <Button type="submit" className="bg-primary hover:bg-primary/90">
                   Lưu sản phẩm
                 </Button>
