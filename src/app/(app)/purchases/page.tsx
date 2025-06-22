@@ -582,15 +582,13 @@ function AddProductForm({ onAddItem, currentItems }: { onAddItem: (item: Purchas
             </div>
             <div className="md:col-span-2">
                 <Label>Số lượng</Label>
-                <Input type="number" value={quantity} onChange={e => setQuantity(Number(e.target.value) || 1)} min={1} />
+                <Input type="number" value={quantity} onChange={e => setQuantity(Number(e.target.value) || 1)} onFocus={e => e.target.select()} min={1} />
             </div>
             <div className="md:col-span-3">
                 <Label>Giá nhập</Label>
-                <Input type="number" value={unitPrice} onChange={e => setUnitPrice(Number(e.target.value) || 0)} min={0} />
+                <Input type="number" value={unitPrice} onChange={e => setUnitPrice(Number(e.target.value) || 0)} onFocus={e => e.target.select()} min={0} />
             </div>
             <Button type="button" onClick={handleAdd} className="md:col-span-2">Thêm vào đơn</Button>
         </div>
     )
 }
-
-    
