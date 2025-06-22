@@ -1,6 +1,22 @@
 // All IDs are kept simple for mocking purposes. In a real DB, these would be UUIDs or CUIDs.
 // Timestamps are in ISO 8601 format.
 
+export const mockStores = [
+  {
+    id: 'store-001',
+    name: 'AgriTrack - Chi nhánh chính',
+    address: '123 Đường Nông Sản, Huyện Cần Giờ, TP.HCM',
+    phone: '02839998888',
+    email: 'contact.hcm@agritrack.vn',
+    database_name: 'agritrack_main_db',
+    manager_id: 'user-001',
+    opening_hours: 'Thứ 2 - Chủ Nhật: 7:00 - 18:00',
+    is_active: true,
+    created_at: '2023-01-01T00:00:00Z',
+    updated_at: '2024-07-25T11:00:00Z'
+  }
+];
+
 export const mockUsers = [
     {
       id: 'user-001',
