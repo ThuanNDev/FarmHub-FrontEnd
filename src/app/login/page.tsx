@@ -54,13 +54,24 @@ export default function LoginPage() {
     setTimeout(() => {
         const user = mockUsers.find((u) => u.username === values.username);
 
-        // In a real app, you would compare a hashed password. For this mock, we just check if the user exists and is active.
+        // In a real app, you would compare a hashed password.
         if (user && user.is_active) {
-        toast({
-            title: 'Đăng nhập thành công',
-            description: `Chào mừng quay trở lại, ${user.full_name}!`,
-        });
-        router.push('/');
+            if (user.last_login_at === null) {
+                // First time login, redirect to OTP verification
+                toast({
+                    title: 'Xác thực lần đầu',
+                    description: 'Vui lòng xác thực tài khoản của bạn.',
+                });
+                router.push(`/verify-otp?username=${values.username}`);
+            } else {
+                // Subsequent login
+                user.last_login_at = new Date().toISOString();
+                toast({
+                    title: 'Đăng nhập thành công',
+                    description: `Chào mừng quay trở lại, ${user.full_name}!`,
+                });
+                router.push('/');
+            }
         } else if (user && !user.is_active) {
             toast({
                 variant: 'destructive',
