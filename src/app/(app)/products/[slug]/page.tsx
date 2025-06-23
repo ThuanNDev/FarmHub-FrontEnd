@@ -9,7 +9,7 @@ import { notFound, useParams, useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { ArrowLeft, CheckCircle, XCircle, Package, DollarSign, Warehouse, Tag, Truck, Info, Calendar, Edit, Trash2 } from 'lucide-react';
+import { ArrowLeft, CheckCircle, XCircle, Package, DollarSign, Warehouse, Tag, Truck, Info, Calendar, Edit, Trash2, Sparkles, Loader2 } from 'lucide-react';
 import { mockProducts, mockCategories, mockSuppliers } from '@/lib/data';
 import { Button } from '@/components/ui/button';
 import {
@@ -59,6 +59,7 @@ import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
 import { slugify } from '@/lib/utils';
 import { productSchema } from '@/lib/form-schemas';
+import { generateProductDescription } from '@/ai/flows/generate-product-description';
 
 type Product = (typeof mockProducts)[0];
 type ProductFormValues = z.infer<typeof productSchema>;
@@ -76,6 +77,7 @@ export default function ProductDetailPage() {
   const [isEditDialogOpen, setEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [isClient, setIsClient] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
   
   const form = useForm<ProductFormValues>({
     resolver: zodResolver(productSchema),
@@ -117,6 +119,7 @@ export default function ProductDetailPage() {
           warrantyInfo: product.warrantyInfo,
           isActive: product.isActive,
           images: imageString,
+          specs: product.specs,
         });
     }
   }, [isEditDialogOpen, product, form]);
@@ -176,6 +179,7 @@ export default function ProductDetailPage() {
         description: values.description || '',
         warrantyInfo: values.warrantyInfo || 'Không có',
         updatedAt: now,
+        specs: values.specs || '{}',
     };
 
     const productIndex = mockProducts.findIndex(p => p.productId === product.productId);
@@ -189,6 +193,32 @@ export default function ProductDetailPage() {
 
     if (product.slug !== newSlug) {
         router.replace(`/products/${newSlug}`);
+    }
+  };
+
+  const handleGenerateDescription = async () => {
+    const { name, brand, specs } = form.getValues();
+    if (!name || !brand) {
+      toast({
+        variant: 'destructive',
+        title: 'Thiếu thông tin',
+        description: 'Vui lòng nhập Tên sản phẩm và Thương hiệu.',
+      });
+      return;
+    }
+    setIsGenerating(true);
+    try {
+      const result = await generateProductDescription({ name, brand, specs });
+      form.setValue('description', result.description, { shouldValidate: true });
+    } catch (error) {
+      console.error(error);
+      toast({
+        variant: 'destructive',
+        title: 'Lỗi',
+        description: 'Không thể tạo mô tả. Vui lòng thử lại.',
+      });
+    } finally {
+      setIsGenerating(false);
     }
   };
 
@@ -479,14 +509,50 @@ export default function ProductDetailPage() {
                     )}
                   />
                <FormField
+                control={form.control}
+                name="description"
+                render={({ field }) => (
+                  <FormItem className="md:col-span-3">
+                    <div className="flex items-center justify-between">
+                      <FormLabel>Mô tả</FormLabel>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={handleGenerateDescription}
+                        disabled={isGenerating}
+                      >
+                        {isGenerating ? (
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        ) : (
+                          <Sparkles className="mr-2 h-4 w-4" />
+                        )}
+                        Tạo bằng AI
+                      </Button>
+                    </div>
+                    <FormControl>
+                      <Textarea
+                        placeholder="Mô tả chi tiết về sản phẩm..."
+                        {...field}
+                        rows={5}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+               <FormField
                   control={form.control}
-                  name="description"
+                  name="specs"
                   render={({ field }) => (
                     <FormItem className="md:col-span-3">
-                      <FormLabel>Mô tả</FormLabel>
+                      <FormLabel>Thông số kỹ thuật</FormLabel>
                       <FormControl>
-                        <Textarea placeholder="Mô tả chi tiết về sản phẩm..." {...field} />
+                        <Textarea placeholder='{"Công suất": "1.2 kW", "Trọng lượng": "4.1 kg"}' {...field} rows={4} />
                       </FormControl>
+                      <FormDescription>
+                        Nhập dưới dạng JSON. Mỗi cặp key-value sẽ được hiển thị trên một dòng.
+                      </FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}

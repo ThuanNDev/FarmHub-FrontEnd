@@ -12,16 +12,17 @@
     -   [ ] Quản lý session/token phía client một cách an toàn (ví dụ: sử dụng httpOnly cookies).
     -   [ ] Bảo vệ các trang quản trị, chỉ cho phép người dùng đã đăng nhập truy cập. Chuyển hướng người dùng chưa xác thực về trang đăng nhập.
 
-## II. Cải tiến & Tính năng mới (Tiềm năng)
+## II. Tích hợp AI (Genkit)
+-   [x] **Mô tả sản phẩm:** Tự động tạo hoặc gợi ý mô tả sản phẩm dựa trên tên, thương hiệu và thông số kỹ thuật.
+-   [x] **Phân tích hình ảnh:** Trong quy trình trả hàng, sử dụng AI để phân tích hình ảnh sản phẩm do khách hàng cung cấp để gợi ý tình trạng (mới, đã sử dụng, hư hỏng).
+-   [x] **Báo cáo thông minh:** Tự động phân tích dữ liệu bán hàng và đưa ra các nhận định, đề xuất.
+-   [x] **Dự báo bán hàng:** Sử dụng dữ liệu bán hàng lịch sử để dự báo nhu cầu cho các sản phẩm trong tương lai.
+
+## III. Cải tiến & Tính năng mới (Tiềm năng)
 
 -   [ ] **Tối ưu hóa với dữ liệu thật:**
     -   [ ] **Tìm kiếm & Phân trang phía Server:** Hiện tại, các chức năng này đang xử lý ở phía client. Khi có dữ liệu lớn, cần chuyển logic này về phía backend để tối ưu hiệu suất.
     -   [ ] **Tải ảnh lên:** Triển khai giải pháp cho phép người dùng tải lên hình ảnh từ máy tính thay vì chỉ dùng URL.
-
--   [ ] **Tích hợp AI (Genkit):**
-    -   [ ] **Mô tả sản phẩm:** Tự động tạo hoặc gợi ý mô tả sản phẩm dựa trên tên, thương hiệu và thông số kỹ thuật.
-    -   [ ] **Phân tích hình ảnh:** Trong quy trình trả hàng, sử dụng AI để phân tích hình ảnh sản phẩm do khách hàng cung cấp để gợi ý tình trạng (mới, đã sử dụng, hư hỏng).
-    -   [ ] **Dự báo bán hàng:** Sử dụng dữ liệu bán hàng lịch sử để dự báo nhu cầu cho các sản phẩm trong tương lai.
 
 -   [ ] **Cải thiện Trải nghiệm người dùng (UX/UI):**
     -   [ ] **Dashboard tùy chỉnh:** Cho phép người dùng chọn và sắp xếp các thẻ thống kê trên Bảng điều khiển.

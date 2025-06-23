@@ -12,6 +12,8 @@ import {
   PlusCircle,
   Search,
   MoreHorizontal,
+  Sparkles,
+  Loader2,
 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -56,7 +58,6 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import {
   Form,
   FormControl,
@@ -86,6 +87,7 @@ import { mockProducts, mockCategories, mockSuppliers } from '@/lib/data';
 import { useToast } from '@/hooks/use-toast';
 import { slugify } from '@/lib/utils';
 import { productSchema } from '@/lib/form-schemas';
+import { generateProductDescription } from '@/ai/flows/generate-product-description';
 
 type Product = (typeof mockProducts)[0];
 type ProductFormValues = z.infer<typeof productSchema>;
@@ -98,6 +100,7 @@ export default function ProductsPage() {
   const [isAddEditDialogOpen, setAddEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [isGenerating, setIsGenerating] = useState(false);
 
   const [currentPage, setCurrentPage] = useState(1);
   const [productsPerPage] = useState(7);
@@ -124,6 +127,7 @@ export default function ProductsPage() {
       warrantyInfo: 'Bảo hành 12 tháng',
       isActive: true,
       images: '',
+      specs: '{}',
     },
   });
 
@@ -153,6 +157,7 @@ export default function ProductsPage() {
           warrantyInfo: selectedProduct.warrantyInfo,
           isActive: selectedProduct.isActive,
           images: imageString,
+          specs: selectedProduct.specs,
         });
       } else {
         form.reset({
@@ -172,6 +177,7 @@ export default function ProductsPage() {
           warrantyInfo: 'Bảo hành 12 tháng',
           isActive: true,
           images: '',
+          specs: '{}',
         });
       }
     }
@@ -225,6 +231,7 @@ export default function ProductsPage() {
               description: values.description || '',
               warrantyInfo: values.warrantyInfo || 'Không có',
               updatedAt: now,
+              specs: values.specs || '{}',
             } 
           : p
       );
@@ -238,7 +245,7 @@ export default function ProductsPage() {
         wholesalePrice: values.wholesalePrice || values.price,
         creditPrice: values.creditPrice || values.price,
         images: imagesAsJsonString.length > 2 ? imagesAsJsonString : '["https://picsum.photos/600/600"]',
-        specs: '{}',
+        specs: values.specs || '{}',
         createdAt: now,
         updatedAt: now,
         isDeleted: false,
@@ -251,6 +258,32 @@ export default function ProductsPage() {
     }
     setAddEditDialogOpen(false);
     setSelectedProduct(null);
+  };
+  
+  const handleGenerateDescription = async () => {
+    const { name, brand, specs } = form.getValues();
+    if (!name || !brand) {
+      toast({
+        variant: 'destructive',
+        title: 'Thiếu thông tin',
+        description: 'Vui lòng nhập Tên sản phẩm và Thương hiệu.',
+      });
+      return;
+    }
+    setIsGenerating(true);
+    try {
+      const result = await generateProductDescription({ name, brand, specs });
+      form.setValue('description', result.description, { shouldValidate: true });
+    } catch (error) {
+      console.error(error);
+      toast({
+        variant: 'destructive',
+        title: 'Lỗi',
+        description: 'Không thể tạo mô tả. Vui lòng thử lại.',
+      });
+    } finally {
+      setIsGenerating(false);
+    }
   };
   
   const filteredProducts = useMemo(() => {
@@ -534,15 +567,51 @@ export default function ProductsPage() {
                       </FormItem>
                     )}
                   />
-               <FormField
+                <FormField
                   control={form.control}
                   name="description"
                   render={({ field }) => (
                     <FormItem className="md:col-span-3">
-                      <FormLabel>Mô tả</FormLabel>
+                      <div className="flex items-center justify-between">
+                        <FormLabel>Mô tả</FormLabel>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={handleGenerateDescription}
+                          disabled={isGenerating}
+                        >
+                          {isGenerating ? (
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          ) : (
+                            <Sparkles className="mr-2 h-4 w-4" />
+                          )}
+                          Tạo bằng AI
+                        </Button>
+                      </div>
                       <FormControl>
-                        <Textarea placeholder="Mô tả chi tiết về sản phẩm..." {...field} />
+                        <Textarea
+                          placeholder="Mô tả chi tiết về sản phẩm..."
+                          {...field}
+                          rows={5}
+                        />
                       </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="specs"
+                  render={({ field }) => (
+                    <FormItem className="md:col-span-3">
+                      <FormLabel>Thông số kỹ thuật</FormLabel>
+                      <FormControl>
+                        <Textarea placeholder='{"Công suất": "1.2 kW", "Trọng lượng": "4.1 kg"}' {...field} rows={4} />
+                      </FormControl>
+                      <FormDescription>
+                        Nhập dưới dạng JSON. Mỗi cặp key-value sẽ được hiển thị trên một dòng.
+                      </FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}

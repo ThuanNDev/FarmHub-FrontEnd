@@ -1,12 +1,12 @@
 
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { MoreHorizontal, PlusCircle, Search, Trash2 } from 'lucide-react';
+import { MoreHorizontal, PlusCircle, Search, Trash2, Camera, Sparkles, Loader2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -57,19 +57,22 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-import { mockReturnOrders, mockReturnOrderItems, mockOrders, mockOrderItems, mockCustomers, mockProducts, mockUsers } from '@/lib/data';
+import { mockReturnOrders, mockReturnOrderItems, mockOrders, mockOrderItems, mockCustomers, mockUsers } from '@/lib/data';
 import { useToast } from '@/hooks/use-toast';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { format } from 'date-fns';
 import { returnOrderSchema } from '@/lib/form-schemas';
+import { analyzeReturnImage } from '@/ai/flows/analyze-return-image';
 
 type ReturnOrder = typeof mockReturnOrders[0];
 type Order = typeof mockOrders[0];
 type OrderItem = typeof mockOrderItems[0];
 
 interface ReturnableItem extends OrderItem {
-  return_quantity: number;
+  returnQuantity: number;
   condition: 'new' | 'used' | 'damaged';
+  imageFile?: File | null;
+  analyzing: boolean;
 }
 type ReturnOrderFormValues = z.infer<typeof returnOrderSchema>;
 
@@ -109,7 +112,7 @@ export default function ReturnsPage() {
       setFoundOrder(order);
       const items = mockOrderItems
         .filter(item => item.orderId === order.orderId)
-        .map(item => ({ ...item, return_quantity: 0, condition: 'new' as const }));
+        .map(item => ({ ...item, returnQuantity: 0, condition: 'new' as const, imageFile: null, analyzing: false }));
       setReturnableItems(items);
     } else {
       toast({ variant: 'destructive', title: 'Không tìm thấy', description: `Không tìm thấy đơn hàng với mã ${orderCode}.`});
@@ -124,7 +127,7 @@ export default function ReturnsPage() {
             const originalItem = mockOrderItems.find(oi => oi.orderItemId === itemId);
             const maxQty = originalItem?.quantity || 0;
             const newQty = Math.max(0, Math.min(quantity, maxQty));
-            return { ...item, return_quantity: newQty };
+            return { ...item, returnQuantity: newQty };
         }
         return item;
     }));
@@ -134,16 +137,53 @@ export default function ReturnsPage() {
     setReturnableItems(prev => prev.map(item => item.orderItemId === itemId ? { ...item, condition } : item));
   }
 
+  const handleImageFileChange = (itemId: string, file: File | null) => {
+    setReturnableItems(prev => prev.map(item => item.orderItemId === itemId ? { ...item, imageFile: file } : item));
+  };
+  
+  const handleAnalyzeImage = async (itemId: string) => {
+    const item = returnableItems.find(i => i.orderItemId === itemId);
+    if (!item || !item.imageFile) {
+        toast({ variant: 'destructive', title: 'Lỗi', description: 'Vui lòng chọn ảnh trước khi phân tích.' });
+        return;
+    }
+
+    setReturnableItems(prev => prev.map(i => i.orderItemId === itemId ? { ...i, analyzing: true } : i));
+
+    try {
+        const reader = new FileReader();
+        reader.readAsDataURL(item.imageFile);
+        reader.onload = async () => {
+            const dataUri = reader.result as string;
+            const result = await analyzeReturnImage({ photoDataUri: dataUri });
+            
+            handleItemConditionChange(itemId, result.condition);
+            
+            // Optionally update a reason/note field if you add one
+            toast({ title: 'Phân tích hoàn tất', description: `AI đề xuất tình trạng: ${t(`status.${result.condition}`)}. Lý do: ${result.reason}` });
+
+        };
+        reader.onerror = (error) => {
+            throw error;
+        };
+    } catch (error) {
+        console.error("Image analysis failed:", error);
+        toast({ variant: 'destructive', title: 'Lỗi', description: 'Phân tích hình ảnh thất bại. Vui lòng thử lại.' });
+    } finally {
+        setReturnableItems(prev => prev.map(i => i.orderItemId === itemId ? { ...i, analyzing: false } : i));
+    }
+  };
+
   const onSubmit = (values: ReturnOrderFormValues) => {
     if (!foundOrder) return;
     
-    const itemsToReturn = returnableItems.filter(item => item.return_quantity > 0);
+    const itemsToReturn = returnableItems.filter(item => item.returnQuantity > 0);
     if(itemsToReturn.length === 0) {
         toast({ variant: 'destructive', title: 'Lỗi', description: 'Vui lòng chọn ít nhất một sản phẩm để trả.'});
         return;
     }
 
-    const totalRefundAmount = itemsToReturn.reduce((sum, item) => sum + item.return_quantity * item.unitPrice, 0);
+    const totalRefundAmount = itemsToReturn.reduce((sum, item) => sum + item.returnQuantity * item.unitPrice, 0);
     const now = new Date().toISOString();
     const currentUser = mockUsers[0];
 
@@ -166,7 +206,7 @@ export default function ReturnsPage() {
             returnOrderItemId: `item-ret-${Date.now()}-${item.orderItemId}`,
             returnOrderId: newReturnOrder.returnOrderId,
             productId: item.productId,
-            quantity: item.return_quantity,
+            quantity: item.returnQuantity,
             unitPrice: item.unitPrice,
             condition: item.condition,
             restocked: false,
@@ -281,7 +321,7 @@ export default function ReturnsPage() {
       </Card>
       
       <Dialog open={isCreateDialogOpen} onOpenChange={setCreateDialogOpen}>
-        <DialogContent className="sm:max-w-3xl">
+        <DialogContent className="sm:max-w-4xl">
             <DialogHeader>
                 <DialogTitle className="font-headline">Tạo đơn trả hàng</DialogTitle>
                 <DialogDescription>
@@ -291,7 +331,7 @@ export default function ReturnsPage() {
             <div className="space-y-4 max-h-[70vh] overflow-y-auto pr-4">
                 <div className="flex items-center gap-2">
                     <Input 
-                        placeholder="Nhập mã đơn hàng gốc (ví dụ: DH20240725001)" 
+                        placeholder="Nhập mã đơn hàng gốc (ví dụ: DH...)" 
                         value={orderCode}
                         onChange={e => setOrderCode(e.target.value)}
                     />
@@ -314,7 +354,8 @@ export default function ReturnsPage() {
                                             <TableRow>
                                                 <TableHead>Sản phẩm</TableHead>
                                                 <TableHead>Đã mua</TableHead>
-                                                <TableHead>Số lượng trả</TableHead>
+                                                <TableHead>SL Trả</TableHead>
+                                                <TableHead>Ảnh</TableHead>
                                                 <TableHead>Tình trạng</TableHead>
                                             </TableRow>
                                         </TableHeader>
@@ -326,12 +367,25 @@ export default function ReturnsPage() {
                                                     <TableCell>
                                                         <Input 
                                                             type="number" 
-                                                            className="w-20" 
+                                                            className="w-16" 
                                                             max={item.quantity}
                                                             min={0}
-                                                            value={item.return_quantity}
+                                                            value={item.returnQuantity}
                                                             onChange={(e) => handleItemQuantityChange(item.orderItemId, parseInt(e.target.value) || 0)}
                                                         />
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <div className="flex items-center gap-2">
+                                                            <Button asChild variant="outline" size="icon" className="h-8 w-8 relative">
+                                                                <label>
+                                                                    <Camera className="h-4 w-4"/>
+                                                                    <input type="file" accept="image/*" className="sr-only" onChange={(e) => handleImageFileChange(item.orderItemId, e.target.files ? e.target.files[0] : null)} />
+                                                                </label>
+                                                            </Button>
+                                                            <Button type="button" variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleAnalyzeImage(item.orderItemId)} disabled={!item.imageFile || item.analyzing}>
+                                                                {item.analyzing ? <Loader2 className="h-4 w-4 animate-spin"/> : <Sparkles className="h-4 w-4 text-primary"/>}
+                                                            </Button>
+                                                        </div>
                                                     </TableCell>
                                                     <TableCell>
                                                          <Select value={item.condition} onValueChange={(val: 'new' | 'used' | 'damaged') => handleItemConditionChange(item.orderItemId, val)}>

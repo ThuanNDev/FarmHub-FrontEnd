@@ -44,6 +44,7 @@ export const productSchema = z.object({
   warrantyInfo: z.string().optional(),
   isActive: z.boolean().default(true),
   images: z.string().optional(),
+  specs: z.string().optional(),
 });
 
 export const purchaseOrderSchema = z.object({
