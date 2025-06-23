@@ -19,6 +19,8 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
+  DialogFooter,
 } from '@/components/ui/dialog';
 import {
   Form,
@@ -36,7 +38,6 @@ import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { useStore } from '@/contexts/StoreContext';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { DialogDescription, DialogFooter } from '@/components/ui/dialog';
 
 type Product = typeof mockProducts[0];
 type PriceTier = 'retail' | 'wholesale' | 'credit';
@@ -692,7 +693,7 @@ export default function POSPage() {
           <header className="flex h-16 items-center justify-between gap-4 rounded-lg bg-background p-4 shadow-sm">
             <div className="flex items-center gap-4">
               <Button asChild variant="outline" size="icon" className="h-10 w-10">
-                <Link href="/">
+                <Link href="/dashboard">
                   <ArrowLeft className="h-5 w-5" />
                   <span className="sr-only">{t('pos.back_to_dashboard')}</span>
                 </Link>

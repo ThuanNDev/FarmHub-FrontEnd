@@ -77,7 +77,7 @@ export default function VerifyOtpPage() {
           title: 'Xác thực thành công',
           description: `Chào mừng bạn đến với ${mockStores[0].name}, ${user.full_name}!`,
         });
-        router.push('/');
+        router.push('/dashboard');
       } else {
         toast({
           variant: 'destructive',

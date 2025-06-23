@@ -74,7 +74,7 @@ export default function LoginPage() {
                     title: t('login.success'),
                     description: t('login.welcome_back', { name: user.full_name }),
                 });
-                router.push('/');
+                router.push('/dashboard');
             }
         } else if (user && !user.is_active) {
             toast({
