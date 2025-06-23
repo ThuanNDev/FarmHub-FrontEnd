@@ -28,6 +28,7 @@ import {
   Bell,
   Plus,
   UserPlus,
+  Presentation,
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { vi as viLocale } from 'date-fns/locale';
@@ -86,6 +87,7 @@ const navItems = [
   { href: '/debts', labelKey: 'nav.debts', icon: CreditCard },
   { href: '/installments', labelKey: 'nav.installments', icon: Landmark },
   { href: '/reports', labelKey: 'nav.reports', icon: BarChart3 },
+  { href: '/product-showcase', labelKey: 'nav.product_showcase', icon: Presentation },
   { href: '/printing', labelKey: 'nav.printing', icon: Printer },
   { href: '/users', labelKey: 'nav.users', icon: UsersRound },
   { href: '/settings', labelKey: 'nav.settings', icon: Settings },

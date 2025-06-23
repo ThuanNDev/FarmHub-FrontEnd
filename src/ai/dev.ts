@@ -4,3 +4,4 @@ import './flows/analyze-return-image';
 import './flows/generate-report-insights';
 import './flows/forecast-sales';
 import './flows/generate-product-specs';
+import './flows/generate-product-landing-page';
