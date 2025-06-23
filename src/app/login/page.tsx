@@ -31,7 +31,7 @@ import { mockUsers, mockStores } from '@/lib/data';
 import { useLanguage } from '@/store/LanguageContext';
 import { loginSchema } from '@/lib/form-schemas';
 import { API_URLS } from '@/lib/api-config';
-import type { User } from '@/types';
+import type { User, ApiUser } from '@/types';
 import { UserRole } from '@/types';
 
 type LoginFormValues = z.infer<typeof loginSchema>;
@@ -45,8 +45,8 @@ export default function LoginPage() {
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      username: 'dung.a@farmhub.vn',
-      password: 'Pass1234',
+      usernameOrEmail: 'ThuanNguyen',
+      password: 'SecurePass123',
     },
   });
 
@@ -59,7 +59,7 @@ export default function LoginPage() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          username: values.username,
+          usernameOrEmail: values.usernameOrEmail,
           password: values.password
         }),
       });
@@ -70,7 +70,7 @@ export default function LoginPage() {
         throw new Error(data.message || 'Đăng nhập thất bại. Vui lòng thử lại.');
       }
 
-      const { access_token, user: apiUser } = data.data as { access_token: string; user: User };
+      const { access_token, user: apiUser } = data.data as { access_token: string; user: ApiUser };
       
       // Store token
       localStorage.setItem('accessToken', access_token);
@@ -82,7 +82,7 @@ export default function LoginPage() {
       // We need to construct a full User object that matches our app's type definition
       const userToStore: User = {
         ...apiUser,
-        username: apiUser.username || apiUser.email.split('@')[0],
+        username: apiUser.email.split('@')[0], // Create username from email as it's not in response
         phone: apiUser.phone || '',
         role: apiUser.role as UserRole, // Cast to our enum
         isActive: apiUser.isActive ?? true,
@@ -135,7 +135,7 @@ export default function LoginPage() {
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <FormField
               control={form.control}
-              name="username"
+              name="usernameOrEmail"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>{t('login.username')}</FormLabel>

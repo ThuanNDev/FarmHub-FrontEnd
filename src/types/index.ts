@@ -1,4 +1,5 @@
 
+
 // All IDs are kept simple for mocking purposes. In a real DB, these would be UUIDs or CUIDs.
 // Timestamps are in ISO 8601 format.
 
@@ -46,6 +47,19 @@ export enum UserRole {
   VIEWER = 'viewer',
 }
 
+// User object as returned by the API
+export type ApiUser = {
+  userId: string;
+  fullName: string;
+  email: string;
+  role: UserRole;
+  associatedStoreIds: string[] | null;
+  isSuperadmin: boolean;
+  isActive?: boolean;
+  phone?: string;
+};
+
+// User object used throughout the application, including mock data
 export type User = {
   userId: string;
   username: string;
