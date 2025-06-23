@@ -1,9 +1,6 @@
 
-'use server';
-
 import {
   mockProducts,
-  mockCategories,
   mockCustomers,
   mockOrders,
   mockOrderItems,
@@ -14,15 +11,18 @@ import {
   mockReturnOrderItems,
   mockStockAdjustments,
   mockUsers,
+  mockCategories,
 } from '@/lib/data';
 import type { Product, Category, Customer, Order, Supplier, PurchaseOrder, ReturnOrder, StockAdjustment, User } from '@/types';
 import { slugify } from '@/lib/utils';
+import { apiClient } from '@/lib/api-client';
+import { API_URLS } from '@/lib/api-config';
 
 
 // --- SIMULATE API LATENCY ---
 const simulateDelay = (ms: number = 50) => new Promise(resolve => setTimeout(resolve, ms));
 
-// --- PRODUCTS API ---
+// --- PRODUCTS API (Uses mock data) ---
 export const getProducts = async (): Promise<Product[]> => {
   await simulateDelay();
   return mockProducts.filter(p => !p.isDeleted);
@@ -44,73 +44,74 @@ export const getProductsByCategoryId = async (categoryId: string): Promise<Produ
 };
 
 
-// --- CATEGORIES API ---
-export const getCategories = async (): Promise<Category[]> => {
-  await simulateDelay();
-  return mockCategories.filter(c => !c.isDeleted);
-};
-
-export const getCategoryById = async (id: string): Promise<Category | undefined> => {
-    await simulateDelay();
-    return mockCategories.find(c => c.categoryId === id && !c.isDeleted);
+// --- CATEGORIES API (Uses real API) ---
+// NOTE: GET and DELETE endpoints are assumed based on REST principles as they are not in the docs.
+export const getCategories = async (storeId: string): Promise<Category[]> => {
+  return apiClient<Category[]>(API_URLS.CATEGORIES(storeId));
 };
 
 export const getCategoryBySlug = async (slug: string): Promise<Category | undefined> => {
+    // This function is used on a detail page. For now, we keep it using mock data
+    // to avoid cascading changes. A real implementation would need a `storeId`
+    // and a `GET /.../categories/slug/{slug}` endpoint.
     await simulateDelay();
     return mockCategories.find(c => c.slug === slug && !c.isDeleted);
 };
 
-export const addCategory = async (data: Omit<Category, 'categoryId' | 'slug' | 'createdAt' | 'updatedAt' | 'isDeleted'>): Promise<Category> => {
-    await simulateDelay();
-    const newCategory: Category = {
-      ...data,
-      categoryId: `cate-${Date.now()}`,
-      slug: slugify(data.name),
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      isDeleted: false
-    };
-    mockCategories.unshift(newCategory);
-    return newCategory;
+export const addCategory = async (storeId: string, data: Partial<Category>): Promise<Category> => {
+    return apiClient<Category>(API_URLS.CATEGORIES(storeId), {
+        method: 'POST',
+        body: JSON.stringify(data),
+    });
 };
 
-export const updateCategory = async (id: string, data: Partial<Omit<Category, 'categoryId' | 'createdAt'>>): Promise<Category> => {
-    await simulateDelay();
-    const index = mockCategories.findIndex(c => c.categoryId === id);
-    if (index === -1) throw new Error('Category not found');
-    const updatedCategory = {
-      ...mockCategories[index],
-      ...data,
-      slug: data.name ? slugify(data.name) : mockCategories[index].slug,
-      updatedAt: new Date().toISOString()
-    };
-    mockCategories[index] = updatedCategory;
-    return updatedCategory;
+export const updateCategory = async (storeId: string, categoryId: string, data: Partial<Category>): Promise<Category> => {
+    const url = `${API_URLS.CATEGORIES(storeId)}/${categoryId}`;
+    return apiClient<Category>(url, {
+        method: 'PUT',
+        body: JSON.stringify(data),
+    });
 };
 
-export const deleteCategory = async (id: string): Promise<void> => {
-    await simulateDelay();
-    const index = mockCategories.findIndex(c => c.categoryId === id);
-    if (index !== -1) {
-      mockCategories[index].isDeleted = true;
-    }
+export const deleteCategory = async (storeId: string, categoryId: string): Promise<void> => {
+    const url = `${API_URLS.CATEGORIES(storeId)}/${categoryId}`;
+    await apiClient<void>(url, { method: 'DELETE' });
 };
 
 
-// --- CUSTOMERS API ---
-export const getCustomers = async (): Promise<Customer[]> => {
-  await simulateDelay();
-  return mockCustomers.filter(c => !c.isDeleted);
+// --- CUSTOMERS API (Uses real API) ---
+// NOTE: GET and DELETE endpoints are assumed based on REST principles as they are not in the docs.
+export const getCustomers = async (storeId: string): Promise<Customer[]> => {
+  return apiClient<Customer[]>(API_URLS.CUSTOMERS(storeId));
 };
 
-export const getCustomerById = async (id: string): Promise<Customer | undefined> => {
-    await simulateDelay();
-    return mockCustomers.find(c => c.customerId === id && !c.isDeleted);
+export const getCustomerById = async (storeId: string, customerId: string): Promise<Customer | undefined> => {
+  const url = `${API_URLS.CUSTOMERS(storeId)}/${customerId}`;
+  return apiClient<Customer>(url);
 };
 
-// ... Add similar CRUD operations for other entities as needed ...
+export const addCustomer = async (storeId: string, data: Partial<Customer>): Promise<Customer> => {
+  return apiClient<Customer>(API_URLS.CUSTOMERS(storeId), {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+};
 
-// --- ORDERS API ---
+export const updateCustomer = async (storeId: string, customerId: string, data: Partial<Customer>): Promise<Customer> => {
+  const url = `${API_URLS.CUSTOMERS(storeId)}/${customerId}`;
+  return apiClient<Customer>(url, {
+    method: 'PUT',
+    body: JSON.stringify(data),
+  });
+};
+
+export const deleteCustomer = async (storeId: string, customerId: string): Promise<void> => {
+    const url = `${API_URLS.CUSTOMERS(storeId)}/${customerId}`;
+    await apiClient<void>(url, { method: 'DELETE' });
+};
+
+
+// --- ORDERS API (Uses mock data) ---
 export const getOrders = async (): Promise<Order[]> => {
   await simulateDelay();
   return mockOrders;
@@ -121,12 +122,8 @@ export const getOrderById = async (id: string): Promise<Order | undefined> => {
     return mockOrders.find(o => o.orderId === id);
 };
 
-// --- SUPPLIERS API ---
+// --- SUPPLIERS API (Uses mock data) ---
 export const getSuppliers = async (): Promise<Supplier[]> => {
   await simulateDelay();
   return mockSuppliers.filter(s => !s.isDeleted);
 };
-
-// --- And so on for all other data types...
-// This layer isolates the data access logic from the UI components.
-// When you switch to a real backend, you only need to change the implementation inside these functions.

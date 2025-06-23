@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -71,17 +71,18 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Switch } from '@/components/ui/switch';
-import { mockCustomers } from '@/lib/data';
 import { useToast } from '@/hooks/use-toast';
 import { useLanguage } from '@/store/LanguageContext';
+import { useStore } from '@/store/StoreContext';
 import { customerSchema } from '@/lib/form-schemas';
+import { getCustomers, addCustomer, updateCustomer, deleteCustomer } from '@/services/api';
+import type { Customer } from '@/types';
 
-type Customer = typeof mockCustomers[0];
 type CustomerFormValues = z.infer<typeof customerSchema>;
 
 export default function CustomersPageContent() {
-  const [customers, setCustomers] = useState<Customer[]>(mockCustomers);
+  const [customers, setCustomers] = useState<Customer[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [isAddEditDialogOpen, setAddEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -91,6 +92,7 @@ export default function CustomersPageContent() {
   const searchParams = useSearchParams();
   const { toast } = useToast();
   const { t } = useLanguage();
+  const { store } = useStore();
 
   const form = useForm<CustomerFormValues>({
     resolver: zodResolver(customerSchema),
@@ -106,6 +108,27 @@ export default function CustomersPageContent() {
       status: 'Active',
     },
   });
+
+  const fetchCustomers = useCallback(async () => {
+    if (!store) return;
+    setIsLoading(true);
+    try {
+      const data = await getCustomers(store.storeId);
+      setCustomers(data);
+    } catch (error) {
+      toast({
+        variant: 'destructive',
+        title: t('common.error'),
+        description: 'Không thể tải danh sách khách hàng.',
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  }, [store, toast, t]);
+
+  useEffect(() => {
+    fetchCustomers();
+  }, [fetchCustomers]);
 
   useEffect(() => {
     if (searchParams.get('action') === 'add') {
@@ -145,54 +168,35 @@ export default function CustomersPageContent() {
     setDeleteDialogOpen(true);
   };
 
-  const confirmDelete = () => {
-    if (selectedCustomer) {
-      setCustomers(customers.map(c => c.customerId === selectedCustomer.customerId ? { ...c, isDeleted: true } : c));
-      toast({ title: "Thành công", description: "Khách hàng đã được xóa." });
+  const confirmDelete = async () => {
+    if (selectedCustomer && store) {
+      try {
+        await deleteCustomer(store.storeId, selectedCustomer.customerId);
+        toast({ title: t('common.success'), description: t('pages.customers.success_delete') });
+        fetchCustomers();
+      } catch(error) {
+        toast({ variant: 'destructive', title: t('common.error'), description: (error as Error).message });
+      }
     }
     setDeleteDialogOpen(false);
     setSelectedCustomer(null);
   };
 
-  const onSubmit = (values: CustomerFormValues) => {
-    const now = new Date().toISOString();
-    if (selectedCustomer) {
-      const updatedCustomers = customers.map(c => 
-        c.customerId === selectedCustomer.customerId 
-          ? { 
-              ...c, 
-              ...values, 
-              updatedAt: now,
-              creditLimit: values.creditLimit || null,
-              address: values.address || null,
-              taxCode: values.taxCode || null,
-              note: values.note || null,
-            } 
-          : c
-      );
-      setCustomers(updatedCustomers);
-      toast({ title: "Thành công", description: "Khách hàng đã được cập nhật." });
-    } else {
-      const newCustomer: Customer = {
-        customerId: `cust-${Math.floor(1000 + Math.random() * 9000)}`,
-        ...values,
-        totalDebt: 0,
-        debtDueDate: null,
-        lastPurchaseDate: null,
-        loyaltyPoints: 0,
-        loyaltyTier: 'Bronze',
-        createdAt: now,
-        updatedAt: now,
-        isDeleted: false,
-        creditLimit: values.creditLimit || null,
-        address: values.address || null,
-        taxCode: values.taxCode || null,
-        note: values.note || null,
-      };
-      setCustomers([newCustomer, ...customers]);
-      toast({ title: "Thành công", description: "Khách hàng mới đã được thêm." });
+  const onSubmit = async (values: CustomerFormValues) => {
+    if (!store) return;
+    try {
+      if (selectedCustomer) {
+        await updateCustomer(store.storeId, selectedCustomer.customerId, values);
+        toast({ title: t('common.success'), description: t('pages.customers.success_update') });
+      } else {
+        await addCustomer(store.storeId, values);
+        toast({ title: t('common.success'), description: t('pages.customers.success_add') });
+      }
+      fetchCustomers();
+      handleDialogChange(false);
+    } catch (error) {
+       toast({ variant: 'destructive', title: t('common.error'), description: (error as Error).message });
     }
-    handleDialogChange(false);
   };
 
   const handleDialogChange = (open: boolean) => {
@@ -202,12 +206,13 @@ export default function CustomersPageContent() {
     }
   }
 
-  const filteredCustomers = customers.filter(customer =>
-    !customer.isDeleted &&
-    (customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-     customer.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-     customer.phone.toLowerCase().includes(searchTerm.toLowerCase()))
-  );
+  const filteredCustomers = useMemo(() => {
+    return customers.filter(customer =>
+        (customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        customer.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        customer.phone.toLowerCase().includes(searchTerm.toLowerCase()))
+    );
+  }, [customers, searchTerm]);
 
   const formatCurrency = (amount: number | null) => {
     if (amount === null || amount === undefined) return '-';
@@ -220,9 +225,9 @@ export default function CustomersPageContent() {
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle className="font-headline">Khách hàng</CardTitle>
+              <CardTitle className="font-headline">{t('pages.customers.title')}</CardTitle>
               <CardDescription>
-                Quản lý khách hàng và lịch sử mua hàng của họ.
+                {t('pages.customers.description')}
               </CardDescription>
             </div>
             <div className='flex items-center gap-2'>
@@ -230,7 +235,7 @@ export default function CustomersPageContent() {
                 <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input
                   type="search"
-                  placeholder="Tìm khách hàng..."
+                  placeholder={t('pages.customers.search_placeholder')}
                   className="pl-8"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
@@ -239,7 +244,7 @@ export default function CustomersPageContent() {
               <Button size="sm" className="h-10 gap-1" onClick={handleAddNew}>
                 <PlusCircle className="h-3.5 w-3.5" />
                 <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-                  Thêm khách hàng
+                  {t('pages.customers.add_button')}
                 </span>
               </Button>
             </div>
@@ -249,13 +254,13 @@ export default function CustomersPageContent() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Tên</TableHead>
-                <TableHead>Liên hệ</TableHead>
-                <TableHead className="hidden md:table-cell">Loại</TableHead>
-                <TableHead className="hidden md:table-cell text-right">Tổng nợ</TableHead>
-                <TableHead>Trạng thái</TableHead>
+                <TableHead>{t('pages.customers.table_name')}</TableHead>
+                <TableHead>{t('pages.customers.table_contact')}</TableHead>
+                <TableHead className="hidden md:table-cell">{t('pages.customers.table_type')}</TableHead>
+                <TableHead className="hidden md:table-cell text-right">{t('pages.customers.table_debt')}</TableHead>
+                <TableHead>{t('pages.customers.table_status')}</TableHead>
                 <TableHead>
-                  <span className="sr-only">Actions</span>
+                  <span className="sr-only">{t('common.actions')}</span>
                 </TableHead>
               </TableRow>
             </TableHeader>
@@ -287,9 +292,9 @@ export default function CustomersPageContent() {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuItem onSelect={() => handleEdit(customer)}>Sửa</DropdownMenuItem>
+                        <DropdownMenuItem onSelect={() => handleEdit(customer)}>{t('common.edit')}</DropdownMenuItem>
                         <DropdownMenuItem onSelect={() => handleDelete(customer)} className="text-destructive">
-                          Xóa
+                          {t('common.delete')}
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
@@ -301,7 +306,7 @@ export default function CustomersPageContent() {
         </CardContent>
         <CardFooter>
           <div className="text-xs text-muted-foreground">
-            Hiển thị <strong>{filteredCustomers.length}</strong> trên <strong>{customers.filter(c => !c.isDeleted).length}</strong> khách hàng
+            {t('pages.customers.showing_results', { count: filteredCustomers.length, total: customers.length })}
           </div>
         </CardFooter>
       </Card>
@@ -309,9 +314,9 @@ export default function CustomersPageContent() {
       <Dialog open={isAddEditDialogOpen} onOpenChange={handleDialogChange}>
         <DialogContent className="sm:max-w-2xl">
           <DialogHeader>
-            <DialogTitle className="font-headline">{selectedCustomer ? 'Sửa khách hàng' : 'Thêm khách hàng mới'}</DialogTitle>
+            <DialogTitle className="font-headline">{selectedCustomer ? t('pages.customers.edit_dialog_title') : t('pages.customers.add_dialog_title')}</DialogTitle>
             <DialogDescription>
-              Điền thông tin chi tiết của khách hàng.
+              {t('pages.customers.dialog_description')}
             </DialogDescription>
           </DialogHeader>
           <Form {...form}>
@@ -321,8 +326,8 @@ export default function CustomersPageContent() {
                 name="name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Tên khách hàng</FormLabel>
-                    <FormControl><Input placeholder="Nguyễn Văn A" {...field} /></FormControl>
+                    <FormLabel>{t('pages.customers.form_name')}</FormLabel>
+                    <FormControl><Input placeholder={t('pages.customers.form_name_placeholder')} {...field} /></FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -332,8 +337,8 @@ export default function CustomersPageContent() {
                 name="phone"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Số điện thoại</FormLabel>
-                    <FormControl><Input placeholder="0901234567" {...field} /></FormControl>
+                    <FormLabel>{t('pages.customers.form_phone')}</FormLabel>
+                    <FormControl><Input placeholder={t('pages.customers.form_phone_placeholder')} {...field} /></FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -343,8 +348,8 @@ export default function CustomersPageContent() {
                 name="email"
                 render={({ field }) => (
                   <FormItem className="md:col-span-2">
-                    <FormLabel>Email</FormLabel>
-                    <FormControl><Input type="email" placeholder="nguyenvana@example.com" {...field} /></FormControl>
+                    <FormLabel>{t('pages.customers.form_email')}</FormLabel>
+                    <FormControl><Input type="email" placeholder={t('pages.customers.form_email_placeholder')} {...field} /></FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -354,8 +359,8 @@ export default function CustomersPageContent() {
                 name="address"
                 render={({ field }) => (
                   <FormItem className="md:col-span-2">
-                    <FormLabel>Địa chỉ</FormLabel>
-                    <FormControl><Textarea placeholder="Số nhà, đường, phường/xã, quận/huyện, tỉnh/thành" {...field} /></FormControl>
+                    <FormLabel>{t('pages.customers.form_address')}</FormLabel>
+                    <FormControl><Textarea placeholder={t('pages.customers.form_address_placeholder')} {...field} /></FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -365,8 +370,8 @@ export default function CustomersPageContent() {
                 name="taxCode"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Mã số thuế</FormLabel>
-                    <FormControl><Input placeholder="Tùy chọn" {...field} /></FormControl>
+                    <FormLabel>{t('pages.customers.form_tax_code')}</FormLabel>
+                    <FormControl><Input placeholder={t('pages.customers.form_tax_code_placeholder')} {...field} /></FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -376,8 +381,8 @@ export default function CustomersPageContent() {
                 name="creditLimit"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Hạn mức công nợ</FormLabel>
-                    <FormControl><Input type="number" placeholder="0" {...field} /></FormControl>
+                    <FormLabel>{t('pages.customers.form_credit_limit')}</FormLabel>
+                    <FormControl><Input type="number" placeholder={t('pages.customers.form_credit_limit_placeholder')} {...field} /></FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -387,14 +392,14 @@ export default function CustomersPageContent() {
                 name="customerType"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Loại khách hàng</FormLabel>
+                    <FormLabel>{t('pages.customers.form_type')}</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                         <FormControl>
-                          <SelectTrigger><SelectValue placeholder="Chọn loại khách" /></SelectTrigger>
+                          <SelectTrigger><SelectValue placeholder={t('pages.customers.form_type_placeholder')} /></SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="Retail">Khách lẻ</SelectItem>
-                          <SelectItem value="Wholesale">Khách sỉ</SelectItem>
+                          <SelectItem value="Retail">{t('pages.customers.form_type_retail')}</SelectItem>
+                          <SelectItem value="Wholesale">{t('pages.customers.form_type_wholesale')}</SelectItem>
                         </SelectContent>
                       </Select>
                     <FormMessage />
@@ -406,15 +411,15 @@ export default function CustomersPageContent() {
                 name="status"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Trạng thái</FormLabel>
+                    <FormLabel>{t('pages.customers.form_status')}</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                         <FormControl>
-                          <SelectTrigger><SelectValue placeholder="Chọn trạng thái" /></SelectTrigger>
+                          <SelectTrigger><SelectValue placeholder={t('pages.customers.form_status_placeholder')} /></SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="Active">{t('status.active')}</SelectItem>
-                          <SelectItem value="Inactive">{t('status.inactive')}</SelectItem>
-                          <SelectItem value="Blocked">{t('status.blocked')}</SelectItem>
+                          <SelectItem value="Active">{t('pages.customers.form_status_active')}</SelectItem>
+                          <SelectItem value="Inactive">{t('pages.customers.form_status_inactive')}</SelectItem>
+                          <SelectItem value="Blocked">{t('pages.customers.form_status_blocked')}</SelectItem>
                         </SelectContent>
                       </Select>
                     <FormMessage />
@@ -426,14 +431,14 @@ export default function CustomersPageContent() {
                 name="note"
                 render={({ field }) => (
                   <FormItem className="md:col-span-2">
-                    <FormLabel>Ghi chú</FormLabel>
-                    <FormControl><Textarea placeholder="Thông tin thêm về khách hàng..." {...field} /></FormControl>
+                    <FormLabel>{t('pages.customers.form_note')}</FormLabel>
+                    <FormControl><Textarea placeholder={t('pages.customers.form_note_placeholder')} {...field} /></FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
               <DialogFooter className="md:col-span-2">
-                <Button type="submit">Lưu khách hàng</Button>
+                <Button type="submit">{t('common.save')}</Button>
               </DialogFooter>
             </form>
           </Form>
@@ -443,16 +448,13 @@ export default function CustomersPageContent() {
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Bạn có chắc chắn không?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Hành động này không thể hoàn tác. Thao tác này sẽ xóa vĩnh viễn khách hàng
-               <strong> "{selectedCustomer?.name}"</strong>.
-            </AlertDialogDescription>
+            <AlertDialogTitle>{t('common.are_you_sure')}</AlertDialogTitle>
+            <AlertDialogDescription dangerouslySetInnerHTML={{ __html: t('pages.customers.delete_dialog_description', { name: `<strong>"${selectedCustomer?.name}"</strong>` }) }} />
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Hủy</AlertDialogCancel>
+            <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
             <AlertDialogAction onClick={confirmDelete} className="bg-destructive hover:bg-destructive/90">
-              Xóa
+              {t('common.delete')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -460,5 +462,3 @@ export default function CustomersPageContent() {
     </>
   );
 }
-
-    

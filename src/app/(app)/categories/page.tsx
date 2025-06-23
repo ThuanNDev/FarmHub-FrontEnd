@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import Image from 'next/image';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -75,8 +75,8 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
-import { slugify } from '@/lib/utils';
 import { useLanguage } from '@/store/LanguageContext';
+import { useStore } from '@/store/StoreContext';
 import { categorySchema } from '@/lib/form-schemas';
 import type { Category } from '@/types';
 import { getCategories, addCategory, updateCategory, deleteCategory } from '@/services/api';
@@ -85,6 +85,7 @@ type CategoryFormValues = z.infer<typeof categorySchema>;
 
 export default function CategoriesPage() {
   const [categories, setCategories] = useState<Category[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [isAddEditDialogOpen, setAddEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -93,14 +94,28 @@ export default function CategoriesPage() {
   const router = useRouter();
   const { toast } = useToast();
   const { t } = useLanguage();
+  const { store } = useStore();
+
+  const fetchCategories = useCallback(async () => {
+    if (!store) return;
+    setIsLoading(true);
+    try {
+      const data = await getCategories(store.storeId);
+      setCategories(data);
+    } catch (error) {
+      toast({
+        variant: 'destructive',
+        title: t('common.error'),
+        description: 'Không thể tải danh sách thể loại.',
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  }, [store, toast, t]);
 
   useEffect(() => {
-    const fetchCategories = async () => {
-      const data = await getCategories();
-      setCategories(data);
-    };
     fetchCategories();
-  }, []);
+  }, [fetchCategories]);
 
   const form = useForm<CategoryFormValues>({
     resolver: zodResolver(categorySchema),
@@ -162,33 +177,41 @@ export default function CategoriesPage() {
   };
 
   const confirmDelete = async () => {
-    if (selectedCategory) {
-      await deleteCategory(selectedCategory.categoryId);
-      setCategories(categories.filter(c => c.categoryId !== selectedCategory.categoryId));
-      toast({ title: "Thành công", description: "Thể loại đã được xóa." });
+    if (selectedCategory && store) {
+        try {
+            await deleteCategory(store.storeId, selectedCategory.categoryId);
+            toast({ title: t('common.success'), description: t('pages.categories.success_delete') });
+            fetchCategories();
+        } catch (error) {
+            toast({ variant: 'destructive', title: t('common.error'), description: (error as Error).message });
+        }
     }
     setDeleteDialogOpen(false);
     setSelectedCategory(null);
   };
 
   const onSubmit = async (values: CategoryFormValues) => {
-    if (selectedCategory) {
-      const updatedCategory = await updateCategory(selectedCategory.categoryId, values);
-      setCategories(categories.map(c => c.categoryId === selectedCategory.categoryId ? updatedCategory : c));
-      toast({ title: "Thành công", description: "Thể loại đã được cập nhật." });
-    } else {
-      const newCategory = await addCategory(values);
-      setCategories([newCategory, ...categories]);
-      toast({ title: "Thành công", description: "Thể loại mới đã được thêm." });
+    if (!store) return;
+    try {
+        if (selectedCategory) {
+          await updateCategory(store.storeId, selectedCategory.categoryId, values);
+          toast({ title: t('common.success'), description: t('pages.categories.success_update') });
+        } else {
+          await addCategory(store.storeId, values);
+          toast({ title: t('common.success'), description: t('pages.categories.success_add') });
+        }
+        fetchCategories();
+        setAddEditDialogOpen(false);
+        setSelectedCategory(null);
+    } catch (error) {
+        toast({ variant: 'destructive', title: t('common.error'), description: (error as Error).message });
     }
-    setAddEditDialogOpen(false);
-    setSelectedCategory(null);
   };
   
   const getParentCategoryName = (parentId: string | null): string => {
     if (!parentId) return '—';
     const parent = categories.find(c => c.categoryId === parentId);
-    return parent ? parent.name : 'Không tìm thấy';
+    return parent ? parent.name : t('pages.categories.parent_not_found');
   };
 
   return (
@@ -197,9 +220,9 @@ export default function CategoriesPage() {
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
-                <CardTitle className="font-headline">Thể loại</CardTitle>
+                <CardTitle className="font-headline">{t('pages.categories.title')}</CardTitle>
                 <CardDescription>
-                Quản lý các thể loại sản phẩm của bạn.
+                {t('pages.categories.description')}
                 </CardDescription>
             </div>
             <div className="flex items-center gap-2">
@@ -207,7 +230,7 @@ export default function CategoriesPage() {
                     <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                     <Input
                         type="search"
-                        placeholder="Tìm thể loại..."
+                        placeholder={t('pages.categories.search_placeholder')}
                         className="pl-8"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
@@ -216,7 +239,7 @@ export default function CategoriesPage() {
                 <Button size="sm" className="h-10 gap-1" onClick={handleAddNew}>
                     <PlusCircle className="h-3.5 w-3.5" />
                     <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-                    Thêm thể loại
+                    {t('pages.categories.add_button')}
                     </span>
                 </Button>
             </div>
@@ -227,14 +250,14 @@ export default function CategoriesPage() {
             <TableHeader>
               <TableRow>
                 <TableHead className="hidden w-[64px] sm:table-cell">
-                    Ảnh
+                    {t('pages.categories.table_image')}
                 </TableHead>
-                <TableHead>Tên</TableHead>
-                <TableHead className="hidden md:table-cell">Mô tả</TableHead>
-                <TableHead className="hidden lg:table-cell">Danh mục cha</TableHead>
-                <TableHead>Trạng thái</TableHead>
+                <TableHead>{t('pages.categories.table_name')}</TableHead>
+                <TableHead className="hidden md:table-cell">{t('pages.categories.table_description')}</TableHead>
+                <TableHead className="hidden lg:table-cell">{t('pages.categories.table_parent')}</TableHead>
+                <TableHead>{t('pages.categories.table_status')}</TableHead>
                 <TableHead>
-                  <span className="sr-only">Hành động</span>
+                  <span className="sr-only">{t('common.actions')}</span>
                 </TableHead>
               </TableRow>
             </TableHeader>
@@ -270,8 +293,8 @@ export default function CategoriesPage() {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuItem onSelect={() => handleEdit(category)}>Sửa</DropdownMenuItem>
-                        <DropdownMenuItem onSelect={() => handleDelete(category)} className="text-destructive">Xóa</DropdownMenuItem>
+                        <DropdownMenuItem onSelect={() => handleEdit(category)}>{t('common.edit')}</DropdownMenuItem>
+                        <DropdownMenuItem onSelect={() => handleDelete(category)} className="text-destructive">{t('common.delete')}</DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </TableCell>
@@ -282,7 +305,7 @@ export default function CategoriesPage() {
         </CardContent>
         <CardFooter>
             <div className="text-xs text-muted-foreground">
-              Hiển thị <strong>{filteredCategories.length}</strong> trên <strong>{categories.length}</strong> thể loại
+              {t('pages.categories.showing_results', { count: filteredCategories.length, total: categories.length })}
             </div>
         </CardFooter>
       </Card>
@@ -290,9 +313,9 @@ export default function CategoriesPage() {
       <Dialog open={isAddEditDialogOpen} onOpenChange={setAddEditDialogOpen}>
         <DialogContent className="sm:max-w-2xl">
           <DialogHeader>
-            <DialogTitle className="font-headline">{selectedCategory ? 'Sửa thể loại' : 'Thêm thể loại mới'}</DialogTitle>
+            <DialogTitle className="font-headline">{selectedCategory ? t('pages.categories.edit_dialog_title') : t('pages.categories.add_dialog_title')}</DialogTitle>
             <DialogDescription>
-              {selectedCategory ? 'Cập nhật thông tin cho thể loại này.' : 'Điền thông tin để thêm một thể loại mới.'}
+              {selectedCategory ? t('pages.categories.edit_dialog_description') : t('pages.categories.add_dialog_description')}
             </DialogDescription>
           </DialogHeader>
           <Form {...form}>
@@ -302,9 +325,9 @@ export default function CategoriesPage() {
                 name="name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Tên thể loại</FormLabel>
+                    <FormLabel>{t('pages.categories.form_name')}</FormLabel>
                     <FormControl>
-                      <Input placeholder="Ví dụ: Máy làm đất" {...field} />
+                      <Input placeholder={t('pages.categories.form_name_placeholder')} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -315,18 +338,18 @@ export default function CategoriesPage() {
                 name="parentCategoryId"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Danh mục cha</FormLabel>
+                    <FormLabel>{t('pages.categories.form_parent')}</FormLabel>
                     <Select
                       onValueChange={(value) => field.onChange(value === '_ROOT_' ? '' : value)}
                       value={field.value || '_ROOT_'}
                     >
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Không có (danh mục gốc)" />
+                          <SelectValue placeholder={t('pages.categories.form_parent_placeholder')} />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="_ROOT_">Không có (danh mục gốc)</SelectItem>
+                        <SelectItem value="_ROOT_">{t('pages.categories.form_parent_root')}</SelectItem>
                         {categories
                           .filter(c => c.categoryId !== selectedCategory?.categoryId)
                           .map(category => (
@@ -345,9 +368,9 @@ export default function CategoriesPage() {
                 name="description"
                 render={({ field }) => (
                   <FormItem className="md:col-span-2">
-                    <FormLabel>Mô tả</FormLabel>
+                    <FormLabel>{t('pages.categories.form_description')}</FormLabel>
                     <FormControl>
-                      <Textarea placeholder="Mô tả ngắn về thể loại..." {...field} />
+                      <Textarea placeholder={t('pages.categories.form_description_placeholder')} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -358,9 +381,9 @@ export default function CategoriesPage() {
                 name="image"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>URL Hình ảnh</FormLabel>
+                    <FormLabel>{t('pages.categories.form_image_url')}</FormLabel>
                     <FormControl>
-                      <Input placeholder="https://placehold.co/100x100.png" {...field} />
+                      <Input placeholder={t('pages.categories.form_image_url_placeholder')} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -371,9 +394,9 @@ export default function CategoriesPage() {
                 name="order"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Thứ tự hiển thị</FormLabel>
+                    <FormLabel>{t('pages.categories.form_order')}</FormLabel>
                     <FormControl>
-                      <Input type="number" placeholder="1" {...field} />
+                      <Input type="number" placeholder={t('pages.categories.form_order_placeholder')} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -385,8 +408,8 @@ export default function CategoriesPage() {
                 render={({ field }) => (
                   <FormItem className="md:col-span-2 flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm mt-4">
                     <div className="space-y-0.5">
-                        <FormLabel>Trạng thái</FormLabel>
-                        <p className="text-sm text-muted-foreground">Hiển thị thể loại này trong hệ thống.</p>
+                        <FormLabel>{t('pages.categories.form_status')}</FormLabel>
+                        <p className="text-sm text-muted-foreground">{t('pages.categories.form_status_description')}</p>
                       </div>
                     <FormControl>
                       <Switch
@@ -398,7 +421,7 @@ export default function CategoriesPage() {
                 )}
               />
               <DialogFooter className="md:col-span-2">
-                <Button type="submit">Lưu</Button>
+                <Button type="submit">{t('common.save')}</Button>
               </DialogFooter>
             </form>
           </Form>
@@ -408,16 +431,13 @@ export default function CategoriesPage() {
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Bạn có chắc chắn không?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Hành động này không thể hoàn tác. Thao tác này sẽ xóa vĩnh viễn thể loại
-               <strong> "{selectedCategory?.name}"</strong>.
-            </AlertDialogDescription>
+            <AlertDialogTitle>{t('pages.categories.delete_dialog_title')}</AlertDialogTitle>
+            <AlertDialogDescription dangerouslySetInnerHTML={{ __html: t('pages.categories.delete_dialog_description', { name: `<strong>"${selectedCategory?.name}"</strong>` })}}/>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Hủy</AlertDialogCancel>
+            <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
             <AlertDialogAction onClick={confirmDelete} className="bg-destructive hover:bg-destructive/90">
-              Xóa
+              {t('common.delete')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
