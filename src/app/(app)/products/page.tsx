@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
@@ -94,7 +93,7 @@ type ProductFormValues = z.infer<typeof productSchema>;
 export default function ProductsPage() {
   const [products, setProducts] = useState<Product[]>(mockProducts.filter(p => !p.isDeleted));
   const [searchTerm, setSearchTerm] = useState('');
-  const [activeTab, setActiveTab] = useState('Tất cả');
+  const [activeCategory, setActiveCategory] = useState('all');
 
   const [isAddEditDialogOpen, setAddEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -180,7 +179,7 @@ export default function ProductsPage() {
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [activeTab, searchTerm]);
+  }, [activeCategory, searchTerm]);
 
   const handleAddNew = () => {
     setSelectedProduct(null);
@@ -254,24 +253,28 @@ export default function ProductsPage() {
     setSelectedProduct(null);
   };
   
-  const productsForCurrentTab = useMemo(() => {
-    const searchFiltered = products.filter((p) => 
-        p.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-        p.productCode.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-    
-    switch(activeTab) {
-        case 'Sắp hết hàng':
-            return searchFiltered.filter(p => p.stock > 0 && p.stock <= p.minStockLevel);
-        case 'Hết hàng':
-            return searchFiltered.filter(p => p.stock === 0);
-        case 'Tất cả':
-        default:
-            return searchFiltered;
-    }
-  }, [products, searchTerm, activeTab]);
+  const filteredProducts = useMemo(() => {
+    let results = [...products];
 
-  const tabs = ['Tất cả', 'Sắp hết hàng', 'Hết hàng'];
+    if (activeCategory !== 'all') {
+        results = results.filter(p => p.categoryId === activeCategory);
+    }
+    
+    if (searchTerm) {
+        results = results.filter(p => 
+            p.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+            p.productCode.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+    }
+    
+    return results;
+  }, [products, searchTerm, activeCategory]);
+
+  const categoriesForTabs = useMemo(() => ([
+    { categoryId: 'all', name: 'Tất cả' },
+    ...mockCategories.filter(c => c.isActive && !c.isDeleted),
+  ]), []);
+
 
   const formatCurrency = (amount: number) => {
     if (!amount) return '0 ₫';
@@ -286,133 +289,132 @@ export default function ProductsPage() {
       return 'https://picsum.photos/64/64';
     }
   };
-
-  const getCategoryName = (categoryId: string) => {
-    return mockCategories.find((c) => c.categoryId === categoryId)?.name || "N/A";
-  };
   
-  const totalPages = Math.ceil(productsForCurrentTab.length / productsPerPage);
+  const totalPages = Math.ceil(filteredProducts.length / productsPerPage);
 
-  const paginatedProducts = productsForCurrentTab.slice(
+  const paginatedProducts = filteredProducts.slice(
     (currentPage - 1) * productsPerPage,
     currentPage * productsPerPage
   );
 
-  const firstItem = productsForCurrentTab.length > 0 ? (currentPage - 1) * productsPerPage + 1 : 0;
-  const lastItem = Math.min(currentPage * productsPerPage, productsForCurrentTab.length);
+  const firstItem = filteredProducts.length > 0 ? (currentPage - 1) * productsPerPage + 1 : 0;
+  const lastItem = Math.min(currentPage * productsPerPage, filteredProducts.length);
   
   const activeCategories = mockCategories.filter(c => c.isActive && !c.isDeleted);
   const activeSuppliers = mockSuppliers.filter(s => !s.isDeleted);
 
   return (
     <>
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <div className="flex items-center">
-          <div className="relative flex-1 md:grow-0">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input
-              type="search"
-              placeholder="Tìm kiếm sản phẩm..."
-              className="w-full rounded-lg bg-background pl-8 md:w-[200px] lg:w-[336px]"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-          </div>
-          <div className="ml-auto flex items-center gap-2">
-            <Button size="sm" className="h-10 gap-1 bg-accent hover:bg-accent/90" onClick={handleAddNew}>
-              <PlusCircle className="h-3.5 w-3.5" />
-              <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-                Thêm sản phẩm
-              </span>
-            </Button>
-          </div>
-        </div>
-        <Card className="mt-4">
+      <Card>
           <CardHeader>
-            <CardTitle className="font-headline">Sản phẩm</CardTitle>
-            <CardDescription>
-              Quản lý sản phẩm và xem tình trạng tồn kho của chúng.
-            </CardDescription>
-            <TabsList>
-              {tabs.map((tab) => (
-                <TabsTrigger key={tab} value={tab}>
-                  {tab}
-                </TabsTrigger>
-              ))}
-            </TabsList>
+            <div className="flex items-start md:items-center justify-between flex-col md:flex-row gap-4">
+                <div>
+                    <CardTitle className="font-headline">Sản phẩm</CardTitle>
+                    <CardDescription>
+                    Quản lý sản phẩm và xem tình trạng tồn kho của chúng.
+                    </CardDescription>
+                </div>
+                <div className="flex items-center gap-2 w-full md:w-auto">
+                    <div className="relative flex-1">
+                        <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                        <Input
+                        type="search"
+                        placeholder="Tìm kiếm sản phẩm..."
+                        className="w-full rounded-lg bg-background pl-8"
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        />
+                    </div>
+                    <Button size="sm" className="h-10 gap-1 bg-accent hover:bg-accent/90" onClick={handleAddNew}>
+                        <PlusCircle className="h-3.5 w-3.5" />
+                        <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
+                            Thêm sản phẩm
+                        </span>
+                    </Button>
+                </div>
+            </div>
           </CardHeader>
           <CardContent>
-            <TabsContent value={activeTab} className="mt-0">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="hidden w-[64px] sm:table-cell">
-                      <span className="sr-only">Ảnh</span>
-                    </TableHead>
-                    <TableHead>Tên sản phẩm</TableHead>
-                    <TableHead className="hidden md:table-cell">Thương hiệu</TableHead>
-                    <TableHead className="text-right">Giá bán lẻ</TableHead>
-                    <TableHead className="hidden lg:table-cell text-right">Giá sỉ</TableHead>
-                    <TableHead className="hidden md:table-cell text-center">Tồn kho</TableHead>
-                    <TableHead>
-                      <span className="sr-only">Hành động</span>
-                    </TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {paginatedProducts.map((product) => (
-                    <TableRow key={product.productId} onClick={() => router.push(`/products/${product.slug}`)} className="cursor-pointer">
-                      <TableCell className="hidden sm:table-cell">
-                        <Image
-                          alt={product.name}
-                          className="aspect-square rounded-md object-cover"
-                          height="64"
-                          src={getImageUrl(product.images)}
-                          width="64"
-                          data-ai-hint={product.hint}
-                        />
-                      </TableCell>
-                      <TableCell className="font-medium">
-                        <div>{product.name}</div>
-                        <div className="text-xs text-muted-foreground">{product.productCode}</div>
-                      </TableCell>
-                      <TableCell className="hidden md:table-cell">{product.brand}</TableCell>
-                      <TableCell className="text-right">{formatCurrency(product.price)}</TableCell>
-                      <TableCell className="hidden lg:table-cell text-right">{formatCurrency(product.wholesalePrice)}</TableCell>
-                      <TableCell className="hidden md:table-cell text-center">
-                        {product.stock <= 0 ? (
-                            <Badge variant="destructive">Hết hàng</Badge>
-                        ) : product.stock <= product.minStockLevel ? (
-                            <Badge variant="outline">{product.stock}</Badge>
-                        ) : (
-                            product.stock
-                        )}
-                      </TableCell>
-                      <TableCell onClick={(e) => e.stopPropagation()}>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button aria-haspopup="true" size="icon" variant="ghost">
-                              <MoreHorizontal className="h-4 w-4" />
-                              <span className="sr-only">Toggle menu</span>
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem onSelect={() => handleEdit(product)}>Sửa</DropdownMenuItem>
-                            <DropdownMenuItem onSelect={() => handleDelete(product)} className="text-destructive">
-                              Xóa
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </TableCell>
+            <Tabs value={activeCategory} onValueChange={setActiveCategory} className="mt-4">
+                <TabsList>
+                {categoriesForTabs.map((category) => (
+                    <TabsTrigger key={category.categoryId} value={category.categoryId}>
+                    {category.name}
+                    </TabsTrigger>
+                ))}
+                </TabsList>
+                <TabsContent value={activeCategory} className="mt-4">
+                <Table>
+                    <TableHeader>
+                    <TableRow>
+                        <TableHead className="hidden w-[64px] sm:table-cell">
+                        <span className="sr-only">Ảnh</span>
+                        </TableHead>
+                        <TableHead>Tên sản phẩm</TableHead>
+                        <TableHead className="hidden md:table-cell">Thương hiệu</TableHead>
+                        <TableHead className="text-right">Giá bán lẻ</TableHead>
+                        <TableHead className="hidden lg:table-cell text-right">Giá sỉ</TableHead>
+                        <TableHead className="hidden md:table-cell text-center">Tồn kho</TableHead>
+                        <TableHead>
+                        <span className="sr-only">Hành động</span>
+                        </TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TabsContent>
+                    </TableHeader>
+                    <TableBody>
+                    {paginatedProducts.map((product) => (
+                        <TableRow key={product.productId} onClick={() => router.push(`/products/${product.slug}`)} className="cursor-pointer">
+                        <TableCell className="hidden sm:table-cell">
+                            <Image
+                            alt={product.name}
+                            className="aspect-square rounded-md object-cover"
+                            height="64"
+                            src={getImageUrl(product.images)}
+                            width="64"
+                            data-ai-hint={product.hint}
+                            />
+                        </TableCell>
+                        <TableCell className="font-medium">
+                            <div>{product.name}</div>
+                            <div className="text-xs text-muted-foreground">{product.productCode}</div>
+                        </TableCell>
+                        <TableCell className="hidden md:table-cell">{product.brand}</TableCell>
+                        <TableCell className="text-right">{formatCurrency(product.price)}</TableCell>
+                        <TableCell className="hidden lg:table-cell text-right">{formatCurrency(product.wholesalePrice)}</TableCell>
+                        <TableCell className="hidden md:table-cell text-center">
+                            {product.stock <= 0 ? (
+                                <Badge variant="destructive">Hết hàng</Badge>
+                            ) : product.stock <= product.minStockLevel ? (
+                                <Badge variant="outline">{product.stock}</Badge>
+                            ) : (
+                                product.stock
+                            )}
+                        </TableCell>
+                        <TableCell onClick={(e) => e.stopPropagation()}>
+                            <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button aria-haspopup="true" size="icon" variant="ghost">
+                                <MoreHorizontal className="h-4 w-4" />
+                                <span className="sr-only">Toggle menu</span>
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                                <DropdownMenuItem onSelect={() => handleEdit(product)}>Sửa</DropdownMenuItem>
+                                <DropdownMenuItem onSelect={() => handleDelete(product)} className="text-destructive">
+                                Xóa
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                            </DropdownMenu>
+                        </TableCell>
+                        </TableRow>
+                    ))}
+                    </TableBody>
+                </Table>
+                </TabsContent>
+            </Tabs>
           </CardContent>
           <CardFooter>
             <div className="text-xs text-muted-foreground">
-              Hiển thị <strong>{firstItem}-{lastItem}</strong> trên <strong>{productsForCurrentTab.length}</strong> sản phẩm
+              Hiển thị <strong>{firstItem}-{lastItem}</strong> trên <strong>{filteredProducts.length}</strong> sản phẩm
             </div>
             <div className="ml-auto flex items-center gap-2">
               <Button
@@ -433,8 +435,7 @@ export default function ProductsPage() {
               </Button>
             </div>
           </CardFooter>
-        </Card>
-      </Tabs>
+      </Card>
 
       <Dialog open={isAddEditDialogOpen} onOpenChange={setAddEditDialogOpen}>
         <DialogContent className="sm:max-w-4xl">
