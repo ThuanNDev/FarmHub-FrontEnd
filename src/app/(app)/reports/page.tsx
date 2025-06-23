@@ -7,6 +7,7 @@ import { vi } from 'date-fns/locale';
 import { DateRange } from 'react-day-picker';
 import { Calendar as CalendarIcon, BarChart2, Users, Package, FileDown } from 'lucide-react';
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
+import * as XLSX from 'xlsx';
 
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -36,11 +37,13 @@ import { Badge } from '@/components/ui/badge';
 import { mockOrders, mockCustomers, mockProducts, mockOrderItems } from '@/lib/data';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export default function ReportsPage() {
   const [date, setDate] = React.useState<DateRange | undefined>(undefined);
   const router = useRouter();
   const { toast } = useToast();
+  const { t } = useLanguage();
   
   React.useEffect(() => {
     setDate({
@@ -177,30 +180,49 @@ export default function ReportsPage() {
       return;
     }
 
-    const headers = ["Mã ĐH", "Khách hàng", "Ngày", "Trạng thái", "Tổng tiền", "Đã trả", "Còn lại", "Phương thức TT"];
-    const rows = filteredOrders.map(order => [
-      `"${order.orderCode}"`,
-      `"${getCustomerName(order.customerId)}"`,
-      `"${format(new Date(order.createdAt), 'dd/MM/yyyy HH:mm')}"`,
-      `"${order.status}"`,
-      order.totalAmount,
-      order.totalPaid,
-      order.totalAmount - order.totalPaid,
-      `"${order.paymentType}"`
-    ]);
+    const dataForSheet = filteredOrders.map((order) => ({
+      'Mã ĐH': order.orderCode,
+      'Khách hàng': getCustomerName(order.customerId),
+      'Ngày': format(new Date(order.createdAt), 'dd/MM/yyyy HH:mm'),
+      'Trạng thái': t(`status.${order.status.toLowerCase()}`),
+      'Tổng tiền': order.totalAmount,
+      'Đã trả': order.totalPaid,
+      'Còn lại': order.totalAmount - order.totalPaid,
+      'Phương thức TT': order.paymentType,
+    }));
+  
+    const worksheet = XLSX.utils.json_to_sheet(dataForSheet);
+    
+    // Set column widths
+    worksheet['!cols'] = [
+      { wch: 15 }, // Mã ĐH
+      { wch: 30 }, // Khách hàng
+      { wch: 20 }, // Ngày
+      { wch: 15 }, // Trạng thái
+      { wch: 20 }, // Tổng tiền
+      { wch: 20 }, // Đã trả
+      { wch: 20 }, // Còn lại
+      { wch: 15 }, // Phương thức TT
+    ];
 
-    let csvContent = "data:text/csv;charset=utf-8,\uFEFF" 
-        + headers.join(",") + "\n" 
-        + rows.map(e => e.join(",")).join("\n");
+    // Apply currency format
+    dataForSheet.forEach((_row, index) => {
+        const rowNum = index + 2; // 1-based index for rows, +1 for header
+        const currencyCols = ['E', 'F', 'G']; // Corresponds to Tổng tiền, Đã trả, Còn lại
+        currencyCols.forEach(col => {
+            const cellAddress = `${col}${rowNum}`;
+            if (worksheet[cellAddress]) {
+                worksheet[cellAddress].t = 'n';
+                worksheet[cellAddress].z = '#,##0"₫"';
+            }
+        });
+    });
 
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    const fileName = `bao_cao_don_hang_${date?.from ? format(date.from, 'dd-MM-yy') : ''}_${date?.to ? format(date.to, 'dd-MM-yy') : ''}.csv`;
-    link.setAttribute("download", fileName);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'BaoCaoDonHang');
+  
+    const fileName = `BaoCaoDonHang_${date?.from ? format(date.from, 'dd-MM-yy') : ''}_${date?.to ? format(date.to, 'dd-MM-yy') : ''}.xlsx`;
+    XLSX.writeFile(workbook, fileName);
     
     toast({
         title: "Xuất file thành công",
@@ -371,7 +393,7 @@ export default function ReportsPage() {
                                 <TableCell>{formatDate(new Date(order.createdAt))}</TableCell>
                                 <TableCell>
                                     <Badge variant={getStatusVariant(order.status) as any}>
-                                    {order.status}
+                                    {t(`status.${order.status.toLowerCase()}`)}
                                     </Badge>
                                 </TableCell>
                                 <TableCell className="text-right">{formatCurrency(order.totalAmount)}</TableCell>
