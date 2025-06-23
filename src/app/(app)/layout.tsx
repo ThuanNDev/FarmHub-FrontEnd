@@ -76,7 +76,7 @@ import { useLanguage } from '@/store/LanguageContext';
 import { RelativeTime } from '@/components/RelativeTime';
 
 const navItems = [
-  { href: '/dashboard', labelKey: 'nav.dashboard', icon: LayoutDashboard },
+  { href: '/', labelKey: 'nav.dashboard', icon: LayoutDashboard },
   { href: '/orders', labelKey: 'nav.orders', icon: ShoppingCart },
   { href: '/returns', labelKey: 'nav.returns', icon: Undo2 },
   { href: '/products', labelKey: 'nav.products', icon: Package },
@@ -268,7 +268,7 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
       <aside className="hidden border-r bg-muted/40 md:block">
         <div className="flex h-full max-h-screen flex-col gap-2">
           <div className="flex h-14 items-center border-b px-4 lg:h-[60px] lg:px-6">
-            <Link href="/dashboard" className="flex items-center gap-2 font-semibold">
+            <Link href="/" className="flex items-center gap-2 font-semibold">
               <Leaf className="h-6 w-6 text-primary" />
               <span className="font-headline text-xl">{store.name}</span>
             </Link>
@@ -298,7 +298,7 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
             <SheetContent side="left" className="flex flex-col">
               <nav className="grid gap-2 text-lg font-medium">
                 <Link
-                  href="/dashboard"
+                  href="/"
                   className="flex items-center gap-2 text-lg font-semibold"
                 >
                   <Leaf className="h-6 w-6 text-primary" />

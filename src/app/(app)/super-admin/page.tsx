@@ -46,7 +46,7 @@ export default function SuperAdminPage() {
         <ShieldAlert className="h-16 w-16 text-destructive mb-4" />
         <h1 className="text-2xl font-bold">Truy cập bị từ chối</h1>
         <p className="text-muted-foreground">Bạn không có quyền truy cập trang này.</p>
-        <Button onClick={() => router.push('/dashboard')} className="mt-4">
+        <Button onClick={() => router.push('/')} className="mt-4">
           Về Bảng điều khiển
         </Button>
       </div>

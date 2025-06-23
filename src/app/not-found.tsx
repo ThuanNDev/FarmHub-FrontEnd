@@ -13,7 +13,7 @@ export default function NotFound() {
         Rất tiếc, chúng tôi không thể tìm thấy trang bạn đang tìm kiếm. Có thể trang đã bị xóa hoặc URL đã bị thay đổi.
       </p>
       <Button asChild className="mt-8">
-        <Link href="/dashboard">Quay về Bảng điều khiển</Link>
+        <Link href="/">Quay về Bảng điều khiển</Link>
       </Button>
     </div>
   );

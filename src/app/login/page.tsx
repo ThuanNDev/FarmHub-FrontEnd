@@ -104,7 +104,7 @@ export default function LoginPage() {
           title: t('login.success'),
           description: t('login.welcome_back', { name: apiUser.fullName }),
       });
-      router.push('/dashboard');
+      router.push('/');
 
     } catch (error) {
       toast({
