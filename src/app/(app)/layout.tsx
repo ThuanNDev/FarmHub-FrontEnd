@@ -11,7 +11,6 @@ import {
   Menu,
   Leaf,
   Settings,
-  DollarSign,
   Tags,
   CreditCard,
   BarChart3,
@@ -363,10 +362,9 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
                 <Button variant={locale === 'vi' ? 'secondary' : 'ghost'} size="sm" className="rounded-r-none border-r h-full px-3" onClick={() => setLocale('vi')}>VI</Button>
                 <Button variant={locale === 'en' ? 'secondary' : 'ghost'} size="sm" className="rounded-l-none h-full px-3" onClick={() => setLocale('en')}>EN</Button>
             </div>
-            <Button asChild size="lg" className="bg-accent hover:bg-accent/90 font-semibold h-10">
+            <Button asChild size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold">
                 <Link href="/pos">
-                    <DollarSign className="h-5 w-5" />
-                    <span>{t('nav.pos')}</span>
+                    <span className="text-lg">{t('nav.pos')}</span>
                 </Link>
             </Button>
           </div>
