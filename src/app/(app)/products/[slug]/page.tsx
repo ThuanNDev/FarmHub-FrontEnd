@@ -5,8 +5,8 @@ import * as React from 'react';
 import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { notFound, useParams } from 'next/navigation';
-import { ArrowLeft, CheckCircle, XCircle, Package, DollarSign, Warehouse, Tag, Truck, Info, Calendar } from 'lucide-react';
+import { notFound, useParams, useRouter } from 'next/navigation';
+import { ArrowLeft, CheckCircle, XCircle, Package, DollarSign, Warehouse, Tag, Truck, Info, Calendar, Edit, Trash2 } from 'lucide-react';
 import { mockProducts, mockCategories, mockSuppliers } from '@/lib/data';
 import { Button } from '@/components/ui/button';
 import {
@@ -15,17 +15,40 @@ import {
 } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
+import { useToast } from '@/hooks/use-toast';
 
 export default function ProductDetailPage() {
   const params = useParams<{ slug: string }>();
-  const product = mockProducts.find((p) => p.slug === params.slug);
+  const router = useRouter();
+  const { toast } = useToast();
+  const product = mockProducts.find((p) => p.slug === params.slug && !p.is_deleted);
+
+  const [selectedImage, setSelectedImage] = useState<string | undefined>(undefined);
+  const [isDeleteDialogOpen, setDeleteDialogOpen] = useState(false);
+
+  React.useEffect(() => {
+    if (product) {
+      const images = JSON.parse(product.images) as string[];
+      setSelectedImage(images[0] || 'https://picsum.photos/600/600');
+    }
+  }, [product]);
 
   if (!product) {
     notFound();
   }
 
   const images = JSON.parse(product.images) as string[];
-  const [selectedImage, setSelectedImage] = useState(images[0] || 'https://picsum.photos/600/600');
   const specs = JSON.parse(product.specs) as Record<string, string>;
   
   const category = mockCategories.find(c => c.id === product.category_id);
@@ -43,15 +66,63 @@ export default function ProductDetailPage() {
     });
   }
 
+  const handleEditClick = () => {
+    toast({
+        title: 'Tính năng đang phát triển',
+        description: 'Chức năng sửa sản phẩm tại trang chi tiết sẽ sớm được cập nhật.',
+    });
+  };
+
+  const handleDeleteConfirm = () => {
+    const productIndex = mockProducts.findIndex(p => p.id === product.id);
+    if (productIndex > -1) {
+      mockProducts[productIndex].is_deleted = true;
+    }
+    toast({ title: 'Thành công', description: 'Sản phẩm đã được xóa.' });
+    router.push('/products');
+  };
+
+  if (!selectedImage) {
+    return null; 
+  }
+
   return (
+    <>
     <div className="flex flex-col gap-4">
-        <div className="flex justify-start">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
             <Button asChild variant="outline" size="sm">
                 <Link href="/products">
                     <ArrowLeft className="mr-2 h-4 w-4" />
                     Quay lại danh sách
                 </Link>
             </Button>
+            <div className="flex gap-2">
+                <Button variant="outline" size="sm" onClick={handleEditClick}>
+                    <Edit className="mr-2 h-4 w-4"/> Sửa
+                </Button>
+                <AlertDialog open={isDeleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+                    <AlertDialogTrigger asChild>
+                        <Button variant="destructive" size="sm">
+                            <Trash2 className="mr-2 h-4 w-4"/> Xóa
+                        </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                        <AlertDialogHeader>
+                            <AlertDialogTitle>Bạn có chắc chắn không?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                                Hành động này không thể hoàn tác. Thao tác này sẽ xóa vĩnh viễn sản phẩm
+                                <strong> "{product?.name}"</strong>.
+                            </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                            <AlertDialogCancel>Hủy</AlertDialogCancel>
+                            <AlertDialogAction onClick={handleDeleteConfirm} className="bg-destructive hover:bg-destructive/90">
+                            Xóa
+                            </AlertDialogAction>
+                        </AlertDialogFooter>
+                    </AlertDialogContent>
+                </AlertDialog>
+            </div>
         </div>
         <Card>
             <CardContent className="p-6">
@@ -196,5 +267,6 @@ export default function ProductDetailPage() {
             </CardContent>
         </Card>
     </div>
+    </>
   );
 }
