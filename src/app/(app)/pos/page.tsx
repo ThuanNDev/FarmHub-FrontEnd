@@ -3,6 +3,7 @@
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -53,6 +54,9 @@ const formatCurrency = (amount: number) => {
 }
 
 export default function POSPage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
   const [cart, setCart] = useState<CartItem[]>([]);
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
@@ -71,6 +75,8 @@ export default function POSPage() {
   const [customerTender, setCustomerTender] = useState(0);
   const [selectedVoucher, setSelectedVoucher] = useState<Voucher | null>(null);
   const [isVoucherDialogOpen, setVoucherDialogOpen] = useState(false);
+  const [installmentTermCount, setInstallmentTermCount] = useState(3);
+  const [editingOrderId, setEditingOrderId] = useState<string | null>(null);
   
   const { toast } = useToast();
   const { store } = useStore();
@@ -92,6 +98,35 @@ export default function POSPage() {
       status: 'Active',
     },
   });
+
+  useEffect(() => {
+    const orderId = searchParams.get('orderId');
+    if (orderId) {
+        setEditingOrderId(orderId);
+        const orderToEdit = mockOrders.find(o => o.orderId === orderId);
+        if (orderToEdit) {
+            const itemsToEdit = mockOrderItems.filter(i => i.orderId === orderId);
+            const customer = mockCustomers.find(c => c.customerId === orderToEdit.customerId);
+
+            setSelectedCustomerId(orderToEdit.customerId || 'guest');
+            // This is a simplification. Full voucher logic in edit mode is complex.
+            setDiscount(orderToEdit.discountAmount); 
+            setSelectedVoucher(null); // Vouchers are not carried over to edit mode for simplicity
+
+            setCart(itemsToEdit.map(item => {
+                const product = mockProducts.find(p => p.productId === item.productId);
+                return {
+                    ...(product as Product), // assume product is found
+                    quantity: item.quantity,
+                    appliedPrice: item.unitPrice,
+                };
+            }));
+            if (customer) {
+                setGlobalPriceTier(customer.customerType === 'Wholesale' ? 'wholesale' : 'retail');
+            }
+        }
+    }
+  }, [searchParams]);
 
   const selectedCustomer = useMemo(() => {
     if (selectedCustomerId === 'guest') return null;
@@ -189,6 +224,8 @@ export default function POSPage() {
     setCart([]);
     setDiscount(0);
     setSelectedVoucher(null);
+    setEditingOrderId(null);
+    router.replace('/pos', { scroll: false });
   }
 
   const handleAddNewCustomer = () => {
@@ -269,12 +306,9 @@ export default function POSPage() {
     }
 
     const now = new Date();
-    const newOrderCode = `DH${now.toISOString().slice(2, 10).replace(/-/g, '')}${Math.floor(100 + Math.random() * 900)}`;
     const deliveryAddress = (document.getElementById('delivery-address') as HTMLTextAreaElement)?.value || selectedCustomer?.address || '';
-
     const finalAmountPaid = paymentMethod === 'Cash' ? Math.min(customerTender, totalWithVat) : amountPaid;
     const remaining = totalWithVat - finalAmountPaid;
-    let description = t('pos.success_order_created', { code: newOrderCode });
 
     if (remaining > 0 && !selectedCustomer) {
         toast({
@@ -285,93 +319,145 @@ export default function POSPage() {
         return;
     }
 
-    const newOrder: (typeof mockOrders)[0] = {
-      orderId: `ord-${now.getTime()}`,
-      orderCode: newOrderCode,
-      customerId: selectedCustomerId,
-      totalAmount: totalWithVat,
-      discountAmount: discount + voucherDiscount,
-      shippingFee: 0, 
-      totalPaid: finalAmountPaid,
-      paymentType: paymentMethod as any,
-      paymentDetails: `Thanh toán tại POS bằng ${paymentMethod}`,
-      status: 'Delivered' as const,
-      expectedDeliveryDate: null,
-      deliveryAddress: deliveryAddress,
-      deliveryStatus: deliveryAddress ? 'Processing' as const : 'Completed' as const,
-      note: 'Đơn hàng tạo tại POS',
-      processedByUserId: currentUser.userId,
-      createdAt: now.toISOString(),
-      updatedAt: now.toISOString(),
-    };
-
-    mockOrders.unshift(newOrder);
-    
-    cart.forEach(item => {
-      const newOrderItem = {
-        orderItemId: `item-${newOrder.orderId}-${item.productId}`,
-        orderId: newOrder.orderId,
-        productId: item.productId,
-        productName: item.name,
-        productUnit: item.unit,
-        quantity: item.quantity,
-        unitPrice: item.appliedPrice,
-        totalPrice: item.appliedPrice * item.quantity,
-      };
-      mockOrderItems.push(newOrderItem);
-      
-      const productInDb = mockProducts.find(p => p.productId === item.productId);
-      if (productInDb) {
-        productInDb.stock -= item.quantity;
-      }
-    });
-
-    if (selectedVoucher && selectedCustomer) {
-      const customerInDb = mockCustomers.find(c => c.customerId === selectedCustomer.customerId);
-      if (customerInDb) {
-          const newPoints = customerInDb.loyaltyPoints - selectedVoucher.pointsCost;
-          customerInDb.loyaltyPoints = newPoints < 0 ? 0 : newPoints;
-      }
-    }
-
-    if (remaining > 0 && selectedCustomer) {
-      const customerInDb = mockCustomers.find(c => c.customerId === selectedCustomer.customerId);
-      if (customerInDb) {
-        if (paymentMethod === 'Installment') {
-            const termCount = 3; 
-            const amountPerTerm = Math.ceil(remaining / termCount);
-            for (let i = 1; i <= termCount; i++) {
-              const dueDate = new Date(now);
-              dueDate.setMonth(dueDate.getMonth() + i);
-              const newTerm: (typeof mockInstallmentTerms)[0] = {
-                  installmentTermId: `inst-${newOrder.orderId}-${i}`,
-                  orderId: newOrder.orderId,
-                  installmentNumber: i,
-                  dueDate: dueDate.toISOString(),
-                  amount: amountPerTerm,
-                  paidAt: null,
-                  paymentMethod: null,
-                  isLate: false,
-                  note: `Kỳ ${i}/${termCount}`,
-                  collectedByUserId: null,
-                  createdAt: now.toISOString(),
-                  updatedAt: now.toISOString(),
-              };
-              mockInstallmentTerms.push(newTerm);
-            }
-            description += t('pos.success_installment', { amount: formatCurrency(remaining), count: termCount });
-        } else {
-            customerInDb.totalDebt += remaining;
-            customerInDb.lastPurchaseDate = now.toISOString();
-            description += t('pos.success_on_credit', { amount: formatCurrency(remaining), name: selectedCustomer.name });
+    if (editingOrderId) {
+        // --- UPDATE EXISTING ORDER ---
+        const orderIndex = mockOrders.findIndex(o => o.orderId === editingOrderId);
+        if (orderIndex === -1) {
+            toast({ variant: 'destructive', title: 'Lỗi', description: 'Không tìm thấy đơn hàng để cập nhật.' });
+            return;
         }
-      }
-    }
 
-    toast({
-      title: t('common.success'),
-      description: description,
-    });
+        const originalOrder = mockOrders[orderIndex];
+        const originalItems = mockOrderItems.filter(item => item.orderId === editingOrderId);
+
+        // Revert old stock
+        originalItems.forEach(item => {
+            const product = mockProducts.find(p => p.productId === item.productId);
+            if (product) product.stock += item.quantity;
+        });
+
+        // Apply new stock
+        cart.forEach(item => {
+            const product = mockProducts.find(p => p.productId === item.productId);
+            if (product) product.stock -= item.quantity;
+        });
+        
+        // Update order
+        originalOrder.totalAmount = totalWithVat;
+        originalOrder.discountAmount = discount + voucherDiscount;
+        originalOrder.totalPaid = finalAmountPaid;
+        originalOrder.paymentType = paymentMethod as any;
+        originalOrder.deliveryAddress = deliveryAddress;
+        originalOrder.note = (document.getElementById('note') as HTMLTextAreaElement)?.value || originalOrder.note;
+        originalOrder.updatedAt = now.toISOString();
+
+        // Update order items
+        const newOrderItems = cart.map(item => ({
+            orderItemId: `item-${originalOrder.orderId}-${item.productId}`,
+            orderId: originalOrder.orderId,
+            productId: item.productId,
+            productName: item.name,
+            productUnit: item.unit,
+            quantity: item.quantity,
+            unitPrice: item.appliedPrice,
+            totalPrice: item.appliedPrice * item.quantity,
+        }));
+        // Remove old items and add new ones
+        const otherItems = mockOrderItems.filter(item => item.orderId !== editingOrderId);
+        mockOrderItems.length = 0;
+        mockOrderItems.push(...otherItems, ...newOrderItems);
+        
+        toast({ title: "Thành công", description: `Đơn hàng ${originalOrder.orderCode} đã được cập nhật.` });
+
+    } else {
+        // --- CREATE NEW ORDER ---
+        const newOrderCode = `DH${now.toISOString().slice(2, 10).replace(/-/g, '')}${Math.floor(100 + Math.random() * 900)}`;
+        let description = t('pos.success_order_created', { code: newOrderCode });
+
+        const newOrder: (typeof mockOrders)[0] = {
+            orderId: `ord-${now.getTime()}`,
+            orderCode: newOrderCode,
+            customerId: selectedCustomerId,
+            totalAmount: totalWithVat,
+            discountAmount: discount + voucherDiscount,
+            shippingFee: 0, 
+            totalPaid: finalAmountPaid,
+            paymentType: paymentMethod as any,
+            paymentDetails: `Thanh toán tại POS bằng ${paymentMethod}`,
+            status: 'Delivered' as const,
+            expectedDeliveryDate: null,
+            deliveryAddress: deliveryAddress,
+            deliveryStatus: deliveryAddress ? 'Processing' as const : 'Completed' as const,
+            note: (document.getElementById('note') as HTMLTextAreaElement)?.value || 'Đơn hàng tạo tại POS',
+            processedByUserId: currentUser.userId,
+            createdAt: now.toISOString(),
+            updatedAt: now.toISOString(),
+        };
+
+        mockOrders.unshift(newOrder);
+        
+        cart.forEach(item => {
+            const newOrderItem = {
+                orderItemId: `item-${newOrder.orderId}-${item.productId}`,
+                orderId: newOrder.orderId,
+                productId: item.productId,
+                productName: item.name,
+                productUnit: item.unit,
+                quantity: item.quantity,
+                unitPrice: item.appliedPrice,
+                totalPrice: item.appliedPrice * item.quantity,
+            };
+            mockOrderItems.push(newOrderItem);
+            
+            const productInDb = mockProducts.find(p => p.productId === item.productId);
+            if (productInDb) {
+                productInDb.stock -= item.quantity;
+            }
+        });
+
+        if (selectedVoucher && selectedCustomer) {
+            const customerInDb = mockCustomers.find(c => c.customerId === selectedCustomer.customerId);
+            if (customerInDb) {
+                const newPoints = customerInDb.loyaltyPoints - selectedVoucher.pointsCost;
+                customerInDb.loyaltyPoints = newPoints < 0 ? 0 : newPoints;
+            }
+        }
+
+        if (remaining > 0 && selectedCustomer) {
+            const customerInDb = mockCustomers.find(c => c.customerId === selectedCustomer.customerId);
+            if (customerInDb) {
+                if (paymentMethod === 'Installment') {
+                    const termCount = installmentTermCount; 
+                    const amountPerTerm = Math.ceil(remaining / termCount);
+                    for (let i = 1; i <= termCount; i++) {
+                        const dueDate = new Date(now);
+                        dueDate.setMonth(dueDate.getMonth() + i);
+                        const newTerm: (typeof mockInstallmentTerms)[0] = {
+                            installmentTermId: `inst-${newOrder.orderId}-${i}`,
+                            orderId: newOrder.orderId,
+                            installmentNumber: i,
+                            dueDate: dueDate.toISOString(),
+                            amount: amountPerTerm,
+                            paidAt: null,
+                            paymentMethod: null,
+                            isLate: false,
+                            note: `Kỳ ${i}/${termCount}`,
+                            collectedByUserId: null,
+                            createdAt: now.toISOString(),
+                            updatedAt: now.toISOString(),
+                        };
+                        mockInstallmentTerms.push(newTerm);
+                    }
+                    description += t('pos.success_installment', { amount: formatCurrency(remaining), count: termCount });
+                } else {
+                    customerInDb.totalDebt += remaining;
+                    customerInDb.lastPurchaseDate = now.toISOString();
+                    description += t('pos.success_on_credit', { amount: formatCurrency(remaining), name: selectedCustomer.name });
+                }
+            }
+        }
+        toast({ title: t('common.success'), description: description });
+    }
 
     setPaymentDialogOpen(false);
     clearCart();
@@ -381,17 +467,13 @@ export default function POSPage() {
   const handleApplyVoucher = (voucher: Voucher) => {
     setSelectedVoucher(voucher);
     setVoucherDialogOpen(false);
-
-    // We calculate the discount value here just for the toast message.
-    // The actual discount applied to the cart is handled by the useMemo.
     let discountValue = 0;
     if (voucher.type === 'fixed') {
         discountValue = voucher.value;
     } else if (voucher.type === 'percentage') {
-        const maxDiscount = 200000; // From mock data description
+        const maxDiscount = 200000;
         discountValue = Math.min(subtotal * (voucher.value / 100), maxDiscount);
     }
-
     toast({
         title: "Đã áp dụng voucher",
         description: `Bạn được giảm ${formatCurrency(Math.min(discountValue, subtotal))}.`,
@@ -420,9 +502,7 @@ export default function POSPage() {
   
     const invoiceDate = new Date().toLocaleDateString('vi-VN');
     const orderCode = `HD${Date.now().toString().slice(-6)}`;
-  
     const vatRate = store.isVatEnabled ? (store.vatRate || 0) : 0;
-  
     const itemsHtml = cart.map(item => `
       <tr class="item">
         <td>
@@ -465,103 +545,26 @@ export default function POSPage() {
         <head>
           <title>Hóa đơn ${orderCode}</title>
           <style>
-            @page {
-              margin: 0mm;
-            }
-            @media print {
-              body {
-                -webkit-print-color-adjust: exact;
-                print-color-adjust: exact;
-              }
-            }
-            * {
-              box-sizing: border-box;
-            }
-            body {
-              font-family: Arial, sans-serif;
-              font-size: 10pt;
-              color: #000;
-              background: #fff;
-              line-height: 1.4;
-              margin: 0;
-              padding: 0;
-            }
-            .invoice-wrapper {
-              width: 280px; /* ~75mm, suitable for 80mm receipt paper */
-              margin: 0 auto;
-              padding: 10px 5px;
-            }
-            .header {
-              text-align: center;
-              margin-bottom: 10px;
-            }
-            .header h1 {
-              font-size: 14pt;
-              margin: 0;
-              font-weight: bold;
-            }
-            .header p {
-              margin: 2px 0;
-              font-size: 9pt;
-            }
-            .info {
-              margin-bottom: 10px;
-              padding-bottom: 10px;
-              border-bottom: 1px dashed #000;
-            }
-            .info p {
-              margin: 3px 0;
-              font-size: 9pt;
-            }
-            .items-table {
-              width: 100%;
-              border-collapse: collapse;
-              margin-bottom: 10px;
-            }
-            .items-table th, .items-table td {
-              text-align: left;
-              padding: 4px 0;
-              vertical-align: top;
-              font-size: 9pt;
-            }
-            .items-table th {
-              border-bottom: 1px solid #000;
-              font-weight: bold;
-            }
-            .items-table .item-name {
-              line-height: 1.2;
-              word-break: break-word;
-            }
-            .items-table .item-details {
-                font-size: 8pt;
-                color: #555;
-            }
-            .items-table th:last-child, .items-table td:last-child {
-              text-align: right;
-              white-space: nowrap;
-            }
-            .totals {
-              width: 100%;
-              margin-top: 10px;
-              padding-top: 10px;
-              border-top: 1px dashed #000;
-            }
-            .totals .row {
-                display: flex;
-                justify-content: space-between;
-                padding: 3px 0;
-                font-size: 9pt;
-            }
-            .totals .row.total {
-                font-weight: bold;
-                font-size: 11pt;
-                padding-top: 5px;
-            }
-            .footer {
-              text-align: center;
-              margin-top: 20px;
-              font-size: 9pt;
-            }
+            @page { margin: 0mm; }
+            @media print { body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
+            * { box-sizing: border-box; }
+            body { font-family: Arial, sans-serif; font-size: 10pt; color: #000; background: #fff; line-height: 1.4; margin: 0; padding: 0; }
+            .invoice-wrapper { width: 280px; margin: 0 auto; padding: 10px 5px; }
+            .header { text-align: center; margin-bottom: 10px; }
+            .header h1 { font-size: 14pt; margin: 0; font-weight: bold; }
+            .header p { margin: 2px 0; font-size: 9pt; }
+            .info { margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px dashed #000; }
+            .info p { margin: 3px 0; font-size: 9pt; }
+            .items-table { width: 100%; border-collapse: collapse; margin-bottom: 10px; }
+            .items-table th, .items-table td { text-align: left; padding: 4px 0; vertical-align: top; font-size: 9pt; }
+            .items-table th { border-bottom: 1px solid #000; font-weight: bold; }
+            .items-table .item-name { line-height: 1.2; word-break: break-word; }
+            .items-table .item-details { font-size: 8pt; color: #555; }
+            .items-table th:last-child, .items-table td:last-child { text-align: right; white-space: nowrap; }
+            .totals { width: 100%; margin-top: 10px; padding-top: 10px; border-top: 1px dashed #000; }
+            .totals .row { display: flex; justify-content: space-between; padding: 3px 0; font-size: 9pt; }
+            .totals .row.total { font-weight: bold; font-size: 11pt; padding-top: 5px; }
+            .footer { text-align: center; margin-top: 20px; font-size: 9pt; }
             .text-right { text-align: right; }
           </style>
         </head>
@@ -572,7 +575,6 @@ export default function POSPage() {
               <p>${store.address}</p>
               <p>SĐT: ${store.phone}</p>
             </div>
-
             <div class="info">
               <p><strong>Hóa đơn bán lẻ:</strong> ${orderCode}</p>
               <p><strong>Ngày:</strong> ${invoiceDate}</p>
@@ -581,7 +583,6 @@ export default function POSPage() {
               <p><strong>Nhân viên:</strong> ${currentUser?.fullName || 'N/A'}</p>
               <p><strong>Thanh toán:</strong> ${t(`pos.${paymentMethod.toLowerCase()}`)}</p>
             </div>
-
             <table class="items-table">
               <thead>
                 <tr>
@@ -593,7 +594,6 @@ export default function POSPage() {
                 ${itemsHtml}
               </tbody>
             </table>
-
             <div class="totals">
                <div class="row">
                 <span>${t('pos.subtotal')}:</span>
@@ -609,9 +609,7 @@ export default function POSPage() {
                 <span>${formatCurrency(totalWithVat)}</span>
               </div>
             </div>
-
             ${qrCodeHtml}
-
             <div class="footer">
               ${invoiceFooterHtml}
               <p>${store.email}</p>
@@ -638,8 +636,6 @@ export default function POSPage() {
     return remaining > 0 ? remaining : 0;
   }, [isPaymentDialogOpen, paymentMethod, totalWithVat, customerTender, amountPaid]);
 
-
-  // Effect to initialize payment dialog state
   useEffect(() => {
     if (isPaymentDialogOpen) {
       setAmountPaid(totalWithVat);
@@ -649,7 +645,6 @@ export default function POSPage() {
     }
   }, [isPaymentDialogOpen, totalWithVat]);
 
-  // Effect to handle payment method changes (e.g., Debt)
   useEffect(() => {
     if (paymentMethod === 'Debt' || paymentMethod === 'Installment') {
       setAmountPaid(0);
@@ -659,7 +654,6 @@ export default function POSPage() {
     }
   }, [paymentMethod, totalWithVat]);
 
-  // Effect to generate QR code URL
   useEffect(() => {
     if (isPaymentDialogOpen) {
       const storeInfo = mockStores[0];
@@ -678,17 +672,14 @@ export default function POSPage() {
     }
   }, [isPaymentDialogOpen, totalWithVat, paymentMethod]);
   
-  // Effect to handle F9 for quick print
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (isPaymentDialogOpen && event.key === 'F9') {
-        event.preventDefault(); // Prevent default browser behavior for F9
+        event.preventDefault();
         handleQuickPrint();
       }
     };
-
     window.addEventListener('keydown', handleKeyDown);
-    
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
@@ -723,7 +714,6 @@ export default function POSPage() {
   return (
     <>
       <div className="grid h-screen w-full grid-cols-10 gap-4 bg-muted/40 p-4">
-        {/* Product Selection Area */}
         <div className="col-span-6 flex flex-col gap-4">
           <header className="flex h-16 items-center justify-between gap-4 rounded-lg bg-background p-4 shadow-sm">
             <div className="flex items-center gap-4">
@@ -794,7 +784,6 @@ export default function POSPage() {
           </main>
         </div>
 
-        {/* Cart Area */}
         <div className="col-span-4">
           <Card className="flex h-full flex-col shadow-sm">
             <CardHeader className="p-4 border-b">
@@ -932,7 +921,7 @@ export default function POSPage() {
                   </div>
               </div>
               <Button className="w-full bg-accent hover:bg-accent/90" size="lg" disabled={cart.length === 0} onClick={() => setPaymentDialogOpen(true)}>
-                {t('pos.create_order')}
+                {editingOrderId ? 'Cập nhật đơn hàng' : t('pos.create_order')}
               </Button>
             </CardFooter>
           </Card>
@@ -1154,6 +1143,17 @@ export default function POSPage() {
                             {showQrCode && <p className="text-sm text-muted-foreground">{t('pos.qr_code_scan')}</p>}
                         </div>
                     )}
+                    {paymentMethod === 'Installment' && (
+                        <div className="space-y-2">
+                           <Label htmlFor="installment-terms">Số kỳ trả góp</Label>
+                           <Input 
+                                id="installment-terms"
+                                type="number" 
+                                value={installmentTermCount} 
+                                onChange={(e) => setInstallmentTermCount(Math.max(1, Number(e.target.value) || 1))}
+                            />
+                        </div>
+                    )}
                      <div className="space-y-2">
                         <Label htmlFor="delivery-address">{t('pos.shipping_address')}</Label>
                         <Textarea 
@@ -1161,6 +1161,10 @@ export default function POSPage() {
                             placeholder={t('pos.shipping_address_placeholder')}
                             defaultValue={selectedCustomer?.address || ''}
                         />
+                    </div>
+                     <div className="space-y-2">
+                        <Label htmlFor="note">Ghi chú đơn hàng</Label>
+                        <Textarea id="note" placeholder="Ghi chú thêm..." />
                     </div>
                 </div>
 
@@ -1296,4 +1300,3 @@ export default function POSPage() {
     </>
   );
 }
-

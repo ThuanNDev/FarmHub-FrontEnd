@@ -134,6 +134,15 @@ export const userSchema = z.object({
     path: ["confirmPassword"],
 });
 
+export const changePasswordSchema = z.object({
+  currentPassword: z.string().min(1, { message: "Vui lòng nhập mật khẩu hiện tại." }),
+  newPassword: z.string().min(8, { message: "Mật khẩu mới phải có ít nhất 8 ký tự." }),
+  confirmPassword: z.string(),
+}).refine(data => data.newPassword === data.confirmPassword, {
+  message: "Mật khẩu mới không khớp.",
+  path: ["confirmPassword"],
+});
+
 export const otpSchema = z.object({
   otp: z.string().min(6, { message: 'Mã OTP phải có 6 chữ số.' }).max(6, { message: 'Mã OTP phải có 6 chữ số.' }),
 });

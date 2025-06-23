@@ -35,10 +35,12 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { mockOrders, mockCustomers, mockProducts, mockOrderItems } from '@/lib/data';
 import { useRouter } from 'next/navigation';
+import { useToast } from '@/hooks/use-toast';
 
 export default function ReportsPage() {
   const [date, setDate] = React.useState<DateRange | undefined>(undefined);
   const router = useRouter();
+  const { toast } = useToast();
   
   React.useEffect(() => {
     setDate({
@@ -165,6 +167,47 @@ export default function ReportsPage() {
     }
   };
 
+  const handleExport = () => {
+    if (filteredOrders.length === 0) {
+      toast({
+        variant: 'destructive',
+        title: "Không có dữ liệu",
+        description: "Không có đơn hàng nào trong khoảng thời gian đã chọn để xuất file.",
+      });
+      return;
+    }
+
+    const headers = ["Mã ĐH", "Khách hàng", "Ngày", "Trạng thái", "Tổng tiền", "Đã trả", "Còn lại", "Phương thức TT"];
+    const rows = filteredOrders.map(order => [
+      `"${order.orderCode}"`,
+      `"${getCustomerName(order.customerId)}"`,
+      `"${format(new Date(order.createdAt), 'dd/MM/yyyy HH:mm')}"`,
+      `"${order.status}"`,
+      order.totalAmount,
+      order.totalPaid,
+      order.totalAmount - order.totalPaid,
+      `"${order.paymentType}"`
+    ]);
+
+    let csvContent = "data:text/csv;charset=utf-8,\uFEFF" 
+        + headers.join(",") + "\n" 
+        + rows.map(e => e.join(",")).join("\n");
+
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    const fileName = `bao_cao_don_hang_${date?.from ? format(date.from, 'dd-MM-yy') : ''}_${date?.to ? format(date.to, 'dd-MM-yy') : ''}.csv`;
+    link.setAttribute("download", fileName);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    toast({
+        title: "Xuất file thành công",
+        description: `Đã xuất ${filteredOrders.length} đơn hàng ra tệp ${fileName}.`,
+    });
+  };
+
 
   return (
     <div className="flex flex-col gap-4">
@@ -212,7 +255,7 @@ export default function ReportsPage() {
                             />
                             </PopoverContent>
                         </Popover>
-                         <Button size="sm" variant="outline" className="h-10 gap-1">
+                         <Button size="sm" variant="outline" className="h-10 gap-1" onClick={handleExport}>
                             <FileDown className="h-3.5 w-3.5" />
                             <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
                                 Xuất file

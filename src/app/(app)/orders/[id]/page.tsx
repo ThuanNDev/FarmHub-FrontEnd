@@ -322,10 +322,7 @@ export default function OrderDetailPage() {
         toast({ variant: 'destructive', title: t('pages.order_details.cannot_edit_title'), description: t('pages.order_details.cannot_edit_description')});
         return;
     }
-    toast({
-      title: t('pages.order_details.wip_title'),
-      description: t('pages.order_details.wip_description'),
-    });
+    router.push(`/pos?orderId=${order.orderId}`);
   }
 
   const getStatusVariant = (status: string) => {

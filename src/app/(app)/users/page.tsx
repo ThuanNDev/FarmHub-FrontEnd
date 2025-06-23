@@ -80,25 +80,25 @@ import { Separator } from '@/components/ui/separator';
 import { mockUsers } from '@/lib/data';
 import { useToast } from '@/hooks/use-toast';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { userSchema } from '@/lib/form-schemas';
+import { userSchema, changePasswordSchema } from '@/lib/form-schemas';
 
 type User = typeof mockUsers[0];
 type UserFormValues = z.infer<typeof userSchema>;
+type ChangePasswordFormValues = z.infer<typeof changePasswordSchema>;
 
 export default function UsersPage() {
   const [users, setUsers] = useState<User[]>(mockUsers);
   const [searchTerm, setSearchTerm] = useState('');
   const [isAddEditDialogOpen, setAddEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [isChangePasswordOpen, setChangePasswordOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   
   const router = useRouter();
   const { toast } = useToast();
   const { t } = useLanguage();
 
-  // For demonstration: Mock the currently logged-in user.
-  // In a real app, this would come from an authentication context.
-  const currentUser = mockUsers[0]; // 'Admin' user
+  const currentUser = mockUsers[0];
 
   const form = useForm<UserFormValues>({
     resolver: zodResolver(userSchema),
@@ -111,6 +111,15 @@ export default function UsersPage() {
       isActive: true,
       password: '',
       confirmPassword: ''
+    },
+  });
+
+  const changePasswordForm = useForm<ChangePasswordFormValues>({
+    resolver: zodResolver(changePasswordSchema),
+    defaultValues: {
+      currentPassword: '',
+      newPassword: '',
+      confirmPassword: '',
     },
   });
 
@@ -203,7 +212,7 @@ export default function UsersPage() {
         phone: values.phone || '',
         role: values.role,
         associatedStoreIds: ['store-001'],
-        isActive: values.isActive,
+        isActive: true,
         isSuperadmin: values.role === 'Admin',
         lastLoginAt: null,
         createdAt: now,
@@ -217,6 +226,20 @@ export default function UsersPage() {
     setAddEditDialogOpen(false);
     setSelectedUser(null);
   };
+
+  const handleChangePassword = (values: ChangePasswordFormValues) => {
+    // In a real app, you'd verify the current password on the backend.
+    const userInDb = mockUsers.find(u => u.userId === currentUser.userId);
+    if (userInDb) {
+        userInDb.passwordHash = `hashed_${values.newPassword}`;
+        userInDb.updatedAt = new Date().toISOString();
+        toast({ title: "Thành công", description: "Mật khẩu đã được thay đổi." });
+        setChangePasswordOpen(false);
+        changePasswordForm.reset();
+    } else {
+        toast({ variant: 'destructive', title: "Lỗi", description: "Không tìm thấy người dùng." });
+    }
+  }
 
   // --- Role-based View ---
   if (currentUser.role !== 'Admin') {
@@ -232,55 +255,108 @@ export default function UsersPage() {
     }
 
     return (
-      <Card>
-        <CardHeader>
-          <div className="flex items-start gap-4">
-            <Avatar className="h-20 w-20 border">
-              <AvatarImage src={`https://placehold.co/128x128.png`} alt={user.fullName} />
-              <AvatarFallback>{user.fullName.charAt(0)}</AvatarFallback>
-            </Avatar>
-            <div className="pt-2">
-              <CardTitle className="font-headline text-2xl">{user.fullName}</CardTitle>
-              <CardDescription>@{user.username}</CardDescription>
+      <>
+        <Card>
+            <CardHeader>
+            <div className="flex items-start gap-4">
+                <Avatar className="h-20 w-20 border">
+                <AvatarImage src={`https://placehold.co/128x128.png`} alt={user.fullName} />
+                <AvatarFallback>{user.fullName.charAt(0)}</AvatarFallback>
+                </Avatar>
+                <div className="pt-2">
+                <CardTitle className="font-headline text-2xl">{user.fullName}</CardTitle>
+                <CardDescription>@{user.username}</CardDescription>
+                </div>
             </div>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <Separator className="my-4" />
-          <div className="space-y-6">
-            <div>
-              <h3 className="font-semibold text-lg mb-2">Thông tin liên hệ</h3>
-              <div className="grid gap-2 text-sm">
-                <div className="flex items-center gap-3">
-                  <Mail className="h-4 w-4 text-muted-foreground" />
-                  <span>{user.email}</span>
+            </CardHeader>
+            <CardContent>
+            <Separator className="my-4" />
+            <div className="space-y-6">
+                <div>
+                <h3 className="font-semibold text-lg mb-2">Thông tin liên hệ</h3>
+                <div className="grid gap-2 text-sm">
+                    <div className="flex items-center gap-3">
+                    <Mail className="h-4 w-4 text-muted-foreground" />
+                    <span>{user.email}</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                    <Phone className="h-4 w-4 text-muted-foreground" />
+                    <span>{user.phone || 'Chưa cập nhật'}</span>
+                    </div>
                 </div>
-                <div className="flex items-center gap-3">
-                  <Phone className="h-4 w-4 text-muted-foreground" />
-                  <span>{user.phone || 'Chưa cập nhật'}</span>
                 </div>
-              </div>
+                <div>
+                <h3 className="font-semibold text-lg mb-2">Thông tin tài khoản</h3>
+                <div className="grid gap-2 text-sm">
+                    <div className="flex items-center gap-3">
+                    <Shield className="h-4 w-4 text-muted-foreground" />
+                    <span>Vai trò: {user.role}</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                    <Badge variant={user.isActive ? 'default' : 'secondary'}>
+                        {t(user.isActive ? 'status.active' : 'status.inactive')}
+                        </Badge>
+                    </div>
+                </div>
+                </div>
             </div>
-            <div>
-              <h3 className="font-semibold text-lg mb-2">Thông tin tài khoản</h3>
-              <div className="grid gap-2 text-sm">
-                <div className="flex items-center gap-3">
-                  <Shield className="h-4 w-4 text-muted-foreground" />
-                  <span>Vai trò: {user.role}</span>
-                </div>
-                 <div className="flex items-center gap-3">
-                   <Badge variant={user.isActive ? 'default' : 'secondary'}>
-                      {t(user.isActive ? 'status.active' : 'status.inactive')}
-                    </Badge>
-                </div>
-              </div>
-            </div>
-          </div>
-        </CardContent>
-        <CardFooter>
-          <Button>Đổi mật khẩu</Button>
-        </CardFooter>
-      </Card>
+            </CardContent>
+            <CardFooter>
+            <Button onClick={() => setChangePasswordOpen(true)}>Đổi mật khẩu</Button>
+            </CardFooter>
+        </Card>
+        
+        <Dialog open={isChangePasswordOpen} onOpenChange={setChangePasswordOpen}>
+            <DialogContent>
+                <DialogHeader>
+                    <DialogTitle>Đổi mật khẩu</DialogTitle>
+                    <DialogDescription>
+                        Nhập mật khẩu hiện tại và mật khẩu mới của bạn.
+                    </DialogDescription>
+                </DialogHeader>
+                <Form {...changePasswordForm}>
+                    <form onSubmit={changePasswordForm.handleSubmit(handleChangePassword)} className="space-y-4">
+                        <FormField
+                            control={changePasswordForm.control}
+                            name="currentPassword"
+                            render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Mật khẩu hiện tại</FormLabel>
+                                <FormControl><Input type="password" {...field} /></FormControl>
+                                <FormMessage />
+                            </FormItem>
+                            )}
+                        />
+                        <FormField
+                            control={changePasswordForm.control}
+                            name="newPassword"
+                            render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Mật khẩu mới</FormLabel>
+                                <FormControl><Input type="password" {...field} /></FormControl>
+                                <FormMessage />
+                            </FormItem>
+                            )}
+                        />
+                         <FormField
+                            control={changePasswordForm.control}
+                            name="confirmPassword"
+                            render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Xác nhận mật khẩu mới</FormLabel>
+                                <FormControl><Input type="password" {...field} /></FormControl>
+                                <FormMessage />
+                            </FormItem>
+                            )}
+                        />
+                        <DialogFooter>
+                            <Button type="submit">Xác nhận</Button>
+                        </DialogFooter>
+                    </form>
+                </Form>
+            </DialogContent>
+        </Dialog>
+      </>
     );
   }
 

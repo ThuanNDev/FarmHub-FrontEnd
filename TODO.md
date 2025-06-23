@@ -14,11 +14,11 @@
 
 ## II. Chức năng Frontend cần hoàn thiện
 
--   [ ] **Trang Đơn hàng (`/orders`):** Hoàn thiện chức năng "Sửa đơn hàng". Nút "Sửa" ở cả trang danh sách và trang chi tiết hiện chỉ hiển thị thông báo. Cần triển khai form sửa đơn hàng (chỉ cho các đơn hàng có trạng thái `Pending`).
--   [ ] **Trang Đơn hàng (`/orders`):** Hoàn thiện chức năng "In đơn hàng" từ menu của mỗi đơn hàng trong danh sách.
--   [ ] **Trang Nhân viên (`/users`):** Hoàn thiện chức năng "Đổi mật khẩu" trong giao diện dành cho nhân viên (vai trò `Staff`).
--   [ ] **Trang Báo cáo (`/reports`):** Hoàn thiện chức năng "Xuất file" để xuất dữ liệu báo cáo ra file CSV/Excel.
--   [ ] **Trang Bán hàng (`/pos`):** Cho phép cấu hình số kỳ trả góp (thay vì mặc định là 3 kỳ) khi khách hàng chọn phương thức trả góp.
+-   [x] **Trang Đơn hàng (`/orders`):** Hoàn thiện chức năng "Sửa đơn hàng". Nút "Sửa" ở cả trang danh sách và trang chi tiết hiện chỉ hiển thị thông báo. Cần triển khai form sửa đơn hàng (chỉ cho các đơn hàng có trạng thái `Pending`).
+-   [x] **Trang Đơn hàng (`/orders`):** Hoàn thiện chức năng "In đơn hàng" từ menu của mỗi đơn hàng trong danh sách.
+-   [x] **Trang Nhân viên (`/users`):** Hoàn thiện chức năng "Đổi mật khẩu" trong giao diện dành cho nhân viên (vai trò `Staff`).
+-   [x] **Trang Báo cáo (`/reports`):** Hoàn thiện chức năng "Xuất file" để xuất dữ liệu báo cáo ra file CSV/Excel.
+-   [x] **Trang Bán hàng (`/pos`):** Cho phép cấu hình số kỳ trả góp (thay vì mặc định là 3 kỳ) khi khách hàng chọn phương thức trả góp.
 
 ## III. Cải tiến & Tính năng mới (Tiềm năng)
 
