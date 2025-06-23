@@ -55,8 +55,8 @@ export default function ProductDetailPage() {
         </div>
         <Card>
             <CardContent className="p-6">
-                <div className="grid md:grid-cols-2 gap-8 lg:gap-12 items-start">
-                    {/* Left Column: Images */}
+                <div className="grid lg:grid-cols-3 gap-8 lg:gap-12 items-start">
+                    {/* Column 1: Images */}
                     <div className="grid gap-4">
                         <div className="aspect-square w-full overflow-hidden rounded-lg border shadow-sm">
                             <Image
@@ -87,9 +87,8 @@ export default function ProductDetailPage() {
                         </div>
                     </div>
 
-                    {/* Right Column: Details */}
+                    {/* Column 2: Core Details */}
                     <div className="grid gap-6">
-                        {/* Main Info */}
                         <div>
                             <div className="flex items-center gap-2">
                                 <Badge variant="outline">{product.brand}</Badge>
@@ -101,12 +100,9 @@ export default function ProductDetailPage() {
                             <h1 className="text-3xl font-bold font-headline mt-2">{product.name}</h1>
                             <p className="text-muted-foreground mt-1">SKU: {product.product_code}</p>
                         </div>
-                        
-                        {product.description && <p className="text-muted-foreground">{product.description}</p>}
-                        
+
                         <Separator />
 
-                        {/* Pricing */}
                         <div className="grid gap-4">
                             <h3 className="font-semibold text-xl flex items-center gap-2"><DollarSign className="w-5 h-5 text-primary"/> Giá cả</h3>
                             <div className="grid grid-cols-2 gap-x-6 gap-y-2 text-sm">
@@ -126,7 +122,6 @@ export default function ProductDetailPage() {
 
                         <Separator />
 
-                        {/* Inventory */}
                         <div className="grid gap-4">
                              <h3 className="font-semibold text-xl flex items-center gap-2"><Warehouse className="w-5 h-5 text-primary"/> Tồn kho</h3>
                              <div className="grid grid-cols-2 gap-x-6 gap-y-2 text-sm">
@@ -146,10 +141,19 @@ export default function ProductDetailPage() {
                                 <div>{product.min_stock_level} {product.unit}</div>
                             </div>
                         </div>
-                        
+                    </div>
+
+                    {/* Column 3: Other Details */}
+                     <div className="grid gap-6">
+                        {product.description && (
+                            <div>
+                                <h3 className="font-semibold text-xl flex items-center gap-2"><Info className="w-5 h-5 text-primary"/> Mô tả sản phẩm</h3>
+                                <p className="text-muted-foreground mt-2 text-sm">{product.description}</p>
+                            </div>
+                        )}
+
                         <Separator />
 
-                        {/* General Info */}
                         <div className="grid gap-4">
                             <h3 className="font-semibold text-xl flex items-center gap-2"><Package className="w-5 h-5 text-primary"/> Thông tin chung</h3>
                             <div className="grid grid-cols-2 gap-x-6 gap-y-2 text-sm">
@@ -169,7 +173,6 @@ export default function ProductDetailPage() {
 
                          <Separator />
 
-                        {/* Specs */}
                         <div className="grid gap-4">
                             <h3 className="font-semibold text-xl">Thông số kỹ thuật</h3>
                             <div className="grid grid-cols-2 gap-x-6 gap-y-2 text-sm">
@@ -188,7 +191,6 @@ export default function ProductDetailPage() {
                              <h3 className="font-semibold text-xl">Thông tin bảo hành</h3>
                              <p className="text-sm text-muted-foreground">{product.warranty_info}</p>
                         </div>
-
                     </div>
                 </div>
             </CardContent>
@@ -196,4 +198,3 @@ export default function ProductDetailPage() {
     </div>
   );
 }
-
