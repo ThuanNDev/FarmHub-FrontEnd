@@ -4,6 +4,16 @@ import type { Store, User, Category, Supplier, Product, Customer, Order, OrderIt
 // All IDs are kept simple for mocking purposes. In a real DB, these would be UUIDs or CUIDs.
 // Timestamps are in ISO 8601 format.
 
+const now = new Date();
+const daysAgo = (days: number) => new Date(now.getTime() - days * 24 * 60 * 60 * 1000).toISOString();
+const hoursAgo = (hours: number) => new Date(now.getTime() - hours * 60 * 60 * 1000).toISOString();
+const daysFromNow = (days: number) => new Date(now.getTime() + days * 24 * 60 * 60 * 1000).toISOString();
+const monthsFromNow = (months: number) => {
+    const d = new Date(now);
+    d.setMonth(d.getMonth() + months);
+    return d.toISOString();
+}
+
 export const mockStores: Store[] = [
   {
     storeId: 'store-001',
@@ -15,8 +25,8 @@ export const mockStores: Store[] = [
     userId: 'user-001',
     openingHours: 'Thứ 2 - Chủ Nhật: 7:00 - 18:00',
     isActive: true,
-    createdAt: '2023-01-01T00:00:00Z',
-    updatedAt: '2024-07-25T11:00:00Z',
+    createdAt: daysAgo(500),
+    updatedAt: daysAgo(1),
     bankInfo: {
       bankId: 'SACOMBANK',
       accountNo: '050109114755',
@@ -49,9 +59,9 @@ export const mockUsers: User[] = [
       associatedStoreIds: ['store-001'],
       isActive: true,
       isSuperadmin: true,
-      lastLoginAt: '2024-07-25T10:00:00Z',
-      createdAt: '2023-01-01T00:00:00Z',
-      updatedAt: '2024-07-25T10:00:00Z',
+      lastLoginAt: hoursAgo(1),
+      createdAt: daysAgo(500),
+      updatedAt: hoursAgo(1),
       passwordResetToken: null,
       tokenExpiryAt: null,
     },
@@ -66,9 +76,9 @@ export const mockUsers: User[] = [
       associatedStoreIds: ['store-001'],
       isActive: true,
       isSuperadmin: false,
-      lastLoginAt: '2024-07-24T15:00:00Z',
-      createdAt: '2023-02-10T00:00:00Z',
-      updatedAt: '2024-07-24T15:00:00Z',
+      lastLoginAt: daysAgo(1),
+      createdAt: daysAgo(450),
+      updatedAt: daysAgo(1),
       passwordResetToken: null,
       tokenExpiryAt: null,
     },
@@ -84,8 +94,8 @@ export const mockCategories: Category[] = [
     image: 'https://picsum.photos/id/145/100/100',
     order: 1,
     isActive: true,
-    createdAt: '2023-01-10T10:00:00Z',
-    updatedAt: '2023-01-10T10:00:00Z',
+    createdAt: daysAgo(365),
+    updatedAt: daysAgo(365),
     isDeleted: false
   },
   { 
@@ -97,8 +107,8 @@ export const mockCategories: Category[] = [
     image: 'https://picsum.photos/id/1048/100/100',
     order: 2,
     isActive: true,
-    createdAt: '2023-01-10T10:05:00Z',
-    updatedAt: '2023-01-10T10:05:00Z',
+    createdAt: daysAgo(365),
+    updatedAt: daysAgo(365),
     isDeleted: false
   },
   { 
@@ -110,8 +120,8 @@ export const mockCategories: Category[] = [
     image: 'https://picsum.photos/id/160/100/100',
     order: 3,
     isActive: true,
-    createdAt: '2023-01-10T10:10:00Z',
-    updatedAt: '2023-01-10T10:10:00Z',
+    createdAt: daysAgo(365),
+    updatedAt: daysAgo(365),
     isDeleted: false
   },
   { 
@@ -123,8 +133,8 @@ export const mockCategories: Category[] = [
     image: 'https://picsum.photos/id/1016/100/100',
     order: 1,
     isActive: true,
-    createdAt: '2023-01-10T10:11:00Z',
-    updatedAt: '2023-01-10T10:11:00Z',
+    createdAt: daysAgo(364),
+    updatedAt: daysAgo(364),
     isDeleted: false
   },
   { 
@@ -136,8 +146,8 @@ export const mockCategories: Category[] = [
     image: 'https://picsum.photos/id/1025/100/100',
     order: 2,
     isActive: true,
-    createdAt: '2023-01-10T10:12:00Z',
-    updatedAt: '2023-01-10T10:12:00Z',
+    createdAt: daysAgo(364),
+    updatedAt: daysAgo(364),
     isDeleted: false
   },
 ];
@@ -152,8 +162,8 @@ export const mockSuppliers: Supplier[] = [
     taxCode: "0300123456",
     contactPerson: "Anh Minh",
     note: "Nhà phân phối chính hãng STIHL.",
-    createdAt: "2023-02-15T09:00:00Z",
-    updatedAt: "2023-05-20T14:30:00Z",
+    createdAt: daysAgo(300),
+    updatedAt: daysAgo(60),
     isDeleted: false
   },
   {
@@ -165,8 +175,8 @@ export const mockSuppliers: Supplier[] = [
     taxCode: "0100987654",
     contactPerson: "Chị Lan",
     note: "Chuyên các dòng máy Thụy Điển.",
-    createdAt: "2022-11-20T11:00:00Z",
-    updatedAt: "2023-06-01T10:00:00Z",
+    createdAt: daysAgo(400),
+    updatedAt: daysAgo(50),
     isDeleted: false
   },
   {
@@ -178,8 +188,8 @@ export const mockSuppliers: Supplier[] = [
     taxCode: "0100114842",
     contactPerson: "Anh Hùng",
     note: "Cung cấp động cơ và máy bơm nước.",
-    createdAt: "2023-01-10T09:00:00Z",
-    updatedAt: "2024-05-01T11:00:00Z",
+    createdAt: daysAgo(350),
+    updatedAt: daysAgo(80),
     isDeleted: false
   }
 ];
@@ -207,8 +217,8 @@ export const mockProducts: Product[] = [
     supplierId: "supp-001",
     isActive: true,
     isDeleted: false,
-    createdAt: "2023-03-01T12:00:00Z",
-    updatedAt: "2023-07-15T10:00:00Z",
+    createdAt: daysAgo(200),
+    updatedAt: daysAgo(10),
     hint: 'chainsaw'
   },
   {
@@ -232,8 +242,8 @@ export const mockProducts: Product[] = [
     supplierId: "supp-002",
     isActive: true,
     isDeleted: false,
-    createdAt: "2023-03-05T14:00:00Z",
-    updatedAt: "2023-07-20T11:00:00Z",
+    createdAt: daysAgo(195),
+    updatedAt: daysAgo(5),
     hint: 'brush cutter'
   },
   {
@@ -257,8 +267,8 @@ export const mockProducts: Product[] = [
     supplierId: "supp-001",
     isActive: true,
     isDeleted: false,
-    createdAt: "2023-04-10T09:00:00Z",
-    updatedAt: "2023-07-18T15:00:00Z",
+    createdAt: daysAgo(150),
+    updatedAt: daysAgo(7),
     hint: 'chainsaw bar'
   },
   {
@@ -282,8 +292,8 @@ export const mockProducts: Product[] = [
     supplierId: "supp-002",
     isActive: true,
     isDeleted: false,
-    createdAt: "2023-05-15T11:00:00Z",
-    updatedAt: "2023-07-21T09:30:00Z",
+    createdAt: daysAgo(120),
+    updatedAt: daysAgo(4),
     hint: 'gear head'
   },
   {
@@ -307,8 +317,8 @@ export const mockProducts: Product[] = [
     supplierId: "supp-001",
     isActive: true,
     isDeleted: false,
-    createdAt: "2023-06-20T16:00:00Z",
-    updatedAt: "2023-07-22T14:00:00Z",
+    createdAt: daysAgo(90),
+    updatedAt: daysAgo(3),
     hint: 'cylinder piston'
   },
   {
@@ -332,8 +342,8 @@ export const mockProducts: Product[] = [
     supplierId: "supp-003",
     isActive: true,
     isDeleted: false,
-    createdAt: "2023-02-01T09:00:00Z",
-    updatedAt: "2024-07-10T11:00:00Z",
+    createdAt: daysAgo(250),
+    updatedAt: daysAgo(15),
     hint: 'gasoline engine'
   },
   {
@@ -357,8 +367,8 @@ export const mockProducts: Product[] = [
     supplierId: "supp-001",
     isActive: true,
     isDeleted: false,
-    createdAt: "2023-08-15T10:00:00Z",
-    updatedAt: "2024-06-25T14:00:00Z",
+    createdAt: daysAgo(80),
+    updatedAt: daysAgo(30),
     hint: 'backpack sprayer'
   },
   {
@@ -382,8 +392,8 @@ export const mockProducts: Product[] = [
     supplierId: "supp-001",
     isActive: true,
     isDeleted: false,
-    createdAt: "2023-01-20T11:00:00Z",
-    updatedAt: "2024-07-20T16:00:00Z",
+    createdAt: daysAgo(280),
+    updatedAt: daysAgo(5),
     hint: '2-stroke oil'
   },
   {
@@ -407,8 +417,8 @@ export const mockProducts: Product[] = [
     supplierId: "supp-002",
     isActive: true,
     isDeleted: false,
-    createdAt: "2023-09-01T09:00:00Z",
-    updatedAt: "2024-07-01T10:00:00Z",
+    createdAt: daysAgo(70),
+    updatedAt: daysAgo(25),
     hint: 'professional chainsaw'
   },
   {
@@ -432,8 +442,8 @@ export const mockProducts: Product[] = [
     supplierId: "supp-003",
     isActive: true,
     isDeleted: false,
-    createdAt: "2023-10-10T14:00:00Z",
-    updatedAt: "2024-07-15T11:00:00Z",
+    createdAt: daysAgo(60),
+    updatedAt: daysAgo(10),
     hint: 'water pump'
   },
   {
@@ -457,8 +467,8 @@ export const mockProducts: Product[] = [
     supplierId: "supp-002",
     isActive: true,
     isDeleted: false,
-    createdAt: "2023-01-25T15:00:00Z",
-    updatedAt: "2024-07-21T14:00:00Z",
+    createdAt: daysAgo(270),
+    updatedAt: daysAgo(4),
     hint: 'spark plug'
   },
   {
@@ -482,8 +492,8 @@ export const mockProducts: Product[] = [
     supplierId: "supp-002",
     isActive: true,
     isDeleted: false,
-    createdAt: "2023-04-15T16:00:00Z",
-    updatedAt: "2024-07-22T09:00:00Z",
+    createdAt: daysAgo(140),
+    updatedAt: daysAgo(3),
     hint: 'trimmer line'
   },
   {
@@ -507,8 +517,8 @@ export const mockProducts: Product[] = [
     supplierId: "supp-001",
     isActive: true,
     isDeleted: false,
-    createdAt: "2024-01-10T11:00:00Z",
-    updatedAt: "2024-07-18T10:00:00Z",
+    createdAt: daysAgo(45),
+    updatedAt: daysAgo(7),
     hint: 'heavy-duty chainsaw'
   },
   {
@@ -532,8 +542,8 @@ export const mockProducts: Product[] = [
     supplierId: "supp-002",
     isActive: true,
     isDeleted: false,
-    createdAt: "2024-02-20T10:00:00Z",
-    updatedAt: "2024-07-19T14:00:00Z",
+    createdAt: daysAgo(35),
+    updatedAt: daysAgo(6),
     hint: 'professional brush cutter'
   },
   {
@@ -557,8 +567,8 @@ export const mockProducts: Product[] = [
     supplierId: "supp-001",
     isActive: true,
     isDeleted: false,
-    createdAt: "2024-03-01T13:00:00Z",
-    updatedAt: "2024-07-23T15:00:00Z",
+    createdAt: daysAgo(25),
+    updatedAt: daysAgo(2),
     hint: 'chainsaw chain'
   }
 ];
@@ -576,13 +586,13 @@ export const mockCustomers: Customer[] = [
     note: 'Chuyên canh tác cà phê, mua sỉ.',
     creditLimit: 50000000,
     totalDebt: 15000000,
-    debtDueDate: '2024-08-15T00:00:00Z',
-    lastPurchaseDate: '2024-07-10T00:00:00Z',
+    debtDueDate: daysFromNow(20),
+    lastPurchaseDate: daysAgo(15),
     loyaltyPoints: 15200,
     loyaltyTier: 'Gold',
     status: 'Active',
-    createdAt: '2022-03-15T00:00:00Z',
-    updatedAt: '2024-07-10T00:00:00Z',
+    createdAt: daysAgo(700),
+    updatedAt: daysAgo(15),
     isDeleted: false
   },
   { 
@@ -597,12 +607,12 @@ export const mockCustomers: Customer[] = [
     creditLimit: 0,
     totalDebt: 0,
     debtDueDate: null,
-    lastPurchaseDate: '2024-07-20T00:00:00Z',
+    lastPurchaseDate: daysAgo(5),
     loyaltyPoints: 5800,
     loyaltyTier: 'Silver',
     status: 'Active',
-    createdAt: '2023-05-20T00:00:00Z',
-    updatedAt: '2024-07-20T00:00:00Z',
+    createdAt: daysAgo(400),
+    updatedAt: daysAgo(5),
     isDeleted: false
   },
   { 
@@ -616,13 +626,13 @@ export const mockCustomers: Customer[] = [
     note: 'Mua máy phun thuốc và vật tư định kỳ.',
     creditLimit: 20000000,
     totalDebt: 5500000,
-    debtDueDate: '2024-09-01T00:00:00Z',
-    lastPurchaseDate: '2024-07-15T00:00:00Z',
+    debtDueDate: daysFromNow(45),
+    lastPurchaseDate: daysAgo(10),
     loyaltyPoints: 8900,
     loyaltyTier: 'Silver',
     status: 'Active',
-    createdAt: '2023-08-01T00:00:00Z',
-    updatedAt: '2024-07-15T00:00:00Z',
+    createdAt: daysAgo(360),
+    updatedAt: daysAgo(10),
     isDeleted: false
   },
   { 
@@ -637,12 +647,12 @@ export const mockCustomers: Customer[] = [
     creditLimit: 0,
     totalDebt: 0,
     debtDueDate: null,
-    lastPurchaseDate: '2024-06-30T00:00:00Z',
+    lastPurchaseDate: daysAgo(25),
     loyaltyPoints: 2300,
     loyaltyTier: 'Bronze',
     status: 'Active',
-    createdAt: '2022-10-10T00:00:00Z',
-    updatedAt: '2024-06-30T00:00:00Z',
+    createdAt: daysAgo(600),
+    updatedAt: daysAgo(25),
     isDeleted: false
   },
   { 
@@ -656,13 +666,13 @@ export const mockCustomers: Customer[] = [
     note: 'Đối tác lớn, yêu cầu xuất hóa đơn VAT.',
     creditLimit: 100000000,
     totalDebt: 45800000,
-    debtDueDate: '2024-08-20T00:00:00Z',
-    lastPurchaseDate: '2024-07-22T00:00:00Z',
+    debtDueDate: daysFromNow(25),
+    lastPurchaseDate: daysAgo(3),
     loyaltyPoints: 45000,
     loyaltyTier: 'Diamond',
     status: 'Active',
-    createdAt: '2023-11-05T00:00:00Z',
-    updatedAt: '2024-07-22T00:00:00Z',
+    createdAt: daysAgo(300),
+    updatedAt: daysAgo(3),
     isDeleted: false
   },
   { 
@@ -677,12 +687,12 @@ export const mockCustomers: Customer[] = [
     creditLimit: 0,
     totalDebt: 0,
     debtDueDate: null,
-    lastPurchaseDate: '2024-05-18T00:00:00Z',
+    lastPurchaseDate: daysAgo(60),
     loyaltyPoints: 1200,
     loyaltyTier: 'Bronze',
     status: 'Active',
-    createdAt: '2024-01-15T00:00:00Z',
-    updatedAt: '2024-05-18T00:00:00Z',
+    createdAt: daysAgo(200),
+    updatedAt: daysAgo(60),
     isDeleted: false
   },
   { 
@@ -697,12 +707,12 @@ export const mockCustomers: Customer[] = [
     creditLimit: 10000000,
     totalDebt: 0,
     debtDueDate: null,
-    lastPurchaseDate: '2024-07-05T00:00:00Z',
+    lastPurchaseDate: daysAgo(20),
     loyaltyPoints: 750,
     loyaltyTier: 'Bronze',
     status: 'Inactive',
-    createdAt: '2023-06-25T00:00:00Z',
-    updatedAt: '2024-07-05T00:00:00Z',
+    createdAt: daysAgo(380),
+    updatedAt: daysAgo(20),
     isDeleted: false
   }
 ];
@@ -711,7 +721,7 @@ export const mockCustomers: Customer[] = [
 export const mockOrders: Order[] = [
   { 
     orderId: 'ord-001', 
-    orderCode: 'DH20240725001',
+    orderCode: `DH${new Date(daysAgo(1)).toISOString().slice(2, 10).replace(/-/g, '')}001`,
     customerId: 'cust-001',
     totalAmount: 2800000,
     discountAmount: 0,
@@ -725,12 +735,12 @@ export const mockOrders: Order[] = [
     deliveryStatus: 'Completed',
     note: 'Khách lấy tại cửa hàng',
     processedByUserId: 'user-001',
-    createdAt: '2024-07-25T10:30:00Z',
-    updatedAt: '2024-07-26T14:00:00Z'
+    createdAt: daysAgo(1),
+    updatedAt: daysAgo(0)
   },
   { 
     orderId: 'ord-002', 
-    orderCode: 'DH20240724005',
+    orderCode: `DH${new Date(daysAgo(2)).toISOString().slice(2, 10).replace(/-/g, '')}005`,
     customerId: 'cust-002',
     totalAmount: 4500000,
     discountAmount: 0,
@@ -744,12 +754,12 @@ export const mockOrders: Order[] = [
     deliveryStatus: 'N/A',
     note: null,
     processedByUserId: 'user-002',
-    createdAt: '2024-07-24T15:00:00Z',
-    updatedAt: '2024-07-24T15:05:00Z'
+    createdAt: daysAgo(2),
+    updatedAt: daysAgo(2)
   },
   { 
     orderId: 'ord-003', 
-    orderCode: 'DH20240723002',
+    orderCode: `DH${new Date(daysAgo(3)).toISOString().slice(2, 10).replace(/-/g, '')}002`,
     customerId: 'cust-001',
     totalAmount: 9000000,
     discountAmount: 500000,
@@ -758,17 +768,17 @@ export const mockOrders: Order[] = [
     paymentType: 'Installment',
     paymentDetails: 'Trả góp 3 tháng',
     status: 'Pending',
-    expectedDeliveryDate: '2024-08-01T00:00:00Z',
+    expectedDeliveryDate: daysFromNow(7),
     deliveryAddress: 'Thôn 1, Xã E-Kmat, TP. Buôn Ma Thuột, Đắk Lắk',
     deliveryStatus: 'Processing',
     note: 'Hẹn lịch giao hàng trước 1 ngày',
     processedByUserId: 'user-001',
-    createdAt: '2024-07-23T09:00:00Z',
-    updatedAt: '2024-07-23T09:00:00Z'
+    createdAt: daysAgo(3),
+    updatedAt: daysAgo(3)
   },
   { 
     orderId: 'ord-004', 
-    orderCode: 'DH20240722010',
+    orderCode: `DH${new Date(daysAgo(4)).toISOString().slice(2, 10).replace(/-/g, '')}010`,
     customerId: 'cust-005',
     totalAmount: 250000,
     discountAmount: 0,
@@ -777,17 +787,17 @@ export const mockOrders: Order[] = [
     paymentType: 'Credit',
     paymentDetails: 'Ghi nợ',
     status: 'Cancelled',
-    expectedDeliveryDate: '2024-07-23T00:00:00Z',
+    expectedDeliveryDate: daysFromNow(1),
     deliveryAddress: '258 Nguyễn Thị Minh Khai, Quận 3, TP.HCM',
     deliveryStatus: 'Cancelled',
     note: 'Khách hàng báo hủy do đổi ý.',
     processedByUserId: 'user-002',
-    createdAt: '2024-07-22T11:45:00Z',
-    updatedAt: '2024-07-22T16:00:00Z'
+    createdAt: daysAgo(4),
+    updatedAt: daysAgo(4)
   },
   { 
     orderId: 'ord-005', 
-    orderCode: 'DH20241215001',
+    orderCode: `DH${new Date(daysAgo(10)).toISOString().slice(2, 10).replace(/-/g, '')}001`,
     customerId: 'cust-005',
     totalAmount: 58500000,
     discountAmount: 1000000,
@@ -796,17 +806,17 @@ export const mockOrders: Order[] = [
     paymentType: 'Card',
     paymentDetails: 'Visa **** 1234 - Đã thanh toán',
     status: 'Pending',
-    expectedDeliveryDate: '2024-12-20T10:00:00Z',
+    expectedDeliveryDate: daysFromNow(5),
     deliveryAddress: '123 Đường Lê Lợi, Quận 1, TP.HCM',
     deliveryStatus: 'Processing',
     note: 'Giao hàng trong giờ hành chính',
     processedByUserId: 'user-002',
-    createdAt: '2024-12-15T09:00:00Z',
-    updatedAt: '2024-12-15T09:00:00Z'
+    createdAt: daysAgo(10),
+    updatedAt: daysAgo(10)
   },
   { 
     orderId: 'ord-006', 
-    orderCode: 'DH20240610003',
+    orderCode: `DH${new Date(daysAgo(45)).toISOString().slice(2, 10).replace(/-/g, '')}003`,
     customerId: 'cust-003',
     totalAmount: 10500000,
     discountAmount: 0,
@@ -820,8 +830,8 @@ export const mockOrders: Order[] = [
     deliveryStatus: 'Completed',
     note: 'Khách quen',
     processedByUserId: 'user-001',
-    createdAt: '2024-06-10T11:20:00Z',
-    updatedAt: '2024-06-11T16:00:00Z'
+    createdAt: daysAgo(45),
+    updatedAt: daysAgo(44)
   },
 ];
 
@@ -861,38 +871,36 @@ export const mockOrderItems: OrderItem[] = [
 export const mockInstallmentTerms: InstallmentTerm[] = [
   {
     installmentTermId: 'inst-001', orderId: 'ord-003', installmentNumber: 1,
-    dueDate: '2024-08-23T00:00:00Z', amount: 2000000,
+    dueDate: monthsFromNow(1), amount: 2000000,
     paidAt: null, paymentMethod: null, isLate: false, note: 'Kỳ đầu tiên',
-    collectedByUserId: null, createdAt: '2024-07-23T09:00:00Z', updatedAt: '2024-07-23T09:00:00Z',
+    collectedByUserId: null, createdAt: daysAgo(3), updatedAt: daysAgo(3),
   },
   {
     installmentTermId: 'inst-002', orderId: 'ord-003', installmentNumber: 2,
-    dueDate: '2024-09-23T00:00:00Z', amount: 2000000,
+    dueDate: monthsFromNow(2), amount: 2000000,
     paidAt: null, paymentMethod: null, isLate: false, note: null,
-    collectedByUserId: null, createdAt: '2024-07-23T09:00:00Z', updatedAt: '2024-07-23T09:00:00Z',
+    collectedByUserId: null, createdAt: daysAgo(3), updatedAt: daysAgo(3),
   },
   {
     installmentTermId: 'inst-003', orderId: 'ord-003', installmentNumber: 3,
-    dueDate: '2024-10-23T00:00:00Z', amount: 2000000,
+    dueDate: monthsFromNow(3), amount: 2000000,
     paidAt: null, paymentMethod: null, isLate: false, note: null,
-    collectedByUserId: null, createdAt: '2024-07-23T09:00:00Z', updatedAt: '2024-07-23T09:00:00Z',
+    collectedByUserId: null, createdAt: daysAgo(3), updatedAt: daysAgo(3),
   },
 ];
 
-export const mockChartData = [
-    { month: 'Thg 1', revenue: 12000000 },
-    { month: 'Thg 2', revenue: 15500000 },
-    { month: 'Thg 3', revenue: 13200000 },
-    { month: 'Thg 4', revenue: 18900000 },
-    { month: 'Thg 5', revenue: 21300000 },
-    { month: 'Thg 6', revenue: 24500000 },
-    { month: 'Thg 7', revenue: 30100000 },
-    { month: 'Thg 8', revenue: 28700000 },
-    { month: 'Thg 9', revenue: 25000000 },
-    { month: 'Thg 10', revenue: 31500000 },
-    { month: 'Thg 11', revenue: 35800000 },
-    { month: 'Thg 12', revenue: 45200000 },
-];
+export const mockChartData = (() => {
+    const data = [];
+    const today = new Date();
+    for (let i = 11; i >= 0; i--) {
+        const d = new Date(today.getFullYear(), today.getMonth() - i, 1);
+        const monthName = d.toLocaleString('vi-VN', { month: 'short' });
+        const revenue = Math.floor(Math.random() * (45000000 - 10000000 + 1)) + 10000000;
+        data.push({ month: monthName.charAt(0).toUpperCase() + monthName.slice(1), revenue });
+    }
+    return data;
+})();
+
 
 export const mockBanks: Bank[] = [
     { bankId: 'VIETCOMBANK', name: 'Vietcombank (VCB)' },
@@ -910,68 +918,68 @@ export const mockBanks: Bank[] = [
 export const mockPurchaseOrders: PurchaseOrder[] = [
     {
       purchaseOrderId: 'po-001',
-      orderCode: 'PN20240726001',
+      orderCode: `PN${new Date(daysAgo(10)).toISOString().slice(2, 10).replace(/-/g, '')}001`,
       supplierId: 'supp-001',
       totalAmount: 21000000,
       status: 'received',
-      expectedDeliveryDate: '2024-07-30T00:00:00Z',
-      receivedDate: '2024-07-29T00:00:00Z',
+      expectedDeliveryDate: daysAgo(5),
+      receivedDate: daysAgo(6),
       note: 'Nhập máy cưa STIHL.',
       createdByUserId: 'user-001',
-      createdAt: '2024-07-26T09:00:00Z',
-      updatedAt: '2024-07-29T10:00:00Z',
+      createdAt: daysAgo(10),
+      updatedAt: daysAgo(6),
     },
     {
       purchaseOrderId: 'po-002',
-      orderCode: 'PN20240728001',
+      orderCode: `PN${new Date(daysAgo(5)).toISOString().slice(2, 10).replace(/-/g, '')}001`,
       supplierId: 'supp-002',
       totalAmount: 35000000,
       status: 'ordered',
-      expectedDeliveryDate: '2024-08-05T00:00:00Z',
+      expectedDeliveryDate: daysFromNow(5),
       receivedDate: null,
       note: 'Nhập máy cắt cỏ Husqvarna.',
       createdByUserId: 'user-001',
-      createdAt: '2024-07-28T14:00:00Z',
-      updatedAt: '2024-07-28T14:00:00Z',
+      createdAt: daysAgo(5),
+      updatedAt: daysAgo(5),
     },
     {
       purchaseOrderId: 'po-003',
-      orderCode: 'PN20240729001',
+      orderCode: `PN${new Date(daysAgo(3)).toISOString().slice(2, 10).replace(/-/g, '')}001`,
       supplierId: 'supp-001',
       totalAmount: 4000000,
       status: 'pending',
-      expectedDeliveryDate: '2024-08-10T00:00:00Z',
+      expectedDeliveryDate: daysFromNow(10),
       receivedDate: null,
       note: 'Nhập phụ tùng STIHL.',
       createdByUserId: 'user-002',
-      createdAt: '2024-07-29T11:00:00Z',
-      updatedAt: '2024-07-29T11:00:00Z',
+      createdAt: daysAgo(3),
+      updatedAt: daysAgo(3),
     },
      {
       purchaseOrderId: 'po-004',
-      orderCode: 'PN20240720001',
+      orderCode: `PN${new Date(daysAgo(15)).toISOString().slice(2, 10).replace(/-/g, '')}001`,
       supplierId: 'supp-002',
       totalAmount: 15000000,
       status: 'cancelled',
-      expectedDeliveryDate: '2024-07-25T00:00:00Z',
+      expectedDeliveryDate: daysAgo(10),
       receivedDate: null,
       note: 'Hủy do thay đổi kế hoạch.',
       createdByUserId: 'user-002',
-      createdAt: '2024-07-20T11:00:00Z',
-      updatedAt: '2024-07-21T11:00:00Z',
+      createdAt: daysAgo(15),
+      updatedAt: daysAgo(14),
     },
     {
         purchaseOrderId: 'po-005',
-        orderCode: 'PN20240615001',
+        orderCode: `PN${new Date(daysAgo(40)).toISOString().slice(2, 10).replace(/-/g, '')}001`,
         supplierId: 'supp-003',
         totalAmount: 84000000,
         status: 'received',
-        expectedDeliveryDate: '2024-06-20T00:00:00Z',
-        receivedDate: '2024-06-20T10:00:00Z',
+        expectedDeliveryDate: daysAgo(35),
+        receivedDate: daysAgo(35),
         note: 'Nhập 30 động cơ Honda GX160',
         createdByUserId: 'user-001',
-        createdAt: '2024-06-15T08:00:00Z',
-        updatedAt: '2024-06-20T10:00:00Z',
+        createdAt: daysAgo(40),
+        updatedAt: daysAgo(35),
     }
   ];
   
@@ -1036,7 +1044,7 @@ export const mockStockAdjustments: StockAdjustment[] = [
     quantityChange: -1,
     reason: 'Hàng mẫu bị hư hỏng khi trưng bày',
     adjustedByUserId: 'user-001',
-    createdAt: '2024-07-30T10:00:00Z',
+    createdAt: daysAgo(1),
   },
   {
     stockAdjustmentId: 'adj-002',
@@ -1045,7 +1053,7 @@ export const mockStockAdjustments: StockAdjustment[] = [
     quantityChange: -2,
     reason: 'Thất thoát do đổ vỡ',
     adjustedByUserId: 'user-002',
-    createdAt: '2024-06-05T15:00:00Z',
+    createdAt: daysAgo(50),
   },
   {
     stockAdjustmentId: 'adj-003',
@@ -1054,7 +1062,7 @@ export const mockStockAdjustments: StockAdjustment[] = [
     quantityChange: 5,
     reason: 'Kiểm kho cuối tháng, tìm thấy hàng thất lạc',
     adjustedByUserId: 'user-001',
-    createdAt: '2024-05-31T17:00:00Z',
+    createdAt: daysAgo(60),
   }
 ];
 
@@ -1063,25 +1071,25 @@ export const mockReturnOrders: ReturnOrder[] = [
         returnOrderId: 'ret-001',
         orderId: 'ord-001',
         customerId: 'cust-001',
-        returnDate: '2024-07-28T11:00:00Z',
+        returnDate: daysAgo(2),
         totalRefundAmount: 2800000,
         reason: 'Khách đổi ý, muốn mua sản phẩm khác.',
         status: 'refunded',
         processedByUserId: 'user-002',
-        createdAt: '2024-07-28T10:45:00Z',
-        updatedAt: '2024-07-28T11:30:00Z',
+        createdAt: daysAgo(2),
+        updatedAt: daysAgo(2),
     },
     {
         returnOrderId: 'ret-002',
         orderId: 'ord-002',
         customerId: 'cust-002',
-        returnDate: '2024-07-26T10:00:00Z',
+        returnDate: daysAgo(1),
         totalRefundAmount: 4500000,
         reason: 'Sản phẩm lỗi kỹ thuật, không khởi động được.',
         status: 'pending',
         processedByUserId: 'user-001',
-        createdAt: '2024-07-26T09:30:00Z',
-        updatedAt: '2024-07-26T09:30:00Z',
+        createdAt: daysAgo(1),
+        updatedAt: daysAgo(1),
     }
 ];
 
@@ -1112,7 +1120,7 @@ export const mockNotifications: Notification[] = [];
 const staticGeneration = () => {
     if (mockNotifications.length > 0) return; // Only generate once
 
-    const baseDate = new Date('2024-07-26T10:00:00Z');
+    const baseDate = new Date();
 
     // Inventory warnings
     const lowStockProducts = mockProducts.filter(p => p.stock > 0 && p.stock <= p.minStockLevel);
