@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
@@ -369,10 +368,10 @@ export default function ProductsPage() {
                     <TableHead className="hidden w-[64px] sm:table-cell">
                       <span className="sr-only">Ảnh</span>
                     </TableHead>
-                    <TableHead>Tên</TableHead>
+                    <TableHead>Tên sản phẩm</TableHead>
+                    <TableHead className="hidden md:table-cell">Thương hiệu</TableHead>
                     <TableHead className="text-right">Giá bán lẻ</TableHead>
                     <TableHead className="hidden lg:table-cell text-right">Giá sỉ</TableHead>
-                    <TableHead className="hidden lg:table-cell text-right">Giá ghi nợ</TableHead>
                     <TableHead className="hidden md:table-cell text-center">Tồn kho</TableHead>
                     <TableHead>
                       <span className="sr-only">Hành động</span>
@@ -393,11 +392,12 @@ export default function ProductsPage() {
                         />
                       </TableCell>
                       <TableCell className="font-medium">
-                        {product.name}
+                        <div>{product.name}</div>
+                        <div className="text-xs text-muted-foreground">{product.product_code}</div>
                       </TableCell>
+                      <TableCell className="hidden md:table-cell">{product.brand}</TableCell>
                       <TableCell className="text-right">{formatCurrency(product.price)}</TableCell>
                       <TableCell className="hidden lg:table-cell text-right">{formatCurrency(product.wholesale_price)}</TableCell>
-                      <TableCell className="hidden lg:table-cell text-right">{formatCurrency(product.credit_price)}</TableCell>
                       <TableCell className="hidden md:table-cell text-center">
                         {product.stock <= 0 ? (
                             <Badge variant="destructive">Hết hàng</Badge>
