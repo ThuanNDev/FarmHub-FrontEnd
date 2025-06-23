@@ -328,9 +328,9 @@ export default function OrderDetailPage() {
   const getStatusVariant = (status: string) => {
     switch (status) {
       case 'Delivered':
-        return 'default';
+        return 'info';
       case 'Pending':
-        return 'secondary';
+        return 'warning';
       case 'Cancelled':
         return 'destructive';
       default:

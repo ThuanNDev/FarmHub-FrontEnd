@@ -90,9 +90,9 @@ export default function OrdersPage() {
   const getStatusVariant = (status: string) => {
     switch (status) {
       case 'Delivered':
-        return 'default';
+        return 'info';
       case 'Pending':
-        return 'secondary';
+        return 'warning';
       case 'Cancelled':
         return 'destructive';
       default:
@@ -379,13 +379,13 @@ export default function OrdersPage() {
             <TabsTrigger value="all">{t('pages.orders.tab_all')}</TabsTrigger>
             <TabsTrigger 
               value="pending"
-              className="data-[state=active]:bg-primary/10 data-[state=active]:text-primary"
+              className="data-[state=active]:bg-warning/80 data-[state=active]:text-warning-foreground"
             >
               {t('pages.orders.tab_pending')}
             </TabsTrigger>
             <TabsTrigger 
               value="delivered"
-              className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+              className="data-[state=active]:bg-info data-[state=active]:text-info-foreground"
             >
               {t('pages.orders.tab_delivered')}
             </TabsTrigger>
