@@ -8,14 +8,14 @@
  * the config exports a function that takes the storeId and returns the URL.
  */
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000/api';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://farmhub-5huw.onrender.com/api';
 
 const tenantUrl = (storeId: string, path: string) => `${API_BASE_URL}/tenant/${storeId}/${path}`;
 
 export const API_URLS = {
     // Global Endpoints (do not require storeId)
     AUTH: {
-        LOGIN: `${API_BASE_URL}/auth/login`,
+        LOGIN: 'https://farmhub-5huw.onrender.com/login', // Use the provided URL directly
         REGISTER: `${API_BASE_URL}/auth/register`,
         VERIFY_OTP: `${API_BASE_URL}/auth/verify-otp`,
         ME: `${API_BASE_URL}/auth/me`,
