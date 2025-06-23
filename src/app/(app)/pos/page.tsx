@@ -1,3 +1,4 @@
+
 'use client';
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import Image from 'next/image';
@@ -52,10 +53,10 @@ const customerSchema = z.object({
   phone: z.string().min(1, "Số điện thoại không được để trống."),
   email: z.string().email("Email không hợp lệ.").optional().or(z.literal('')),
   address: z.string().optional(),
-  tax_code: z.string().optional(),
-  customer_type: z.enum(['Retail', 'Wholesale']),
+  taxCode: z.string().optional(),
+  customerType: z.enum(['Retail', 'Wholesale']),
   note: z.string().optional(),
-  credit_limit: z.coerce.number().min(0).optional(),
+  creditLimit: z.coerce.number().min(0).optional(),
   status: z.enum(['Active', 'Inactive', 'Blocked']),
 });
 
@@ -87,7 +88,7 @@ export default function POSPage() {
   const { store } = useStore();
   const { t } = useLanguage();
 
-  const currentUser = useMemo(() => mockUsers.find(u => u.is_active), []);
+  const currentUser = useMemo(() => mockUsers.find(u => u.isActive), []);
 
   const form = useForm<CustomerFormValues>({
     resolver: zodResolver(customerSchema),
@@ -96,21 +97,21 @@ export default function POSPage() {
       phone: '',
       email: '',
       address: '',
-      tax_code: '',
-      customer_type: 'Retail',
+      taxCode: '',
+      customerType: 'Retail',
       note: '',
-      credit_limit: 0,
+      creditLimit: 0,
       status: 'Active',
     },
   });
 
   const selectedCustomer = useMemo(() => {
     if (selectedCustomerId === 'guest') return null;
-    return customers.find(c => c.id === selectedCustomerId);
+    return customers.find(c => c.customerId === selectedCustomerId);
   }, [selectedCustomerId, customers]);
 
   const filteredCustomersForSearch = useMemo(() => {
-    const activeCustomers = customers.filter(c => !c.is_deleted && c.status === 'Active');
+    const activeCustomers = customers.filter(c => !c.isDeleted && c.status === 'Active');
     if (!customerSearch) return activeCustomers;
     return activeCustomers.filter(c => 
         c.name.toLowerCase().includes(customerSearch.toLowerCase()) || 
@@ -126,8 +127,8 @@ export default function POSPage() {
 
   // Set global price tier based on customer type
   useEffect(() => {
-    const customer = customers.find(c => c.id === selectedCustomerId);
-    const newTier = customer?.customer_type === 'Wholesale' ? 'wholesale' : 'retail';
+    const customer = customers.find(c => c.customerId === selectedCustomerId);
+    const newTier = customer?.customerType === 'Wholesale' ? 'wholesale' : 'retail';
     setGlobalPriceTier(newTier);
   }, [selectedCustomerId, customers]);
 
@@ -142,19 +143,19 @@ export default function POSPage() {
 
   const getPriceByTier = (product: Product, tier: PriceTier): number => {
     switch(tier) {
-      case 'wholesale': return product.wholesale_price || product.price;
-      case 'credit': return product.credit_price || product.price;
+      case 'wholesale': return product.wholesalePrice || product.price;
+      case 'credit': return product.creditPrice || product.price;
       default: return product.price;
     }
   }
 
   const addToCart = (product: Product) => {
     setCart((prevCart) => {
-      const existingItem = prevCart.find((item) => item.id === product.id);
+      const existingItem = prevCart.find((item) => item.productId === product.productId);
       if (existingItem) {
         if (existingItem.quantity < product.stock) {
            return prevCart.map((item) =>
-            item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item
+            item.productId === product.productId ? { ...item, quantity: item.quantity + 1 } : item
           );
         }
         toast({
@@ -182,15 +183,15 @@ export default function POSPage() {
   };
 
   const updateQuantity = (productId: string, newQuantity: number) => {
-    const product = products.find(p => p.id === productId);
+    const product = products.find(p => p.productId === productId);
     if (!product) return;
 
     if (newQuantity <= 0) {
-      setCart((prevCart) => prevCart.filter((item) => item.id !== productId));
+      setCart((prevCart) => prevCart.filter((item) => item.productId !== productId));
     } else if (newQuantity <= product.stock) {
       setCart((prevCart) =>
         prevCart.map((item) =>
-          item.id === productId ? { ...item, quantity: newQuantity } : item
+          item.productId === productId ? { ...item, quantity: newQuantity } : item
         )
       );
     }
@@ -203,8 +204,8 @@ export default function POSPage() {
 
   const handleAddNewCustomer = () => {
     form.reset({
-      name: '', phone: '', email: '', address: '', tax_code: '', 
-      customer_type: 'Retail', note: '', credit_limit: 0, status: 'Active'
+      name: '', phone: '', email: '', address: '', taxCode: '', 
+      customerType: 'Retail', note: '', creditLimit: 0, status: 'Active'
     });
     setAddCustomerDialogOpen(true);
   };
@@ -212,19 +213,19 @@ export default function POSPage() {
   const onCustomerSubmit = (values: CustomerFormValues) => {
     const now = new Date().toISOString();
     const newCustomer: Customer = {
-      id: `cust-${Math.floor(1000 + Math.random() * 9000)}`,
+      customerId: `cust-${Math.floor(1000 + Math.random() * 9000)}`,
       ...values,
-      total_debt: 0,
-      debt_due_date: null,
-      last_purchase_date: null,
-      loyalty_points: 0,
-      loyalty_tier: 'Bronze',
-      created_at: now,
-      updated_at: now,
-      is_deleted: false,
-      credit_limit: values.credit_limit || null,
+      totalDebt: 0,
+      debtDueDate: null,
+      lastPurchaseDate: null,
+      loyaltyPoints: 0,
+      loyaltyTier: 'Bronze',
+      createdAt: now,
+      updatedAt: now,
+      isDeleted: false,
+      creditLimit: values.creditLimit || null,
       address: values.address || null,
-      tax_code: values.tax_code || null,
+      taxCode: values.taxCode || null,
       note: values.note || null,
     };
     setCustomers(prev => [newCustomer, ...prev]);
@@ -261,48 +262,48 @@ export default function POSPage() {
     }
 
     const newOrder: (typeof mockOrders)[0] = {
-      id: `ord-${now.getTime()}`,
-      order_code: newOrderCode,
-      customer_id: selectedCustomerId,
-      total_amount: totalWithVat,
-      discount_amount: discount,
-      shipping_fee: 0, 
-      total_paid: finalAmountPaid,
-      payment_type: paymentMethod as any,
-      payment_details: `Thanh toán tại POS bằng ${paymentMethod}`,
+      orderId: `ord-${now.getTime()}`,
+      orderCode: newOrderCode,
+      customerId: selectedCustomerId,
+      totalAmount: totalWithVat,
+      discountAmount: discount,
+      shippingFee: 0, 
+      totalPaid: finalAmountPaid,
+      paymentType: paymentMethod as any,
+      paymentDetails: `Thanh toán tại POS bằng ${paymentMethod}`,
       status: 'Delivered' as const,
-      expected_delivery_date: null,
-      delivery_address: deliveryAddress,
-      delivery_status: deliveryAddress ? 'Processing' as const : 'Completed' as const,
+      expectedDeliveryDate: null,
+      deliveryAddress: deliveryAddress,
+      deliveryStatus: deliveryAddress ? 'Processing' as const : 'Completed' as const,
       note: 'Đơn hàng tạo tại POS',
-      processed_by_user_id: currentUser.id,
-      created_at: now.toISOString(),
-      updated_at: now.toISOString(),
+      processedByUserId: currentUser.userId,
+      createdAt: now.toISOString(),
+      updatedAt: now.toISOString(),
     };
 
     mockOrders.unshift(newOrder);
     
     cart.forEach(item => {
       const newOrderItem = {
-        id: `item-${newOrder.id}-${item.id}`,
-        order_id: newOrder.id,
-        product_id: item.id,
-        product_name: item.name,
-        product_unit: item.unit,
+        orderItemId: `item-${newOrder.orderId}-${item.productId}`,
+        orderId: newOrder.orderId,
+        productId: item.productId,
+        productName: item.name,
+        productUnit: item.unit,
         quantity: item.quantity,
-        unit_price: item.appliedPrice,
-        total_price: item.appliedPrice * item.quantity,
+        unitPrice: item.appliedPrice,
+        totalPrice: item.appliedPrice * item.quantity,
       };
       mockOrderItems.push(newOrderItem);
       
-      const productInDb = mockProducts.find(p => p.id === item.id);
+      const productInDb = mockProducts.find(p => p.productId === item.productId);
       if (productInDb) {
         productInDb.stock -= item.quantity;
       }
     });
 
     if (remaining > 0 && selectedCustomer) {
-      const customerInDb = mockCustomers.find(c => c.id === selectedCustomer.id);
+      const customerInDb = mockCustomers.find(c => c.customerId === selectedCustomer.customerId);
       if (customerInDb) {
         if (paymentMethod === 'Installment') {
             const termCount = 3; 
@@ -311,25 +312,25 @@ export default function POSPage() {
               const dueDate = new Date(now);
               dueDate.setMonth(dueDate.getMonth() + i);
               const newTerm: (typeof mockInstallmentTerms)[0] = {
-                  id: `inst-${newOrder.id}-${i}`,
-                  order_id: newOrder.id,
-                  installment_number: i,
-                  due_date: dueDate.toISOString(),
+                  installmentTermId: `inst-${newOrder.orderId}-${i}`,
+                  orderId: newOrder.orderId,
+                  installmentNumber: i,
+                  dueDate: dueDate.toISOString(),
                   amount: amountPerTerm,
-                  paid_at: null,
-                  payment_method: null,
-                  is_late: false,
+                  paidAt: null,
+                  paymentMethod: null,
+                  isLate: false,
                   note: `Kỳ ${i}/${termCount}`,
-                  collected_by_user_id: null,
-                  created_at: now.toISOString(),
+                  collectedByUserId: null,
+                  createdAt: now.toISOString(),
                   updatedAt: now.toISOString(),
               };
               mockInstallmentTerms.push(newTerm);
             }
             description += t('pos.success_installment', { amount: formatCurrency(remaining), count: termCount });
         } else {
-            customerInDb.total_debt += remaining;
-            customerInDb.last_purchase_date = now.toISOString();
+            customerInDb.totalDebt += remaining;
+            customerInDb.lastPurchaseDate = now.toISOString();
             description += t('pos.success_on_credit', { amount: formatCurrency(remaining), name: selectedCustomer.name });
         }
       }
@@ -355,9 +356,9 @@ export default function POSPage() {
   }, [subtotal, discount]);
 
   const vatAmount = useMemo(() => {
-    if (!store.is_vat_enabled || !store.vat_rate) return 0;
-    return total * (store.vat_rate / 100);
-  }, [total, store.is_vat_enabled, store.vat_rate]);
+    if (!store.isVatEnabled || !store.vatRate) return 0;
+    return total * (store.vatRate / 100);
+  }, [total, store.isVatEnabled, store.vatRate]);
 
   const totalWithVat = useMemo(() => {
     return total + vatAmount;
@@ -386,7 +387,7 @@ export default function POSPage() {
     const invoiceDate = new Date().toLocaleDateString('vi-VN');
     const orderCode = `HD${Date.now().toString().slice(-6)}`;
   
-    const vatRate = store.is_vat_enabled ? (store.vat_rate || 0) : 0;
+    const vatRate = store.isVatEnabled ? (store.vatRate || 0) : 0;
   
     const itemsHtml = cart.map(item => `
       <tr class="item">
@@ -398,25 +399,25 @@ export default function POSPage() {
       </tr>
     `).join('');
   
-    const vatHtml = store.is_vat_enabled && vatRate > 0 ? `
+    const vatHtml = store.isVatEnabled && vatRate > 0 ? `
       <div class="row">
         <span>VAT (${vatRate}%):</span>
         <span>${formatCurrency(vatAmount)}</span>
       </div>
     ` : '';
   
-    const invoiceFooterHtml = store.invoice_footer
-      ? `<p>${store.invoice_footer.replace(/\n/g, '<br>')}</p>`
+    const invoiceFooterHtml = store.invoiceFooter
+      ? `<p>${store.invoiceFooter.replace(/\n/g, '<br>')}</p>`
       : `<p>Cảm ơn quý khách và hẹn gặp lại!</p>`;
   
     let qrCodeHtml = '';
-    if (paymentMethod === 'Transfer' && store?.bank_info && totalWithVat > 0) {
+    if (paymentMethod === 'Transfer' && store?.bankInfo && totalWithVat > 0) {
         const params = new URLSearchParams({
             amount: totalWithVat.toString(),
             addInfo: `Thanh toan don hang ${orderCode}`,
-            accountName: store.bank_info.account_name,
+            accountName: store.bankInfo.accountName,
         });
-        const url = `https://img.vietqr.io/image/${store.bank_info.bank_id}-${store.bank_info.account_no}-print.png?${params.toString()}`;
+        const url = `https://img.vietqr.io/image/${store.bankInfo.bankId}-${store.bankInfo.accountNo}-print.png?${params.toString()}`;
         qrCodeHtml = `
             <div class="qr-code" style="text-align: center; margin-top: 15px;">
                 <p style="font-weight: bold; margin-bottom: 5px; font-size: 9pt;">Quét mã QR để thanh toán</p>
@@ -543,7 +544,7 @@ export default function POSPage() {
               <p><strong>Ngày:</strong> ${invoiceDate}</p>
               <p><strong>Khách hàng:</strong> ${selectedCustomer?.name || t('pos.guest')}</p>
               ${selectedCustomer ? `<p><strong>SĐT:</strong> ${selectedCustomer.phone}</p>` : ''}
-              <p><strong>Nhân viên:</strong> ${currentUser?.full_name || 'N/A'}</p>
+              <p><strong>Nhân viên:</strong> ${currentUser?.fullName || 'N/A'}</p>
               <p><strong>Thanh toán:</strong> ${t(`pos.${paymentMethod.toLowerCase()}`)}</p>
             </div>
 
@@ -628,14 +629,14 @@ export default function POSPage() {
   useEffect(() => {
     if (isPaymentDialogOpen) {
       const storeInfo = mockStores[0];
-      if (paymentMethod === 'Transfer' && storeInfo?.bank_info && totalWithVat > 0) {
+      if (paymentMethod === 'Transfer' && storeInfo?.bankInfo && totalWithVat > 0) {
         const orderCode = `DH${Date.now().toString().slice(-6)}`;
         const params = new URLSearchParams({
           amount: totalWithVat.toString(),
           addInfo: `Thanh toan don hang ${orderCode}`,
-          accountName: storeInfo.bank_info.account_name,
+          accountName: storeInfo.bankInfo.accountName,
         });
-        const url = `https://img.vietqr.io/image/${storeInfo.bank_info.bank_id}-${storeInfo.bank_info.account_no}-print.png?${params.toString()}`;
+        const url = `https://img.vietqr.io/image/${storeInfo.bankInfo.bankId}-${storeInfo.bankInfo.accountNo}-print.png?${params.toString()}`;
         setQrCodeUrl(url);
       } else {
         setQrCodeUrl('');
@@ -659,18 +660,18 @@ export default function POSPage() {
     };
   }, [isPaymentDialogOpen, handleQuickPrint]);
 
-  const categories = mockCategories.filter(c => !c.is_deleted && c.is_active);
-  const products = mockProducts.filter(p => !p.is_deleted && p.is_active);
+  const categories = mockCategories.filter(c => !c.isDeleted && c.isActive);
+  const products = mockProducts.filter(p => !p.isDeleted && p.isActive);
   
   const filteredProducts = useMemo(() => {
     let result = products;
     if (activeCategory) {
-      result = result.filter(p => p.category_id === activeCategory);
+      result = result.filter(p => p.categoryId === activeCategory);
     }
     if (searchTerm) {
       result = result.filter(p => 
         p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        p.product_code.toLowerCase().includes(searchTerm.toLowerCase())
+        p.productCode.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
     return result;
@@ -715,7 +716,7 @@ export default function POSPage() {
             </div>
             <div className="hidden items-center gap-2 text-sm font-medium md:flex">
               <User className="h-5 w-5 text-muted-foreground" />
-              <span>{currentUser?.full_name || 'Nhân viên'}</span>
+              <span>{currentUser?.fullName || 'Nhân viên'}</span>
             </div>
           </header>
           <main className="flex flex-1 flex-col gap-4 rounded-lg bg-background p-4 shadow-sm">
@@ -723,14 +724,14 @@ export default function POSPage() {
                   <TabsList>
                       <TabsTrigger value="all">{t('pos.all_categories')}</TabsTrigger>
                       {categories.map(cat => (
-                      <TabsTrigger key={cat.id} value={cat.id}>{cat.name}</TabsTrigger>
+                      <TabsTrigger key={cat.categoryId} value={cat.categoryId}>{cat.name}</TabsTrigger>
                       ))}
                   </TabsList>
                   <ScrollArea className="mt-4 h-[calc(100vh-200px)]">
                     <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 pr-4">
                       {filteredProducts.map((product) => (
                         <Card
-                          key={product.id}
+                          key={product.productId}
                           className="overflow-hidden transition-all hover:shadow-lg cursor-pointer group"
                           onClick={() => addToCart(product)}
                         >
@@ -781,7 +782,7 @@ export default function POSPage() {
                                     {t('pos.guest')}
                                 </Button>
                                 {filteredCustomersForSearch.map(customer => (
-                                    <Button key={customer.id} variant="ghost" className="w-full justify-start font-normal h-auto py-2 text-left" onClick={() => { setSelectedCustomerId(customer.id); setCustomerPopoverOpen(false); setCustomerSearch(''); }}>
+                                    <Button key={customer.customerId} variant="ghost" className="w-full justify-start font-normal h-auto py-2 text-left" onClick={() => { setSelectedCustomerId(customer.customerId); setCustomerPopoverOpen(false); setCustomerSearch(''); }}>
                                         <div>
                                             <p>{customer.name}</p>
                                             <p className="text-xs text-muted-foreground">{customer.phone}</p>
@@ -819,28 +820,28 @@ export default function POSPage() {
                   ) : (
                   <div className="grid gap-y-2 p-4">
                       {cart.map((item) => (
-                        <div key={item.id} className="grid grid-cols-12 items-center gap-2 border-b pb-2 last:border-b-0 last:pb-0">
+                        <div key={item.productId} className="grid grid-cols-12 items-center gap-2 border-b pb-2 last:border-b-0 last:pb-0">
                           <div className="col-span-6">
                               <p className="font-medium text-sm truncate">{item.name}</p>
                               <p className="text-xs text-muted-foreground">{formatCurrency(item.appliedPrice)}</p>
                           </div>
                           <div className="col-span-3 flex items-center justify-center gap-1">
-                              <Button size="icon" variant="outline" className="h-6 w-6" onClick={() => updateQuantity(item.id, item.quantity - 1)}>
+                              <Button size="icon" variant="outline" className="h-6 w-6" onClick={() => updateQuantity(item.productId, item.quantity - 1)}>
                                   <Minus className="h-3 w-3" />
                               </Button>
                               <Input 
                                   type="number" 
                                   value={item.quantity} 
-                                  onChange={(e) => updateQuantity(item.id, parseInt(e.target.value) || 0)}
+                                  onChange={(e) => updateQuantity(item.productId, parseInt(e.target.value) || 0)}
                                   className="h-6 w-10 text-center p-0 border-0 shadow-none focus-visible:ring-0"
                               />
-                              <Button size="icon" variant="outline" className="h-6 w-6" onClick={() => updateQuantity(item.id, item.quantity + 1)}>
+                              <Button size="icon" variant="outline" className="h-6 w-6" onClick={() => updateQuantity(item.productId, item.quantity + 1)}>
                                   <Plus className="h-3 w-3" />
                               </Button>
                           </div>
                           <p className="col-span-2 text-right font-medium text-sm">{formatCurrency(item.appliedPrice * item.quantity)}</p>
                           <div className="col-span-1 flex justify-end">
-                              <Button size="icon" variant="ghost" className="h-6 w-6 text-muted-foreground hover:text-destructive" onClick={() => updateQuantity(item.id, 0)}>
+                              <Button size="icon" variant="ghost" className="h-6 w-6 text-muted-foreground hover:text-destructive" onClick={() => updateQuantity(item.productId, 0)}>
                                   <X className="h-4 w-4" />
                               </Button>
                           </div>
@@ -867,9 +868,9 @@ export default function POSPage() {
                           placeholder="0"
                       />
                   </div>
-                  {store.is_vat_enabled && store.vat_rate > 0 && (
+                  {store.isVatEnabled && store.vatRate > 0 && (
                     <div className="flex justify-between">
-                        <span>{t('pos.vat_rate', { rate: store.vat_rate })}</span>
+                        <span>{t('pos.vat_rate', { rate: store.vatRate })}</span>
                         <span className="font-medium">{formatCurrency(vatAmount)}</span>
                     </div>
                   )}
@@ -943,7 +944,7 @@ export default function POSPage() {
               />
               <FormField
                 control={form.control}
-                name="tax_code"
+                name="taxCode"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>{t('pages.customers.form_tax_code')}</FormLabel>
@@ -954,7 +955,7 @@ export default function POSPage() {
               />
               <FormField
                 control={form.control}
-                name="credit_limit"
+                name="creditLimit"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>{t('pages.customers.form_credit_limit')}</FormLabel>
@@ -965,7 +966,7 @@ export default function POSPage() {
               />
               <FormField
                 control={form.control}
-                name="customer_type"
+                name="customerType"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>{t('pages.customers.form_type')}</FormLabel>

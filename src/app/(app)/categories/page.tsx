@@ -84,16 +84,16 @@ type Category = typeof mockCategories[0];
 const categorySchema = z.object({
   name: z.string().min(1, { message: "Tên thể loại không được để trống." }),
   description: z.string().optional(),
-  ParentCategoryId: z.string().optional(), // Will treat special value as null in submission
+  parentCategoryId: z.string().optional(), // Will treat special value as null in submission
   image: z.string().url({ message: "Vui lòng nhập URL hình ảnh hợp lệ." }).or(z.literal('')).optional(),
   order: z.coerce.number().int().optional(),
-  is_active: z.boolean().default(true),
+  isActive: z.boolean().default(true),
 });
 
 type CategoryFormValues = z.infer<typeof categorySchema>;
 
 export default function CategoriesPage() {
-  const [categories, setCategories] = useState<Category[]>(mockCategories.filter(c => !c.is_deleted));
+  const [categories, setCategories] = useState<Category[]>(mockCategories.filter(c => !c.isDeleted));
   const [searchTerm, setSearchTerm] = useState('');
   const [isAddEditDialogOpen, setAddEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -108,10 +108,10 @@ export default function CategoriesPage() {
     defaultValues: {
       name: '',
       description: '',
-      ParentCategoryId: '',
+      parentCategoryId: '',
       image: '',
       order: 0,
-      is_active: true,
+      isActive: true,
     },
   });
 
@@ -129,19 +129,19 @@ export default function CategoriesPage() {
             form.reset({
                 name: selectedCategory.name,
                 description: selectedCategory.description,
-                ParentCategoryId: selectedCategory.ParentCategoryId || '',
+                parentCategoryId: selectedCategory.parentCategoryId || '',
                 image: selectedCategory.image,
                 order: selectedCategory.order,
-                is_active: selectedCategory.is_active,
+                isActive: selectedCategory.isActive,
             });
         } else {
             form.reset({
                 name: '',
                 description: '',
-                ParentCategoryId: '',
+                parentCategoryId: '',
                 image: '',
                 order: categories.length + 1,
-                is_active: true,
+                isActive: true,
             });
         }
     }
@@ -164,7 +164,7 @@ export default function CategoriesPage() {
 
   const confirmDelete = () => {
     if (selectedCategory) {
-      setCategories(categories.map(c => c.CategoryId === selectedCategory.CategoryId ? { ...c, is_deleted: true } : c).filter(c => !c.is_deleted));
+      setCategories(categories.map(c => c.categoryId === selectedCategory.categoryId ? { ...c, isDeleted: true } : c).filter(c => !c.isDeleted));
       toast({ title: "Thành công", description: "Thể loại đã được xóa." });
     }
     setDeleteDialogOpen(false);
@@ -175,32 +175,32 @@ export default function CategoriesPage() {
     const slug = slugify(values.name);
     if (selectedCategory) {
       const updatedCategories = categories.map(c => 
-        c.CategoryId === selectedCategory.CategoryId ? { 
+        c.categoryId === selectedCategory.categoryId ? { 
             ...c, 
             ...values,
             slug,
-            ParentCategoryId: values.ParentCategoryId || null,
+            parentCategoryId: values.parentCategoryId || null,
             image: values.image || 'https://picsum.photos/100/100',
             order: values.order ?? c.order,
             description: values.description || '',
-            updated_at: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
         } : c
       );
       setCategories(updatedCategories);
       toast({ title: "Thành công", description: "Thể loại đã được cập nhật." });
     } else {
       const newCategory: Category = {
-        CategoryId: `cate-${Math.floor(1000 + Math.random() * 9000)}`,
+        categoryId: `cate-${Math.floor(1000 + Math.random() * 9000)}`,
         name: values.name,
         slug,
         description: values.description || '',
-        ParentCategoryId: values.ParentCategoryId || null,
+        parentCategoryId: values.parentCategoryId || null,
         image: values.image || 'https://picsum.photos/100/100',
         order: values.order ?? categories.length + 1,
-        is_active: values.is_active,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-        is_deleted: false
+        isActive: values.isActive,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        isDeleted: false
       };
       setCategories([newCategory, ...categories]);
       toast({ title: "Thành công", description: "Thể loại mới đã được thêm." });
@@ -211,7 +211,7 @@ export default function CategoriesPage() {
   
   const getParentCategoryName = (parentId: string | null): string => {
     if (!parentId) return '—';
-    const parent = categories.find(c => c.CategoryId === parentId);
+    const parent = categories.find(c => c.categoryId === parentId);
     return parent ? parent.name : 'Không tìm thấy';
   };
 
@@ -264,7 +264,7 @@ export default function CategoriesPage() {
             </TableHeader>
             <TableBody>
               {filteredCategories.map((category) => (
-                <TableRow key={category.CategoryId} onClick={() => router.push(`/categories/${category.slug}`)} className="cursor-pointer">
+                <TableRow key={category.categoryId} onClick={() => router.push(`/categories/${category.slug}`)} className="cursor-pointer">
                   <TableCell className="hidden sm:table-cell">
                     <Image
                         alt={category.name}
@@ -279,10 +279,10 @@ export default function CategoriesPage() {
                   <TableCell className="hidden md:table-cell max-w-[200px] truncate" title={category.description}>
                     {category.description || '—'}
                   </TableCell>
-                  <TableCell className="hidden lg:table-cell">{getParentCategoryName(category.ParentCategoryId)}</TableCell>
+                  <TableCell className="hidden lg:table-cell">{getParentCategoryName(category.parentCategoryId)}</TableCell>
                   <TableCell>
-                      <Badge variant={category.is_active ? 'default' : 'secondary'}>
-                        {t(category.is_active ? 'status.active' : 'status.inactive')}
+                      <Badge variant={category.isActive ? 'default' : 'secondary'}>
+                        {t(category.isActive ? 'status.active' : 'status.inactive')}
                       </Badge>
                   </TableCell>
                   <TableCell onClick={(e) => e.stopPropagation()}>
@@ -336,7 +336,7 @@ export default function CategoriesPage() {
               />
               <FormField
                 control={form.control}
-                name="ParentCategoryId"
+                name="parentCategoryId"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Danh mục cha</FormLabel>
@@ -352,9 +352,9 @@ export default function CategoriesPage() {
                       <SelectContent>
                         <SelectItem value="_ROOT_">Không có (danh mục gốc)</SelectItem>
                         {categories
-                          .filter(c => c.CategoryId !== selectedCategory?.CategoryId)
+                          .filter(c => c.categoryId !== selectedCategory?.categoryId)
                           .map(category => (
-                            <SelectItem key={category.CategoryId} value={category.CategoryId}>
+                            <SelectItem key={category.categoryId} value={category.categoryId}>
                               {category.name}
                             </SelectItem>
                           ))}
@@ -405,7 +405,7 @@ export default function CategoriesPage() {
               />
                <FormField
                 control={form.control}
-                name="is_active"
+                name="isActive"
                 render={({ field }) => (
                   <FormItem className="md:col-span-2 flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm mt-4">
                     <div className="space-y-0.5">

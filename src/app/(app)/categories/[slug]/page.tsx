@@ -36,7 +36,7 @@ export default function CategoryDetailPage() {
     notFound();
   }
   
-  const productsInCategory = mockProducts.filter(p => p.CategoryId === category.CategoryId && !p.is_deleted);
+  const productsInCategory = mockProducts.filter(p => p.categoryId === category.categoryId && !p.isDeleted);
   
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
@@ -75,8 +75,8 @@ export default function CategoryDetailPage() {
             <div>
               <div className="flex items-center gap-2">
                 <CardTitle className="font-headline text-2xl">{category.name}</CardTitle>
-                <Badge variant={category.is_active ? 'default' : 'secondary'}>
-                  {t(category.is_active ? 'status.active' : 'status.inactive')}
+                <Badge variant={category.isActive ? 'default' : 'secondary'}>
+                  {t(category.isActive ? 'status.active' : 'status.inactive')}
                 </Badge>
               </div>
               <CardDescription>{category.description}</CardDescription>
@@ -98,7 +98,7 @@ export default function CategoryDetailPage() {
                  </TableHeader>
                  <TableBody>
                    {productsInCategory.map((product) => (
-                     <TableRow key={product.ProductId} onClick={() => router.push(`/products/${product.slug}`)} className="cursor-pointer">
+                     <TableRow key={product.productId} onClick={() => router.push(`/products/${product.slug}`)} className="cursor-pointer">
                        <TableCell className="hidden sm:table-cell">
                          <Image
                            alt={product.name}

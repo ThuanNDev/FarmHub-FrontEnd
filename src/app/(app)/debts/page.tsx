@@ -50,7 +50,7 @@ export default function DebtsPage() {
 
   useEffect(() => {
     const customersWithDebt = mockCustomers.filter(
-      (customer) => !customer.is_deleted && customer.total_debt > 0
+      (customer) => !customer.isDeleted && customer.totalDebt > 0
     );
     setDebtors(customersWithDebt);
   }, []);
@@ -61,14 +61,14 @@ export default function DebtsPage() {
 
     const newStatuses: Record<string, DebtStatus> = {};
     debtors.forEach(debtor => {
-        if (!debtor.debt_due_date) {
-            newStatuses[debtor.CustomerId] = { textKey: 'status.unknown', variant: 'outline' };
+        if (!debtor.debtDueDate) {
+            newStatuses[debtor.customerId] = { textKey: 'status.unknown', variant: 'outline' };
             return;
         }
-        const dueDate = new Date(debtor.debt_due_date);
+        const dueDate = new Date(debtor.debtDueDate);
         
         if (dueDate < today) {
-            newStatuses[debtor.CustomerId] = { textKey: 'status.overdue', variant: 'destructive' };
+            newStatuses[debtor.customerId] = { textKey: 'status.overdue', variant: 'destructive' };
             return;
         }
         
@@ -76,9 +76,9 @@ export default function DebtsPage() {
         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
         if (diffDays <= 7) {
-            newStatuses[debtor.CustomerId] = { textKey: 'status.due_soon', variant: 'default' };
+            newStatuses[debtor.customerId] = { textKey: 'status.due_soon', variant: 'default' };
         } else {
-            newStatuses[debtor.CustomerId] = { textKey: 'status.within_due_date', variant: 'secondary' };
+            newStatuses[debtor.customerId] = { textKey: 'status.within_due_date', variant: 'secondary' };
         }
     });
     setDebtStatuses(newStatuses);
@@ -110,13 +110,13 @@ export default function DebtsPage() {
   const handleConfirmPayment = (values: PaymentFormValues) => {
     if (!selectedDebtor) return;
 
-    const customerInDb = mockCustomers.find(c => c.CustomerId === selectedDebtor.CustomerId);
+    const customerInDb = mockCustomers.find(c => c.customerId === selectedDebtor.customerId);
     if(customerInDb) {
-      const newDebt = customerInDb.total_debt - values.amount;
-      customerInDb.total_debt = newDebt < 0 ? 0 : newDebt;
+      const newDebt = customerInDb.totalDebt - values.amount;
+      customerInDb.totalDebt = newDebt < 0 ? 0 : newDebt;
     }
 
-    setDebtors(mockCustomers.filter(c => !c.is_deleted && c.total_debt > 0));
+    setDebtors(mockCustomers.filter(c => !c.isDeleted && c.totalDebt > 0));
 
     toast({
       title: 'Thành công',
@@ -167,13 +167,13 @@ export default function DebtsPage() {
             <TableBody>
               {filteredDebtors.length > 0 ? (
                 filteredDebtors.map((debtor) => {
-                  const status = debtStatuses[debtor.CustomerId] || { textKey: 'status.unknown', variant: 'outline' };
+                  const status = debtStatuses[debtor.customerId] || { textKey: 'status.unknown', variant: 'outline' };
                   return (
-                    <TableRow key={debtor.CustomerId}>
+                    <TableRow key={debtor.customerId}>
                       <TableCell className="font-medium">{debtor.name}</TableCell>
                       <TableCell>{debtor.phone}</TableCell>
-                      <TableCell className="text-right">{formatCurrency(debtor.total_debt)}</TableCell>
-                      <TableCell className="hidden sm:table-cell">{formatDate(debtor.debt_due_date)}</TableCell>
+                      <TableCell className="text-right">{formatCurrency(debtor.totalDebt)}</TableCell>
+                      <TableCell className="hidden sm:table-cell">{formatDate(debtor.debtDueDate)}</TableCell>
                       <TableCell>
                         <Badge variant={status.variant}>{t(status.textKey)}</Badge>
                       </TableCell>
@@ -186,7 +186,7 @@ export default function DebtsPage() {
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => router.push(`/customers/${debtor.CustomerId}`)}>Xem chi tiết</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => router.push(`/customers/${debtor.customerId}`)}>Xem chi tiết</DropdownMenuItem>
                             <DropdownMenuItem onClick={() => handleOpenPaymentDialog(debtor)}>Ghi nhận thanh toán</DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
@@ -216,8 +216,8 @@ export default function DebtsPage() {
           open={isPaymentDialogOpen}
           onOpenChange={setPaymentDialogOpen}
           title={`Ghi nhận thanh toán cho ${selectedDebtor.name}`}
-          description={`Tổng nợ hiện tại là ${formatCurrency(selectedDebtor.total_debt)}. Nhập số tiền đã thanh toán.`}
-          dueAmount={selectedDebtor.total_debt}
+          description={`Tổng nợ hiện tại là ${formatCurrency(selectedDebtor.totalDebt)}. Nhập số tiền đã thanh toán.`}
+          dueAmount={selectedDebtor.totalDebt}
           onConfirm={handleConfirmPayment}
         />
       )}

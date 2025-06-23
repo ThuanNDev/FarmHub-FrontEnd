@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -67,19 +68,19 @@ export default function ReportsPage() {
     }
 
     const filtered = mockOrders.filter(order => {
-        const orderDate = new Date(order.created_at);
+        const orderDate = new Date(order.createdAt);
         return orderDate >= date.from! && orderDate <= date.to! && order.status !== 'Cancelled';
     });
 
-    const revenue = filtered.reduce((acc, order) => acc + order.total_amount, 0);
+    const revenue = filtered.reduce((acc, order) => acc + order.totalAmount, 0);
 
     const dailyRevenue: { [key: string]: number } = {};
     for (const order of filtered) {
-        const day = format(new Date(order.created_at), 'dd/MM');
+        const day = format(new Date(order.createdAt), 'dd/MM');
         if (!dailyRevenue[day]) {
             dailyRevenue[day] = 0;
         }
-        dailyRevenue[day] += order.total_amount;
+        dailyRevenue[day] += order.totalAmount;
     }
     const chartData = Object.keys(dailyRevenue).map(day => ({
         name: day,
@@ -95,29 +96,29 @@ export default function ReportsPage() {
 
     const customerSpending: { [id: string]: { id: string, name: string, phone: string, total: number } } = {};
     for (const order of filtered) {
-        const customer = mockCustomers.find(c => c.id === order.customer_id);
+        const customer = mockCustomers.find(c => c.customerId === order.customerId);
         const customerName = customer?.name || 'Khách lẻ';
         const customerPhone = customer?.phone || '-';
-        const id = customer?.id || 'guest';
+        const id = customer?.customerId || 'guest';
 
         if (!customerSpending[id]) {
             customerSpending[id] = { id, name: customerName, phone: customerPhone, total: 0 };
         }
-        customerSpending[id].total += order.total_amount;
+        customerSpending[id].total += order.totalAmount;
     }
     const sortedCustomers = Object.values(customerSpending).sort((a, b) => b.total - a.total).slice(0, 5);
 
-    const filteredOrderIds = new Set(filtered.map(o => o.id));
-    const relevantOrderItems = mockOrderItems.filter(item => filteredOrderIds.has(item.order_id));
+    const filteredOrderIds = new Set(filtered.map(o => o.orderId));
+    const relevantOrderItems = mockOrderItems.filter(item => filteredOrderIds.has(item.orderId));
     
     const productSales: { [id: string]: { product: any, quantity: number } } = {};
     for (const item of relevantOrderItems) {
-        const product = mockProducts.find(p => p.id === item.product_id);
+        const product = mockProducts.find(p => p.productId === item.productId);
         if (product) {
-            if (!productSales[product.id]) {
-                productSales[product.id] = { product, quantity: 0 };
+            if (!productSales[product.productId]) {
+                productSales[product.productId] = { product, quantity: 0 };
             }
-            productSales[product.id].quantity += item.quantity;
+            productSales[product.productId].quantity += item.quantity;
         }
     }
     
@@ -138,7 +139,7 @@ export default function ReportsPage() {
 
 
     return {
-        filteredOrders: filtered.sort((a,b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()),
+        filteredOrders: filtered.sort((a,b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()),
         revenueChartData: chartData,
         topCustomers: sortedCustomers,
         topProducts: sortedProducts,
@@ -148,7 +149,7 @@ export default function ReportsPage() {
   }, [date]);
   
   const getCustomerName = (customerId: string) => {
-    return mockCustomers.find(c => c.id === customerId)?.name || 'Khách lẻ';
+    return mockCustomers.find(c => c.customerId === customerId)?.name || 'Khách lẻ';
   };
   
   const getStatusVariant = (status: string) => {
@@ -285,7 +286,7 @@ export default function ReportsPage() {
                         <CardContent>
                              <div className="space-y-4">
                             {topProducts.map((product) => (
-                                <div key={product.id} className="flex items-center">
+                                <div key={product.productId} className="flex items-center">
                                     <Avatar className="h-9 w-9 border">
                                         <AvatarImage src={product.image} alt={product.name} />
                                         <AvatarFallback>{product.name.charAt(0)}</AvatarFallback>
@@ -321,16 +322,16 @@ export default function ReportsPage() {
                             </TableHeader>
                             <TableBody>
                             {filteredOrders.map((order) => (
-                                <TableRow key={order.id} className="cursor-pointer" onClick={() => router.push(`/orders/${order.id}`)}>
-                                <TableCell className="font-medium">{order.order_code}</TableCell>
-                                <TableCell>{getCustomerName(order.customer_id)}</TableCell>
-                                <TableCell>{formatDate(new Date(order.created_at))}</TableCell>
+                                <TableRow key={order.orderId} className="cursor-pointer" onClick={() => router.push(`/orders/${order.orderId}`)}>
+                                <TableCell className="font-medium">{order.orderCode}</TableCell>
+                                <TableCell>{getCustomerName(order.customerId)}</TableCell>
+                                <TableCell>{formatDate(new Date(order.createdAt))}</TableCell>
                                 <TableCell>
                                     <Badge variant={getStatusVariant(order.status) as any}>
                                     {order.status}
                                     </Badge>
                                 </TableCell>
-                                <TableCell className="text-right">{formatCurrency(order.total_amount)}</TableCell>
+                                <TableCell className="text-right">{formatCurrency(order.totalAmount)}</TableCell>
                                 </TableRow>
                             ))}
                             {filteredOrders.length === 0 && (

@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useEffect } from 'react';
@@ -43,24 +44,24 @@ const settingsSchema = z.object({
   address: z.string().min(1, "Địa chỉ không được để trống."),
   phone: z.string().min(1, "Số điện thoại không được để trống."),
   email: z.string().email("Email không hợp lệ."),
-  opening_hours: z.string().optional(),
-  is_active: z.boolean().default(true),
-  bank_info: z.object({
-    bank_id: z.string().min(1, "Vui lòng chọn ngân hàng."),
-    account_no: z.string().min(1, "Số tài khoản không được để trống."),
-    account_name: z.string().min(1, "Tên chủ tài khoản không được để trống."),
+  openingHours: z.string().optional(),
+  isActive: z.boolean().default(true),
+  bankInfo: z.object({
+    bankId: z.string().min(1, "Vui lòng chọn ngân hàng."),
+    accountNo: z.string().min(1, "Số tài khoản không được để trống."),
+    accountName: z.string().min(1, "Tên chủ tài khoản không được để trống."),
   }).optional(),
-  is_vat_enabled: z.boolean().default(true),
-  vat_rate: z.coerce.number().min(0, "VAT không được âm.").max(100, "VAT không thể lớn hơn 100%").optional(),
-  invoice_footer: z.string().optional(),
-  printing_preferences: z.object({
-      default_paper_size: z.enum(['k80', 'a5', 'k58']),
+  isVatEnabled: z.boolean().default(true),
+  vatRate: z.coerce.number().min(0, "VAT không được âm.").max(100, "VAT không thể lớn hơn 100%").optional(),
+  invoiceFooter: z.string().optional(),
+  printingPreferences: z.object({
+      defaultPaperSize: z.enum(['k80', 'a5', 'k58']),
   }).optional(),
-  backup_schedule: z.string().optional(),
+  backupSchedule: z.string().optional(),
   defaults: z.object({
     unit: z.string().optional(),
     discount: z.coerce.number().min(0, "Chiết khấu không thể âm.").optional(),
-    shipping_fee: z.coerce.number().min(0, "Phí vận chuyển không thể âm.").optional(),
+    shippingFee: z.coerce.number().min(0, "Phí vận chuyển không thể âm.").optional(),
   }).optional(),
 });
 
@@ -74,26 +75,26 @@ export default function SettingsPage() {
     resolver: zodResolver(settingsSchema),
     defaultValues: {
       ...store,
-      bank_info: store.bank_info || { bank_id: '', account_no: '', account_name: ''},
-      is_vat_enabled: store.is_vat_enabled ?? true,
-      vat_rate: store.vat_rate || 0,
-      invoice_footer: store.invoice_footer || '',
-      backup_schedule: store.backup_schedule || 'daily_2am',
-      printing_preferences: store.printing_preferences || { default_paper_size: 'k80' },
-      defaults: store.defaults || { unit: 'cái', discount: 0, shipping_fee: 0 },
+      bankInfo: store.bankInfo || { bankId: '', accountNo: '', accountName: ''},
+      isVatEnabled: store.isVatEnabled ?? true,
+      vatRate: store.vatRate || 0,
+      invoiceFooter: store.invoiceFooter || '',
+      backupSchedule: store.backupSchedule || 'daily_2am',
+      printingPreferences: store.printingPreferences || { defaultPaperSize: 'k80' },
+      defaults: store.defaults || { unit: 'cái', discount: 0, shippingFee: 0 },
     },
   });
 
   useEffect(() => {
     form.reset({
         ...store,
-        bank_info: store.bank_info || { bank_id: '', account_no: '', account_name: ''},
-        is_vat_enabled: store.is_vat_enabled ?? true,
-        vat_rate: store.vat_rate || 0,
-        invoice_footer: store.invoice_footer || '',
-        backup_schedule: store.backup_schedule || 'daily_2am',
-        printing_preferences: store.printing_preferences || { default_paper_size: 'k80' },
-        defaults: store.defaults || { unit: 'cái', discount: 0, shipping_fee: 0 },
+        bankInfo: store.bankInfo || { bankId: '', accountNo: '', accountName: ''},
+        isVatEnabled: store.isVatEnabled ?? true,
+        vatRate: store.vatRate || 0,
+        invoiceFooter: store.invoiceFooter || '',
+        backupSchedule: store.backupSchedule || 'daily_2am',
+        printingPreferences: store.printingPreferences || { defaultPaperSize: 'k80' },
+        defaults: store.defaults || { unit: 'cái', discount: 0, shippingFee: 0 },
     });
   }, [store, form]);
 
@@ -173,7 +174,7 @@ export default function SettingsPage() {
             />
              <FormField
               control={form.control}
-              name="opening_hours"
+              name="openingHours"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Giờ mở cửa</FormLabel>
@@ -199,7 +200,7 @@ export default function SettingsPage() {
             
             <FormField
               control={form.control}
-              name="is_vat_enabled"
+              name="isVatEnabled"
               render={({ field }) => (
                 <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
                   <div className="space-y-0.5">
@@ -221,7 +222,7 @@ export default function SettingsPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <FormField
                     control={form.control}
-                    name="vat_rate"
+                    name="vatRate"
                     render={({ field }) => (
                         <FormItem>
                         <FormLabel>Thuế suất VAT (%)</FormLabel>
@@ -239,7 +240,7 @@ export default function SettingsPage() {
             
             <FormField
                 control={form.control}
-                name="invoice_footer"
+                name="invoiceFooter"
                 render={({ field }) => (
                     <FormItem>
                     <FormLabel>Chân trang hoá đơn</FormLabel>
@@ -262,7 +263,7 @@ export default function SettingsPage() {
 
             <FormField
                 control={form.control}
-                name="printing_preferences.default_paper_size"
+                name="printingPreferences.defaultPaperSize"
                 render={({ field }) => (
                     <FormItem>
                     <FormLabel>Khổ giấy mặc định</FormLabel>
@@ -324,7 +325,7 @@ export default function SettingsPage() {
                 />
                 <FormField
                     control={form.control}
-                    name="defaults.shipping_fee"
+                    name="defaults.shippingFee"
                     render={({ field }) => (
                         <FormItem>
                         <FormLabel>Phí vận chuyển mặc định (VND)</FormLabel>
@@ -349,7 +350,7 @@ export default function SettingsPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <FormField
                     control={form.control}
-                    name="bank_info.bank_id"
+                    name="bankInfo.bankId"
                     render={({ field }) => (
                         <FormItem>
                         <FormLabel>Ngân hàng</FormLabel>
@@ -361,7 +362,7 @@ export default function SettingsPage() {
                             </FormControl>
                             <SelectContent>
                             {mockBanks.map((bank) => (
-                                <SelectItem key={bank.id} value={bank.id}>
+                                <SelectItem key={bank.bankId} value={bank.bankId}>
                                 {bank.name}
                                 </SelectItem>
                             ))}
@@ -373,7 +374,7 @@ export default function SettingsPage() {
                 />
                 <FormField
                     control={form.control}
-                    name="bank_info.account_no"
+                    name="bankInfo.accountNo"
                     render={({ field }) => (
                         <FormItem>
                         <FormLabel>Số tài khoản</FormLabel>
@@ -386,7 +387,7 @@ export default function SettingsPage() {
                 />
                  <FormField
                     control={form.control}
-                    name="bank_info.account_name"
+                    name="bankInfo.accountName"
                     render={({ field }) => (
                         <FormItem className="md:col-span-2">
                         <FormLabel>Tên chủ tài khoản</FormLabel>
@@ -410,7 +411,7 @@ export default function SettingsPage() {
             
             <FormField
                 control={form.control}
-                name="backup_schedule"
+                name="backupSchedule"
                 render={({ field }) => (
                     <FormItem>
                     <FormLabel>Tần suất sao lưu</FormLabel>
@@ -439,7 +440,7 @@ export default function SettingsPage() {
             
              <FormField
                 control={form.control}
-                name="is_active"
+                name="isActive"
                 render={({ field }) => (
                 <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4 shadow-sm">
                     <div className="space-y-0.5">

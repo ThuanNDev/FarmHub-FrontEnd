@@ -1,3 +1,4 @@
+
 'use client';
 import React, { useState, useMemo, useRef } from 'react';
 import { Search, Printer, ChevronsUpDown, Trash2 } from 'lucide-react';
@@ -27,7 +28,7 @@ export default function PrintingPage() {
   const { toast } = useToast();
   const printRef = useRef<HTMLDivElement>(null);
   const { store } = useStore();
-  const paperSize = store.printing_preferences?.default_paper_size || 'k80';
+  const paperSize = store.printingPreferences?.defaultPaperSize || 'k80';
 
   // Invoice State
   const [orderCode, setOrderCode] = useState('');
@@ -76,10 +77,10 @@ export default function PrintingPage() {
   };
   
   const handleSearchOrder = () => {
-    const order = mockOrders.find(o => o.order_code.toLowerCase() === orderCode.toLowerCase().trim());
+    const order = mockOrders.find(o => o.orderCode.toLowerCase() === orderCode.toLowerCase().trim());
     if (order) {
       setFoundOrder(order);
-      toast({ title: 'Thành công', description: `Đã tìm thấy đơn hàng ${order.order_code}.` });
+      toast({ title: 'Thành công', description: `Đã tìm thấy đơn hàng ${order.orderCode}.` });
     } else {
       setFoundOrder(null);
       toast({ variant: 'destructive', title: 'Không tìm thấy', description: `Không có đơn hàng nào khớp với mã "${orderCode}".` });
@@ -87,17 +88,17 @@ export default function PrintingPage() {
   };
 
   const addProductToPrintList = (product: Product) => {
-    if (productsToPrint.some(p => p.id === product.id)) return;
+    if (productsToPrint.some(p => p.productId === product.productId)) return;
     setProductsToPrint(prev => [...prev, { ...product, labelCount: 12 }]);
   }
 
   const updateLabelCount = (productId: string, count: number) => {
     const newCount = Math.max(0, count);
-    setProductsToPrint(prev => prev.map(p => p.id === productId ? { ...p, labelCount: newCount } : p));
+    setProductsToPrint(prev => prev.map(p => p.productId === productId ? { ...p, labelCount: newCount } : p));
   }
 
   const removeProductFromPrintList = (productId: string) => {
-    setProductsToPrint(prev => prev.filter(p => p.id !== productId));
+    setProductsToPrint(prev => prev.filter(p => p.productId !== productId));
   }
 
   return (
@@ -173,13 +174,13 @@ export default function PrintingPage() {
                             <ScrollArea className="h-80">
                                 <div className="space-y-2 pr-4">
                                 {productsToPrint.map(p => (
-                                    <div key={p.id} className="flex items-center gap-2 p-2 border rounded-md">
+                                    <div key={p.productId} className="flex items-center gap-2 p-2 border rounded-md">
                                         <div className="flex-1">
                                             <p className="text-sm font-medium truncate">{p.name}</p>
-                                            <p className="text-xs text-muted-foreground">{p.product_code}</p>
+                                            <p className="text-xs text-muted-foreground">{p.productCode}</p>
                                         </div>
-                                        <Input type="number" value={p.labelCount} onChange={e => updateLabelCount(p.id, parseInt(e.target.value))} className="w-16 h-8 text-center" />
-                                        <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => removeProductFromPrintList(p.id)}><Trash2 className="h-4 w-4" /></Button>
+                                        <Input type="number" value={p.labelCount} onChange={e => updateLabelCount(p.productId, parseInt(e.target.value))} className="w-16 h-8 text-center" />
+                                        <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => removeProductFromPrintList(p.productId)}><Trash2 className="h-4 w-4" /></Button>
                                     </div>
                                 ))}
                                 {productsToPrint.length === 0 && <p className="text-sm text-center text-muted-foreground pt-10">Chưa có sản phẩm nào được chọn.</p>}
@@ -218,11 +219,11 @@ const ProductSelector = ({ onProductSelect }: { onProductSelect: (product: Produ
     const [search, setSearch] = useState("");
 
     const filteredProducts = useMemo(() => {
-        if (!search) return mockProducts.filter(p => p.is_active && !p.is_deleted);
+        if (!search) return mockProducts.filter(p => p.isActive && !p.isDeleted);
         return mockProducts.filter(p =>
-            p.is_active && !p.is_deleted &&
+            p.isActive && !p.isDeleted &&
             (p.name.toLowerCase().includes(search.toLowerCase()) ||
-            p.product_code.toLowerCase().includes(search.toLowerCase()))
+            p.productCode.toLowerCase().includes(search.toLowerCase()))
         );
     }, [search]);
 
@@ -240,10 +241,10 @@ const ProductSelector = ({ onProductSelect }: { onProductSelect: (product: Produ
                 <ScrollArea className="h-72">
                     <div className="p-2 space-y-1">
                         {filteredProducts.map((product) => (
-                            <Button key={product.id} variant="ghost" className="w-full justify-start font-normal h-auto py-2 text-left" onClick={() => { onProductSelect(product); setOpen(false); setSearch(''); }}>
+                            <Button key={product.productId} variant="ghost" className="w-full justify-start font-normal h-auto py-2 text-left" onClick={() => { onProductSelect(product); setOpen(false); setSearch(''); }}>
                                 <div>
                                     <p>{product.name}</p>
-                                    <p className="text-xs text-muted-foreground">{product.product_code}</p>
+                                    <p className="text-xs text-muted-foreground">{product.productCode}</p>
                                 </div>
                             </Button>
                         ))}
@@ -266,11 +267,11 @@ const BarcodePreview = ({ products }: { products: ProductToPrint[] }) => {
     return (
       <div className="barcode-grid grid grid-cols-4 gap-x-1 gap-y-2">
         {allLabels.map((product, index) => (
-          <div key={`${product.id}-${index}`} className="barcode-label flex flex-col items-center justify-center p-1 border border-dashed border-gray-400 text-black bg-white">
+          <div key={`${product.productId}-${index}`} className="barcode-label flex flex-col items-center justify-center p-1 border border-dashed border-gray-400 text-black bg-white">
             <p className="text-[8px] font-bold text-center leading-tight truncate w-full">{product.name}</p>
             <p className="text-[7px] font-semibold">{new Intl.NumberFormat('vi-VN').format(product.price)} ₫</p>
-            <Barcode value={product.product_code} options={{ height: 25, width: 1, fontSize: 10, margin: 2 }} />
-            <p className="text-[7px] tracking-wider">{product.product_code}</p>
+            <Barcode value={product.productCode} options={{ height: 25, width: 1, fontSize: 10, margin: 2 }} />
+            <p className="text-[7px] tracking-wider">{product.productCode}</p>
           </div>
         ))}
       </div>
@@ -284,9 +285,9 @@ const InvoicePreview = ({ order, paperSize }: { order: Order | null, paperSize: 
     }
     
     const storeInfo = mockStores[0];
-    const customer = mockCustomers.find(c => c.id === order.customer_id);
-    const items = mockOrderItems.filter(i => i.order_id === order.id);
-    const processor = mockUsers.find(u => u.id === order.processed_by_user_id);
+    const customer = mockCustomers.find(c => c.customerId === order.customerId);
+    const items = mockOrderItems.filter(i => i.orderId === order.orderId);
+    const processor = mockUsers.find(u => u.userId === order.processedByUserId);
     const formatCurrency = (amount: number) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
     const formatDate = (date: string) => new Date(date).toLocaleString('vi-VN');
 
@@ -297,19 +298,19 @@ const InvoicePreview = ({ order, paperSize }: { order: Order | null, paperSize: 
                     <div className="text-left">
                         <h1 className="font-bold text-2xl">{storeInfo.name}</h1>
                         <p className="text-xs">{storeInfo.address}</p>
-                        <p className="text-xs">SĐT: {storeInfo.phone}</p>
+                        <p className="text-xs">SĐT: ${storeInfo.phone}</p>
                     </div>
                     <div className="text-right">
                         <h2 className="font-bold text-xl uppercase">Hóa Đơn Bán Hàng</h2>
-                        <p className="text-xs">Mã ĐH: {order.order_code}</p>
-                        <p className="text-xs">Ngày: {formatDate(order.created_at)}</p>
+                        <p className="text-xs">Mã ĐH: ${order.orderCode}</p>
+                        <p className="text-xs">Ngày: ${formatDate(order.createdAt)}</p>
                     </div>
                 </header>
                 <section className="my-6">
                     <h3 className="font-semibold mb-2">Thông tin khách hàng:</h3>
-                    <p className="text-sm"><strong>Tên:</strong> {customer?.name || 'Khách lẻ'}</p>
-                    <p className="text-sm"><strong>SĐT:</strong> {customer?.phone || 'N/A'}</p>
-                    <p className="text-sm"><strong>Địa chỉ:</strong> {order.delivery_address || customer?.address || 'N/A'}</p>
+                    <p className="text-sm"><strong>Tên:</strong> ${customer?.name || 'Khách lẻ'}</p>
+                    <p className="text-sm"><strong>SĐT:</strong> ${customer?.phone || 'N/A'}</p>
+                    <p className="text-sm"><strong>Địa chỉ:</strong> ${order.deliveryAddress || customer?.address || 'N/A'}</p>
                 </section>
                 <table className="w-full text-sm">
                     <thead className="bg-gray-100">
@@ -322,26 +323,26 @@ const InvoicePreview = ({ order, paperSize }: { order: Order | null, paperSize: 
                     </thead>
                     <tbody>
                         {items.map(item => (
-                            <tr key={item.id} className="border-b">
-                                <td className="p-2">{item.product_name}</td>
-                                <td className="p-2 text-center">{item.quantity}</td>
-                                <td className="p-2 text-right">{formatCurrency(item.unit_price)}</td>
-                                <td className="p-2 text-right">{formatCurrency(item.total_price)}</td>
+                            <tr key={item.orderItemId} className="border-b">
+                                <td className="p-2">${item.productName}</td>
+                                <td className="p-2 text-center">${item.quantity}</td>
+                                <td className="p-2 text-right">${formatCurrency(item.unitPrice)}</td>
+                                <td className="p-2 text-right">${formatCurrency(item.totalPrice)}</td>
                             </tr>
                         ))}
                     </tbody>
                 </table>
                  <div className="w-2/5 ml-auto mt-6 text-sm space-y-2">
-                    <div className="flex justify-between"><span className="text-gray-600">Tạm tính:</span> <strong>{formatCurrency(items.reduce((s, i) => s + i.total_price, 0))}</strong></div>
-                    <div className="flex justify-between"><span className="text-gray-600">Giảm giá:</span> <strong>-{formatCurrency(order.discount_amount)}</strong></div>
-                    <div className="flex justify-between"><span className="text-gray-600">Phí VC:</span> <strong>{formatCurrency(order.shipping_fee)}</strong></div>
-                    <div className="flex justify-between border-t pt-2 mt-2 text-base"><span className="font-bold">Tổng cộng:</span> <strong className="text-lg">{formatCurrency(order.total_amount)}</strong></div>
-                    <div className="flex justify-between"><span className="text-gray-600">Đã trả:</span> <strong>{formatCurrency(order.total_paid)}</strong></div>
-                    <div className="flex justify-between text-red-600 font-bold"><span className="">Còn lại:</span> <strong>{formatCurrency(order.total_amount - order.total_paid)}</strong></div>
+                    <div className="flex justify-between"><span className="text-gray-600">Tạm tính:</span> <strong>${formatCurrency(items.reduce((s, i) => s + i.totalPrice, 0))}</strong></div>
+                    <div className="flex justify-between"><span className="text-gray-600">Giảm giá:</span> <strong>-${formatCurrency(order.discountAmount)}</strong></div>
+                    <div className="flex justify-between"><span className="text-gray-600">Phí VC:</span> <strong>${formatCurrency(order.shippingFee)}</strong></div>
+                    <div className="flex justify-between border-t pt-2 mt-2 text-base"><span className="font-bold">Tổng cộng:</span> <strong className="text-lg">${formatCurrency(order.totalAmount)}</strong></div>
+                    <div className="flex justify-between"><span className="text-gray-600">Đã trả:</span> <strong>${formatCurrency(order.totalPaid)}</strong></div>
+                    <div className="flex justify-between text-red-600 font-bold"><span className="">Còn lại:</span> <strong>${formatCurrency(order.totalAmount - order.totalPaid)}</strong></div>
                 </div>
                 <footer className="mt-12 text-center text-xs text-gray-500 border-t pt-4">
-                    <p>{storeInfo.invoice_footer}</p>
-                    <p>Nhân viên: {processor?.full_name || 'N/A'}</p>
+                    <p>${storeInfo.invoiceFooter}</p>
+                    <p>Nhân viên: ${processor?.fullName || 'N/A'}</p>
                 </footer>
             </div>
         );
@@ -352,19 +353,19 @@ const InvoicePreview = ({ order, paperSize }: { order: Order | null, paperSize: 
         <div className={cn("bg-white text-black p-2 font-mono mx-auto shadow-lg", thermalClass)}>
             <div className="text-center">
                 <h1 className="font-bold text-lg">{storeInfo.name}</h1>
-                <p className="text-[10px]">{storeInfo.address}</p>
-                <p className="text-[10px]">SĐT: {storeInfo.phone}</p>
+                <p className="text-[10px]">${storeInfo.address}</p>
+                <p className="text-[10px]">SĐT: ${storeInfo.phone}</p>
             </div>
             <div className="my-2 border-b border-dashed border-black"></div>
             <div className="text-center">
                 <h2 className="font-bold text-base">HÓA ĐƠN BÁN LẺ</h2>
-                <p className="text-[10px]">Mã: {order.order_code}</p>
-                <p className="text-[10px]">Ngày: {formatDate(order.created_at)}</p>
+                <p className="text-[10px]">Mã: ${order.orderCode}</p>
+                <p className="text-[10px]">Ngày: ${formatDate(order.createdAt)}</p>
             </div>
             <div className="my-2 border-b border-dashed border-black"></div>
              <div className="text-[10px]">
-                <p><strong>KH:</strong> {customer?.name || 'Khách lẻ'}</p>
-                <p><strong>NV:</strong> {processor?.full_name || 'N/A'}</p>
+                <p><strong>KH:</strong> ${customer?.name || 'Khách lẻ'}</p>
+                <p><strong>NV:</strong> ${processor?.fullName || 'N/A'}</p>
              </div>
              <table className="w-full text-[10px] my-2">
                 <thead>
@@ -376,27 +377,27 @@ const InvoicePreview = ({ order, paperSize }: { order: Order | null, paperSize: 
                 </thead>
                 <tbody>
                     {items.map(item => (
-                        <tr key={item.id}>
+                        <tr key={item.orderItemId}>
                             <td className="p-1 align-top">
-                                <div>{item.product_name}</div>
-                                <div className="pl-1">@{formatCurrency(item.unit_price)}</div>
+                                <div>${item.productName}</div>
+                                <div className="pl-1">@{formatCurrency(item.unitPrice)}</div>
                             </td>
-                            <td className="p-1 text-right align-top">{item.quantity}</td>
-                            <td className="p-1 text-right align-top">{formatCurrency(item.total_price)}</td>
+                            <td className="p-1 text-right align-top">${item.quantity}</td>
+                            <td className="p-1 text-right align-top">${formatCurrency(item.totalPrice)}</td>
                         </tr>
                     ))}
                 </tbody>
              </table>
               <div className="text-xs my-2 border-t border-dashed border-black pt-2 space-y-1">
-                <div className="flex justify-between"><span>Tạm tính:</span> <span>{formatCurrency(items.reduce((s, i) => s + i.total_price, 0))}</span></div>
-                <div className="flex justify-between"><span>Giảm giá:</span> <span>-{formatCurrency(order.discount_amount)}</span></div>
-                <div className="flex justify-between font-bold text-sm"><span>TỔNG CỘNG:</span> <span>{formatCurrency(order.total_amount)}</span></div>
-                <div className="flex justify-between"><span>Đã trả:</span> <span>{formatCurrency(order.total_paid)}</span></div>
-                <div className="flex justify-between font-bold"><span>CÒN LẠI:</span> <span>{formatCurrency(order.total_amount - order.total_paid)}</span></div>
+                <div className="flex justify-between"><span>Tạm tính:</span> <span>${formatCurrency(items.reduce((s, i) => s + i.totalPrice, 0))}</span></div>
+                <div className="flex justify-between"><span>Giảm giá:</span> <span>-${formatCurrency(order.discountAmount)}</span></div>
+                <div className="flex justify-between font-bold text-sm"><span>TỔNG CỘNG:</span> <span>${formatCurrency(order.totalAmount)}</span></div>
+                <div className="flex justify-between"><span>Đã trả:</span> <span>${formatCurrency(order.totalPaid)}</span></div>
+                <div className="flex justify-between font-bold"><span>CÒN LẠI:</span> <span>${formatCurrency(order.totalAmount - order.totalPaid)}</span></div>
               </div>
               <div className="my-2 border-t border-dashed border-black text-center text-[10px] pt-2">
-                <p>{storeInfo.invoice_footer}</p>
-                <p>{storeInfo.email}</p>
+                <p>${storeInfo.invoiceFooter}</p>
+                <p>${storeInfo.email}</p>
               </div>
         </div>
     );

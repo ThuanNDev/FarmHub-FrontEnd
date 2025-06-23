@@ -46,57 +46,57 @@ export default function PurchaseOrderDetailPage() {
   const params = useParams<{ id: string }>();
   const { t } = useLanguage();
   
-  const initialPO = React.useMemo(() => mockPurchaseOrders.find((o) => o.id === params.id), [params.id]);
+  const initialPO = React.useMemo(() => mockPurchaseOrders.find((o) => o.purchaseOrderId === params.id), [params.id]);
   
   const [po, setPo] = React.useState<PurchaseOrder | undefined>(initialPO);
   const { toast } = useToast();
 
   React.useEffect(() => {
-    setPo(mockPurchaseOrders.find((o) => o.id === params.id));
+    setPo(mockPurchaseOrders.find((o) => o.purchaseOrderId === params.id));
   }, [params.id]);
 
   if (!po) {
     notFound();
   }
   
-  const supplier = mockSuppliers.find(s => s.id === po.supplier_id);
-  const createdBy = mockUsers.find(u => u.id === po.created_by_user_id);
-  const items = mockPurchaseOrderItems.filter(item => item.purchase_order_id === po.id);
+  const supplier = mockSuppliers.find(s => s.supplierId === po.supplierId);
+  const createdBy = mockUsers.find(u => u.userId === po.createdByUserId);
+  const items = mockPurchaseOrderItems.filter(item => item.purchaseOrderId === po.purchaseOrderId);
 
   const handleCancelOrder = () => {
-    const poInDb = mockPurchaseOrders.find(o => o.id === po.id);
+    const poInDb = mockPurchaseOrders.find(o => o.purchaseOrderId === po.purchaseOrderId);
     if (poInDb) {
         poInDb.status = 'cancelled';
-        poInDb.updated_at = new Date().toISOString();
+        poInDb.updatedAt = new Date().toISOString();
         setPo({ ...po, status: 'cancelled' });
         toast({
             title: 'Thành công',
-            description: `Đơn nhập hàng ${po.order_code} đã được hủy.`,
+            description: `Đơn nhập hàng ${po.orderCode} đã được hủy.`,
         });
     }
   };
 
   const handleConfirmReceived = () => {
-    const poInDb = mockPurchaseOrders.find(o => o.id === po.id);
+    const poInDb = mockPurchaseOrders.find(o => o.purchaseOrderId === po.purchaseOrderId);
     if (poInDb) {
         poInDb.status = 'received';
-        poInDb.received_date = new Date().toISOString();
-        poInDb.updated_at = poInDb.received_date;
+        poInDb.receivedDate = new Date().toISOString();
+        poInDb.updatedAt = poInDb.receivedDate;
         
         // Update stock
-        const poItems = mockPurchaseOrderItems.filter(item => item.purchase_order_id === po.id);
+        const poItems = mockPurchaseOrderItems.filter(item => item.purchaseOrderId === po.purchaseOrderId);
         poItems.forEach(item => {
-            const product = mockProducts.find(p => p.id === item.product_id);
+            const product = mockProducts.find(p => p.productId === item.productId);
             if(product) {
                 product.stock += item.quantity;
-                item.received_quantity = item.quantity; // Mark as received
+                item.receivedQuantity = item.quantity; // Mark as received
             }
         });
 
-        setPo({ ...po, status: 'received', received_date: poInDb.received_date });
+        setPo({ ...po, status: 'received', receivedDate: poInDb.receivedDate });
         toast({
             title: 'Thành công',
-            description: `Đã xác nhận nhận hàng cho đơn ${po.order_code}. Tồn kho đã được cập nhật.`,
+            description: `Đã xác nhận nhận hàng cho đơn ${po.orderCode}. Tồn kho đã được cập nhật.`,
         });
     }
   };
@@ -121,7 +121,7 @@ export default function PurchaseOrderDetailPage() {
     }
   };
   
-  const getProduct = (productId: string) => mockProducts.find(p => p.id === productId);
+  const getProduct = (productId: string) => mockProducts.find(p => p.productId === productId);
 
   const handlePrint = () => {
     if (!po || !supplier || !createdBy) {
@@ -140,15 +140,15 @@ export default function PurchaseOrderDetailPage() {
     }
 
     const itemsHtml = items.map((item, index) => {
-        const product = getProduct(item.product_id);
+        const product = getProduct(item.productId);
         return `
             <tr class="item">
                 <td class="text-center">${index + 1}</td>
                 <td>${product?.name || 'Sản phẩm không tìm thấy'}</td>
                 <td class="text-center">${product?.unit || 'cái'}</td>
                 <td class="text-center">${item.quantity}</td>
-                <td class="text-right">${formatCurrency(item.unit_price)}</td>
-                <td class="text-right">${formatCurrency(item.total_price)}</td>
+                <td class="text-right">${formatCurrency(item.unitPrice)}</td>
+                <td class="text-right">${formatCurrency(item.totalPrice)}</td>
                 <td></td>
                 <td class="text-center"><div style="width: 16px; height: 16px; border: 1px solid #000; margin: auto;"></div></td>
             </tr>
@@ -158,7 +158,7 @@ export default function PurchaseOrderDetailPage() {
     const printHtml = `
       <html>
         <head>
-          <title>Đơn Nhập Hàng ${po.order_code}</title>
+          <title>Đơn Nhập Hàng ${po.orderCode}</title>
           <style>
             @media print {
               body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
@@ -187,8 +187,8 @@ export default function PurchaseOrderDetailPage() {
           <div class="container">
             <div class="header">
               <h1>ĐƠN NHẬP HÀNG</h1>
-              <p>Mã đơn: ${po.order_code}</p>
-              <p>Ngày tạo: ${formatDate(po.created_at)}</p>
+              <p>Mã đơn: ${po.orderCode}</p>
+              <p>Ngày tạo: ${formatDate(po.createdAt)}</p>
             </div>
             
             <div class="info-section">
@@ -197,14 +197,14 @@ export default function PurchaseOrderDetailPage() {
                     <p><strong>Tên:</strong> ${mockStores[0].name}</p>
                     <p><strong>Địa chỉ:</strong> ${mockStores[0].address}</p>
                     <p><strong>Điện thoại:</strong> ${mockStores[0].phone}</p>
-                    <p><strong>Người tạo:</strong> ${createdBy.full_name}</p>
+                    <p><strong>Người tạo:</strong> ${createdBy.fullName}</p>
                 </div>
                  <div>
                     <h3>Thông tin nhà cung cấp</h3>
                     <p><strong>Tên:</strong> ${supplier.name}</p>
                     <p><strong>Địa chỉ:</strong> ${supplier.address || 'N/A'}</p>
                     <p><strong>Điện thoại:</strong> ${supplier.phone}</p>
-                    <p><strong>Người liên hệ:</strong> ${supplier.contact_person || 'N/A'}</p>
+                    <p><strong>Người liên hệ:</strong> ${supplier.contactPerson || 'N/A'}</p>
                 </div>
             </div>
 
@@ -228,7 +228,7 @@ export default function PurchaseOrderDetailPage() {
             </table>
 
             <div class="total-section">
-                <h2>Tổng cộng: ${formatCurrency(po.total_amount)}</h2>
+                <h2>Tổng cộng: ${formatCurrency(po.totalAmount)}</h2>
             </div>
             
             <div class="signature-section">
@@ -308,7 +308,7 @@ export default function PurchaseOrderDetailPage() {
                     <AlertDialogHeader>
                     <AlertDialogTitle>Bạn có chắc chắn muốn hủy đơn hàng?</AlertDialogTitle>
                     <AlertDialogDescription>
-                        Hành động này không thể hoàn tác. Đơn hàng <strong>{po.order_code}</strong> sẽ được chuyển sang trạng thái "Đã hủy".
+                        Hành động này không thể hoàn tác. Đơn hàng <strong>{po.orderCode}</strong> sẽ được chuyển sang trạng thái "Đã hủy".
                     </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
@@ -327,9 +327,9 @@ export default function PurchaseOrderDetailPage() {
         <CardHeader>
           <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
             <div>
-              <CardTitle className="font-headline text-2xl">Chi tiết đơn nhập hàng {po.order_code}</CardTitle>
+              <CardTitle className="font-headline text-2xl">Chi tiết đơn nhập hàng {po.orderCode}</CardTitle>
               <CardDescription>
-                Ngày tạo: {formatDate(po.created_at)} bởi {createdBy?.full_name || 'N/A'}
+                Ngày tạo: {formatDate(po.createdAt)} bởi {createdBy?.fullName || 'N/A'}
               </CardDescription>
             </div>
             <Badge className="text-base" variant={getStatusVariant(po.status)}>{t(`status.${po.status.toLowerCase()}`)}</Badge>
@@ -347,7 +347,7 @@ export default function PurchaseOrderDetailPage() {
                             <p className="font-semibold">{supplier?.name || 'N/A'}</p>
                             <p className="text-sm text-muted-foreground">{supplier?.phone}</p>
                             <p className="text-sm text-muted-foreground">{supplier?.address}</p>
-                            {supplier && <Button variant="link" size="sm" className="p-0 h-auto" onClick={() => router.push(`/suppliers/${supplier.id}`)}>Xem chi tiết NCC</Button>}
+                            {supplier && <Button variant="link" size="sm" className="p-0 h-auto" onClick={() => router.push(`/suppliers/${supplier.supplierId}`)}>Xem chi tiết NCC</Button>}
                         </CardContent>
                     </Card>
                      <Card>
@@ -356,8 +356,8 @@ export default function PurchaseOrderDetailPage() {
                            <h3 className="font-headline text-lg">Thông tin ngày</h3>
                         </CardHeader>
                         <CardContent className="space-y-1 text-sm">
-                            <p><span className="font-semibold">Ngày dự kiến nhận:</span> {formatDate(po.expected_delivery_date)}</p>
-                            <p><span className="font-semibold">Ngày thực tế nhận:</span> {formatDate(po.received_date)}</p>
+                            <p><span className="font-semibold">Ngày dự kiến nhận:</span> {formatDate(po.expectedDeliveryDate)}</p>
+                            <p><span className="font-semibold">Ngày thực tế nhận:</span> {formatDate(po.receivedDate)}</p>
                         </CardContent>
                     </Card>
                     <Card>
@@ -388,13 +388,13 @@ export default function PurchaseOrderDetailPage() {
                                 </TableHeader>
                                 <TableBody>
                                 {items.map(item => {
-                                    const product = getProduct(item.product_id);
+                                    const product = getProduct(item.productId);
                                     return (
-                                        <TableRow key={item.id}>
+                                        <TableRow key={item.purchaseOrderItemId}>
                                             <TableCell className="font-medium">{product?.name || 'Sản phẩm không tìm thấy'}</TableCell>
                                             <TableCell className="text-center">{item.quantity} {product?.unit}</TableCell>
-                                            <TableCell className="text-right">{formatCurrency(item.unit_price)}</TableCell>
-                                            <TableCell className="text-right">{formatCurrency(item.total_price)}</TableCell>
+                                            <TableCell className="text-right">{formatCurrency(item.unitPrice)}</TableCell>
+                                            <TableCell className="text-right">{formatCurrency(item.totalPrice)}</TableCell>
                                         </TableRow>
                                     )
                                 })}
@@ -404,7 +404,7 @@ export default function PurchaseOrderDetailPage() {
                             <div className="space-y-2 text-right">
                                  <div className="flex justify-between font-bold text-lg">
                                     <span>Tổng cộng</span>
-                                    <span>{formatCurrency(po.total_amount)}</span>
+                                    <span>{formatCurrency(po.totalAmount)}</span>
                                  </div>
                             </div>
                         </CardContent>

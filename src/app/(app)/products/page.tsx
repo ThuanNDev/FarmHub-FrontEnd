@@ -91,27 +91,27 @@ type Product = (typeof mockProducts)[0];
 
 const productSchema = z.object({
   name: z.string().min(1, { message: 'Tên sản phẩm không được để trống.' }),
-  product_code: z.string().min(1, { message: 'Mã sản phẩm không được để trống.' }),
+  productCode: z.string().min(1, { message: 'Mã sản phẩm không được để trống.' }),
   description: z.string().optional(),
-  category_id: z.string().min(1, { message: 'Vui lòng chọn thể loại.' }),
-  supplier_id: z.string().min(1, { message: 'Vui lòng chọn nhà cung cấp.' }),
+  categoryId: z.string().min(1, { message: 'Vui lòng chọn thể loại.' }),
+  supplierId: z.string().min(1, { message: 'Vui lòng chọn nhà cung cấp.' }),
   brand: z.string().min(1, { message: 'Thương hiệu không được để trống.' }),
   unit: z.string().min(1, { message: 'Đơn vị không được để trống.' }),
-  import_price: z.coerce.number().positive({ message: 'Giá nhập phải là một số dương.' }),
+  importPrice: z.coerce.number().positive({ message: 'Giá nhập phải là một số dương.' }),
   price: z.coerce.number().positive({ message: 'Giá lẻ phải là một số dương.' }),
-  wholesale_price: z.coerce.number().positive({ message: 'Giá sỉ phải là số dương.' }).optional(),
-  credit_price: z.coerce.number().positive({ message: 'Giá bán nợ phải là số dương.' }).optional(),
+  wholesalePrice: z.coerce.number().positive({ message: 'Giá sỉ phải là số dương.' }).optional(),
+  creditPrice: z.coerce.number().positive({ message: 'Giá bán nợ phải là số dương.' }).optional(),
   stock: z.coerce.number().int().min(0, { message: 'Tồn kho phải là số nguyên không âm.' }),
-  min_stock_level: z.coerce.number().int().min(0, { message: 'Ngưỡng tồn kho phải là số nguyên không âm.' }),
-  warranty_info: z.string().optional(),
-  is_active: z.boolean().default(true),
+  minStockLevel: z.coerce.number().int().min(0, { message: 'Ngưỡng tồn kho phải là số nguyên không âm.' }),
+  warrantyInfo: z.string().optional(),
+  isActive: z.boolean().default(true),
   images: z.string().optional(),
 });
 
 type ProductFormValues = z.infer<typeof productSchema>;
 
 export default function ProductsPage() {
-  const [products, setProducts] = useState<Product[]>(mockProducts.filter(p => !p.is_deleted));
+  const [products, setProducts] = useState<Product[]>(mockProducts.filter(p => !p.isDeleted));
   const [searchTerm, setSearchTerm] = useState('');
   const [activeTab, setActiveTab] = useState('Tất cả');
 
@@ -129,20 +129,20 @@ export default function ProductsPage() {
     resolver: zodResolver(productSchema),
     defaultValues: {
       name: '',
-      product_code: '',
+      productCode: '',
       description: '',
-      category_id: '',
-      supplier_id: '',
+      categoryId: '',
+      supplierId: '',
       brand: '',
       unit: 'chiếc',
-      import_price: 0,
+      importPrice: 0,
       price: 0,
-      wholesale_price: 0,
-      credit_price: 0,
+      wholesalePrice: 0,
+      creditPrice: 0,
       stock: 0,
-      min_stock_level: 5,
-      warranty_info: 'Bảo hành 12 tháng',
-      is_active: true,
+      minStockLevel: 5,
+      warrantyInfo: 'Bảo hành 12 tháng',
+      isActive: true,
       images: '',
     },
   });
@@ -158,39 +158,39 @@ export default function ProductsPage() {
         }
         form.reset({
           name: selectedProduct.name,
-          product_code: selectedProduct.product_code,
+          productCode: selectedProduct.productCode,
           description: selectedProduct.description,
-          category_id: selectedProduct.category_id,
-          supplier_id: selectedProduct.supplier_id,
+          categoryId: selectedProduct.categoryId,
+          supplierId: selectedProduct.supplierId,
           brand: selectedProduct.brand,
           unit: selectedProduct.unit,
-          import_price: selectedProduct.import_price,
+          importPrice: selectedProduct.importPrice,
           price: selectedProduct.price,
-          wholesale_price: selectedProduct.wholesale_price || undefined,
-          credit_price: selectedProduct.credit_price || undefined,
+          wholesalePrice: selectedProduct.wholesalePrice || undefined,
+          creditPrice: selectedProduct.creditPrice || undefined,
           stock: selectedProduct.stock,
-          min_stock_level: selectedProduct.min_stock_level,
-          warranty_info: selectedProduct.warranty_info,
-          is_active: selectedProduct.is_active,
+          minStockLevel: selectedProduct.minStockLevel,
+          warrantyInfo: selectedProduct.warrantyInfo,
+          isActive: selectedProduct.isActive,
           images: imageString,
         });
       } else {
         form.reset({
           name: '',
-          product_code: '',
+          productCode: '',
           description: '',
-          category_id: '',
-          supplier_id: '',
+          categoryId: '',
+          supplierId: '',
           brand: '',
           unit: 'chiếc',
-          import_price: 0,
+          importPrice: 0,
           price: 0,
-          wholesale_price: undefined,
-          credit_price: undefined,
+          wholesalePrice: undefined,
+          creditPrice: undefined,
           stock: 0,
-          min_stock_level: 5,
-          warranty_info: 'Bảo hành 12 tháng',
-          is_active: true,
+          minStockLevel: 5,
+          warrantyInfo: 'Bảo hành 12 tháng',
+          isActive: true,
           images: '',
         });
       }
@@ -218,7 +218,7 @@ export default function ProductsPage() {
 
   const confirmDelete = () => {
     if (selectedProduct) {
-      setProducts(products.map(p => p.id === selectedProduct.id ? { ...p, is_deleted: true } : p).filter(p => !p.is_deleted));
+      setProducts(products.map(p => p.productId === selectedProduct.productId ? { ...p, isDeleted: true } : p).filter(p => !p.isDeleted));
       toast({ title: 'Thành công', description: 'Sản phẩm đã được xóa.' });
     }
     setDeleteDialogOpen(false);
@@ -234,17 +234,17 @@ export default function ProductsPage() {
 
     if (selectedProduct) {
       const updatedProducts = products.map((p) =>
-        p.id === selectedProduct.id 
+        p.productId === selectedProduct.productId 
           ? { 
               ...p, 
               ...values,
               images: imagesAsJsonString,
               slug: slugify(values.name),
-              wholesale_price: values.wholesale_price || values.price,
-              credit_price: values.credit_price || values.price,
+              wholesalePrice: values.wholesalePrice || values.price,
+              creditPrice: values.creditPrice || values.price,
               description: values.description || '',
-              warranty_info: values.warranty_info || 'Không có',
-              updated_at: now,
+              warrantyInfo: values.warrantyInfo || 'Không có',
+              updatedAt: now,
             } 
           : p
       );
@@ -252,19 +252,19 @@ export default function ProductsPage() {
       toast({ title: 'Thành công', description: 'Sản phẩm đã được cập nhật.' });
     } else {
       const newProduct: Product = {
-        id: `prod-${Math.floor(1000 + Math.random() * 9000)}`,
+        productId: `prod-${Math.floor(1000 + Math.random() * 9000)}`,
         ...values,
         slug: slugify(values.name),
-        wholesale_price: values.wholesale_price || values.price,
-        credit_price: values.credit_price || values.price,
+        wholesalePrice: values.wholesalePrice || values.price,
+        creditPrice: values.creditPrice || values.price,
         images: imagesAsJsonString.length > 2 ? imagesAsJsonString : '["https://picsum.photos/600/600"]',
         specs: '{}',
-        created_at: now,
-        updated_at: now,
-        is_deleted: false,
+        createdAt: now,
+        updatedAt: now,
+        isDeleted: false,
         hint: 'product',
         description: values.description || '',
-        warranty_info: values.warranty_info || 'Không có',
+        warrantyInfo: values.warrantyInfo || 'Không có',
       };
       setProducts([newProduct, ...products]);
       toast({ title: 'Thành công', description: 'Sản phẩm mới đã được thêm.' });
@@ -276,12 +276,12 @@ export default function ProductsPage() {
   const productsForCurrentTab = useMemo(() => {
     const searchFiltered = products.filter((p) => 
         p.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-        p.product_code.toLowerCase().includes(searchTerm.toLowerCase())
+        p.productCode.toLowerCase().includes(searchTerm.toLowerCase())
     );
     
     switch(activeTab) {
         case 'Sắp hết hàng':
-            return searchFiltered.filter(p => p.stock > 0 && p.stock <= p.min_stock_level);
+            return searchFiltered.filter(p => p.stock > 0 && p.stock <= p.minStockLevel);
         case 'Hết hàng':
             return searchFiltered.filter(p => p.stock === 0);
         case 'Tất cả':
@@ -307,7 +307,7 @@ export default function ProductsPage() {
   };
 
   const getCategoryName = (categoryId: string) => {
-    return mockCategories.find((c) => c.id === categoryId)?.name || "N/A";
+    return mockCategories.find((c) => c.categoryId === categoryId)?.name || "N/A";
   };
   
   const totalPages = Math.ceil(productsForCurrentTab.length / productsPerPage);
@@ -320,8 +320,8 @@ export default function ProductsPage() {
   const firstItem = productsForCurrentTab.length > 0 ? (currentPage - 1) * productsPerPage + 1 : 0;
   const lastItem = Math.min(currentPage * productsPerPage, productsForCurrentTab.length);
   
-  const activeCategories = mockCategories.filter(c => c.is_active && !c.is_deleted);
-  const activeSuppliers = mockSuppliers.filter(s => !s.is_deleted);
+  const activeCategories = mockCategories.filter(c => c.isActive && !c.isDeleted);
+  const activeSuppliers = mockSuppliers.filter(s => !s.isDeleted);
 
   return (
     <>
@@ -380,7 +380,7 @@ export default function ProductsPage() {
                 </TableHeader>
                 <TableBody>
                   {paginatedProducts.map((product) => (
-                    <TableRow key={product.id} onClick={() => router.push(`/products/${product.slug}`)} className="cursor-pointer">
+                    <TableRow key={product.productId} onClick={() => router.push(`/products/${product.slug}`)} className="cursor-pointer">
                       <TableCell className="hidden sm:table-cell">
                         <Image
                           alt={product.name}
@@ -393,15 +393,15 @@ export default function ProductsPage() {
                       </TableCell>
                       <TableCell className="font-medium">
                         <div>{product.name}</div>
-                        <div className="text-xs text-muted-foreground">{product.product_code}</div>
+                        <div className="text-xs text-muted-foreground">{product.productCode}</div>
                       </TableCell>
                       <TableCell className="hidden md:table-cell">{product.brand}</TableCell>
                       <TableCell className="text-right">{formatCurrency(product.price)}</TableCell>
-                      <TableCell className="hidden lg:table-cell text-right">{formatCurrency(product.wholesale_price)}</TableCell>
+                      <TableCell className="hidden lg:table-cell text-right">{formatCurrency(product.wholesalePrice)}</TableCell>
                       <TableCell className="hidden md:table-cell text-center">
                         {product.stock <= 0 ? (
                             <Badge variant="destructive">Hết hàng</Badge>
-                        ) : product.stock <= product.min_stock_level ? (
+                        ) : product.stock <= product.minStockLevel ? (
                             <Badge variant="outline">{product.stock}</Badge>
                         ) : (
                             product.stock
@@ -480,7 +480,7 @@ export default function ProductsPage() {
                 />
                  <FormField
                   control={form.control}
-                  name="product_code"
+                  name="productCode"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Mã sản phẩm (SKU)</FormLabel>
@@ -506,7 +506,7 @@ export default function ProductsPage() {
                 />
                 <FormField
                     control={form.control}
-                    name="category_id"
+                    name="categoryId"
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Thể loại</FormLabel>
@@ -518,7 +518,7 @@ export default function ProductsPage() {
                           </FormControl>
                           <SelectContent>
                             {activeCategories.map((category) => (
-                              <SelectItem key={category.id} value={category.id}>
+                              <SelectItem key={category.categoryId} value={category.categoryId}>
                                 {category.name}
                               </SelectItem>
                             ))}
@@ -530,7 +530,7 @@ export default function ProductsPage() {
                   />
                   <FormField
                     control={form.control}
-                    name="supplier_id"
+                    name="supplierId"
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Nhà cung cấp</FormLabel>
@@ -542,7 +542,7 @@ export default function ProductsPage() {
                           </FormControl>
                           <SelectContent>
                             {activeSuppliers.map((supplier) => (
-                              <SelectItem key={supplier.id} value={supplier.id}>
+                              <SelectItem key={supplier.supplierId} value={supplier.supplierId}>
                                 {supplier.name}
                               </SelectItem>
                             ))}
@@ -586,7 +586,7 @@ export default function ProductsPage() {
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
                         <FormField
                             control={form.control}
-                            name="import_price"
+                            name="importPrice"
                             render={({ field }) => (
                             <FormItem>
                                 <FormLabel>Giá nhập</FormLabel>
@@ -612,7 +612,7 @@ export default function ProductsPage() {
                         />
                         <FormField
                             control={form.control}
-                            name="wholesale_price"
+                            name="wholesalePrice"
                             render={({ field }) => (
                             <FormItem>
                                 <FormLabel>Giá sỉ</FormLabel>
@@ -625,7 +625,7 @@ export default function ProductsPage() {
                         />
                         <FormField
                             control={form.control}
-                            name="credit_price"
+                            name="creditPrice"
                             render={({ field }) => (
                             <FormItem>
                                 <FormLabel>Giá bán nợ</FormLabel>
@@ -667,7 +667,7 @@ export default function ProductsPage() {
                 />
                 <FormField
                     control={form.control}
-                    name="min_stock_level"
+                    name="minStockLevel"
                     render={({ field }) => (
                     <FormItem>
                         <FormLabel>Tồn kho tối thiểu</FormLabel>
@@ -680,7 +680,7 @@ export default function ProductsPage() {
                 />
                <FormField
                   control={form.control}
-                  name="warranty_info"
+                  name="warrantyInfo"
                   render={({ field }) => {
                     const warrantyMonths = field.value?.match(/\d+/)?.[0] || '0';
                     return (
@@ -717,7 +717,7 @@ export default function ProductsPage() {
                 />
                 <FormField
                   control={form.control}
-                  name="is_active"
+                  name="isActive"
                   render={({ field }) => (
                     <FormItem className="md:col-span-3 flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
                        <div className="space-y-0.5">

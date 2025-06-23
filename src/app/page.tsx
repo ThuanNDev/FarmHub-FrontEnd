@@ -128,7 +128,7 @@ export default function LandingPage() {
             </div>
             <div className="mx-auto grid grid-cols-1 gap-8 sm:grid-cols-2 md:grid-cols-3 lg:gap-12 mt-12">
               {featuredProducts.map((product) => (
-                <Card key={product.ProductId} className="group overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-2">
+                <Card key={product.productId} className="group overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-2">
                     <div className="overflow-hidden">
                         <Image
                             src={getImageUrl(product.images)}
@@ -255,5 +255,3 @@ export default function LandingPage() {
     </div>
   );
 }
-
-    

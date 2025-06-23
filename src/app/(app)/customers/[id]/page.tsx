@@ -42,7 +42,7 @@ export default function CustomerDetailPage() {
   const { t } = useLanguage();
   const { toast } = useToast();
 
-  const [customer, setCustomer] = React.useState(mockCustomers.find((c) => c.CustomerId === params.id && !c.is_deleted));
+  const [customer, setCustomer] = React.useState(mockCustomers.find((c) => c.customerId === params.id && !c.isDeleted));
   const [isRedeemDialogOpen, setRedeemDialogOpen] = React.useState(false);
 
 
@@ -50,7 +50,7 @@ export default function CustomerDetailPage() {
     notFound();
   }
   
-  const customerOrders = mockOrders.filter(o => o.CustomerId === customer.CustomerId);
+  const customerOrders = mockOrders.filter(o => o.customerId === customer.customerId);
   
   const formatCurrency = (amount: number | null) => {
     if (amount === null || amount === undefined) return '-';
@@ -78,14 +78,14 @@ export default function CustomerDetailPage() {
   const handleRedeemVoucher = (voucher: typeof mockVouchers[0]) => {
     if (!customer) return;
 
-    const newPoints = customer.loyalty_points - voucher.points_cost;
+    const newPoints = customer.loyaltyPoints - voucher.pointsCost;
 
-    const customerInDb = mockCustomers.find(c => c.CustomerId === customer.CustomerId);
+    const customerInDb = mockCustomers.find(c => c.customerId === customer.customerId);
     if (customerInDb) {
-      customerInDb.loyalty_points = newPoints;
+      customerInDb.loyaltyPoints = newPoints;
     }
     
-    setCustomer(prev => prev ? { ...prev, loyalty_points: newPoints } : undefined);
+    setCustomer(prev => prev ? { ...prev, loyaltyPoints: newPoints } : undefined);
 
     toast({
       title: "Đổi voucher thành công!",
@@ -111,7 +111,7 @@ export default function CustomerDetailPage() {
             <Card>
                 <CardHeader>
                     <CardTitle className="font-headline">{customer.name}</CardTitle>
-                    <CardDescription>{customer.customer_type === 'Wholesale' ? 'Khách sỉ' : 'Khách lẻ'}</CardDescription>
+                    <CardDescription>{customer.customerType === 'Wholesale' ? 'Khách sỉ' : 'Khách lẻ'}</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                     <div className="flex items-center gap-3">
@@ -129,7 +129,7 @@ export default function CustomerDetailPage() {
                     <Separator />
                      <div className="space-y-2">
                         <h4 className="font-semibold">Thông tin thêm</h4>
-                        <p className="text-sm"><span className="text-muted-foreground">Mã số thuế:</span> {customer.tax_code || 'N/A'}</p>
+                        <p className="text-sm"><span className="text-muted-foreground">Mã số thuế:</span> {customer.taxCode || 'N/A'}</p>
                         <p className="text-sm"><span className="text-muted-foreground">Ghi chú:</span> {customer.note || 'Không có'}</p>
                      </div>
                 </CardContent>
@@ -142,15 +142,15 @@ export default function CustomerDetailPage() {
                     <div className="space-y-2">
                         <div className="flex justify-between">
                             <span className="text-muted-foreground">Hạn mức</span>
-                            <span className="font-medium">{formatCurrency(customer.credit_limit)}</span>
+                            <span className="font-medium">{formatCurrency(customer.creditLimit)}</span>
                         </div>
                         <div className="flex justify-between">
                             <span className="text-muted-foreground">Tổng nợ</span>
-                            <span className="font-medium text-destructive">{formatCurrency(customer.total_debt)}</span>
+                            <span className="font-medium text-destructive">{formatCurrency(customer.totalDebt)}</span>
                         </div>
                          <div className="flex justify-between">
                             <span className="text-muted-foreground">Ngày đến hạn</span>
-                            <span className="font-medium">{formatDate(customer.debt_due_date)}</span>
+                            <span className="font-medium">{formatDate(customer.debtDueDate)}</span>
                         </div>
                     </div>
                 </CardContent>
@@ -166,11 +166,11 @@ export default function CustomerDetailPage() {
                   <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
                       <div className="space-y-1">
                           <p className="text-sm text-muted-foreground">Điểm tích lũy</p>
-                          <p className="text-2xl font-bold text-primary">{customer.loyalty_points.toLocaleString()}</p>
+                          <p className="text-2xl font-bold text-primary">{customer.loyaltyPoints.toLocaleString()}</p>
                       </div>
                       <div className="text-right">
                           <p className="text-sm text-muted-foreground">Hạng</p>
-                          <Badge variant="default" className="text-base">{customer.loyalty_tier}</Badge>
+                          <Badge variant="default" className="text-base">{customer.loyaltyTier}</Badge>
                       </div>
                   </div>
                   <Button className="w-full" onClick={() => setRedeemDialogOpen(true)}>
@@ -198,13 +198,13 @@ export default function CustomerDetailPage() {
                  </TableHeader>
                  <TableBody>
                    {customerOrders.map((order) => (
-                     <TableRow key={order.OrderId} onClick={() => router.push(`/orders/${order.OrderId}`)} className="cursor-pointer">
-                       <TableCell className="font-medium">{order.order_code}</TableCell>
-                       <TableCell>{formatDate(order.created_at)}</TableCell>
+                     <TableRow key={order.orderId} onClick={() => router.push(`/orders/${order.orderId}`)} className="cursor-pointer">
+                       <TableCell className="font-medium">{order.orderCode}</TableCell>
+                       <TableCell>{formatDate(order.createdAt)}</TableCell>
                        <TableCell>
                          <Badge variant={getStatusVariant(order.status) as any}>{t(`status.${order.status.toLowerCase()}`)}</Badge>
                        </TableCell>
-                       <TableCell className="text-right">{formatCurrency(order.total_amount)}</TableCell>
+                       <TableCell className="text-right">{formatCurrency(order.totalAmount)}</TableCell>
                      </TableRow>
                    ))}
                  </TableBody>
@@ -225,23 +225,23 @@ export default function CustomerDetailPage() {
         <DialogHeader>
           <DialogTitle className="font-headline">Đổi điểm thưởng</DialogTitle>
           <DialogDescription>
-            Chọn voucher bạn muốn đổi. Điểm của bạn: {customer.loyalty_points.toLocaleString()}
+            Chọn voucher bạn muốn đổi. Điểm của bạn: {customer.loyaltyPoints.toLocaleString()}
           </DialogDescription>
         </DialogHeader>
         <div className="py-4 max-h-[60vh] overflow-y-auto">
           <div className="space-y-4">
             {mockVouchers.map((voucher) => (
-              <Card key={voucher.VoucherId} className={cn(customer.loyalty_points < voucher.points_cost && "bg-muted/50 opacity-60")}>
+              <Card key={voucher.voucherId} className={cn(customer.loyaltyPoints < voucher.pointsCost && "bg-muted/50 opacity-60")}>
                 <CardContent className="p-4 flex items-center justify-between">
                   <div>
                     <h4 className="font-semibold">{voucher.name}</h4>
                     <p className="text-sm text-muted-foreground">{voucher.description}</p>
-                    <p className="text-sm font-bold text-primary mt-1">{voucher.points_cost.toLocaleString()} điểm</p>
+                    <p className="text-sm font-bold text-primary mt-1">{voucher.pointsCost.toLocaleString()} điểm</p>
                   </div>
                   <Button
                     size="sm"
                     onClick={() => handleRedeemVoucher(voucher)}
-                    disabled={customer.loyalty_points < voucher.points_cost}
+                    disabled={customer.loyaltyPoints < voucher.pointsCost}
                   >
                     Đổi
                   </Button>

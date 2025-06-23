@@ -44,7 +44,7 @@ export default function Dashboard() {
   useEffect(() => {
     const today = new Date();
     const newOrdersCount = mockOrders.filter(order => {
-        const orderDate = new Date(order.created_at);
+        const orderDate = new Date(order.createdAt);
         return orderDate.getMonth() === today.getMonth() && orderDate.getFullYear() === today.getFullYear() && order.status !== 'Cancelled';
     }).length;
     setNewOrdersThisMonth(newOrdersCount);
@@ -63,25 +63,25 @@ export default function Dashboard() {
     recentOrders,
     bestSellingProducts
   } = useMemo(() => {
-    const totalRevenue = mockOrders.reduce((sum, order) => order.status !== 'Cancelled' ? sum + order.total_amount : sum, 0);
-    const totalDebt = mockCustomers.reduce((sum, customer) => sum + (customer.total_debt || 0), 0);
-    const totalCustomers = mockCustomers.filter(c => !c.is_deleted).length;
+    const totalRevenue = mockOrders.reduce((sum, order) => order.status !== 'Cancelled' ? sum + order.totalAmount : sum, 0);
+    const totalDebt = mockCustomers.reduce((sum, customer) => sum + (customer.totalDebt || 0), 0);
+    const totalCustomers = mockCustomers.filter(c => !c.isDeleted).length;
     
-    const recentOrders = [...mockOrders].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()).slice(0, 5);
+    const recentOrders = [...mockOrders].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).slice(0, 5);
 
     const productSales: { [key: string]: { quantity: number, product: any } } = {};
 
     mockOrderItems.forEach(item => {
-        const order = mockOrders.find(o => o.id === item.order_id);
+        const order = mockOrders.find(o => o.orderId === item.orderId);
         if (order && order.status !== 'Cancelled') {
-            if (!productSales[item.product_id]) {
-                const product = mockProducts.find(p => p.id === item.product_id);
+            if (!productSales[item.productId]) {
+                const product = mockProducts.find(p => p.productId === item.productId);
                 if (product) {
-                    productSales[item.product_id] = { product, quantity: 0 };
+                    productSales[item.productId] = { product, quantity: 0 };
                 }
             }
-            if (productSales[item.product_id]) {
-                productSales[item.product_id].quantity += item.quantity;
+            if (productSales[item.productId]) {
+                productSales[item.productId].quantity += item.quantity;
             }
         }
     });
@@ -94,7 +94,7 @@ export default function Dashboard() {
   }, []);
 
   const getCustomerName = (customerId: string) => {
-    return mockCustomers.find(c => c.id === customerId)?.name || 'Khách lẻ';
+    return mockCustomers.find(c => c.customerId === customerId)?.name || 'Khách lẻ';
   };
   
   const getImageUrl = (imagesJson: string) => {
@@ -224,19 +224,19 @@ export default function Dashboard() {
               </TableHeader>
               <TableBody>
                 {recentOrders.map((order) => (
-                  <TableRow key={order.id}>
+                  <TableRow key={order.orderId}>
                     <TableCell>
-                      <div className="font-medium">{getCustomerName(order.customer_id)}</div>
+                      <div className="font-medium">{getCustomerName(order.customerId)}</div>
                     </TableCell>
                     <TableCell className="hidden sm:table-cell">
-                      {format(new Date(order.created_at), 'dd/MM/yyyy')}
+                      {format(new Date(order.createdAt), 'dd/MM/yyyy')}
                     </TableCell>
                     <TableCell>
                         <Badge variant={order.status === 'Delivered' ? 'default' : order.status === 'Cancelled' ? 'destructive' : 'secondary'}>
                             {order.status}
                         </Badge>
                     </TableCell>
-                    <TableCell className="text-right">{formatCurrency(order.total_amount)}</TableCell>
+                    <TableCell className="text-right">{formatCurrency(order.totalAmount)}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -253,7 +253,7 @@ export default function Dashboard() {
           <CardContent>
             <div className="space-y-4">
               {bestSellingProducts.length > 0 ? bestSellingProducts.map(({product, quantity}) => (
-                <div key={product.id} className="flex items-center">
+                <div key={product.productId} className="flex items-center">
                     <Avatar className="h-9 w-9 border">
                         <AvatarImage src={getImageUrl(product.images)} alt={product.name} data-ai-hint={product.hint} />
                         <AvatarFallback>{product.name.charAt(0)}</AvatarFallback>

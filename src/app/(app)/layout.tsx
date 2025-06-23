@@ -178,12 +178,12 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
   const { toast } = useToast();
   const { locale, setLocale, t } = useLanguage();
 
-  const appCreator = mockUsers.find(u => u.is_superadmin);
+  const appCreator = mockUsers.find(u => u.isSuperadmin);
   
   const [notifications, setNotifications] = React.useState(initialNotifications);
   const [notifActiveTab, setNotifActiveTab] = React.useState('all');
 
-  const unreadCount = React.useMemo(() => notifications.filter(n => !n.is_read).length, [notifications]);
+  const unreadCount = React.useMemo(() => notifications.filter(n => !n.isRead).length, [notifications]);
   
   React.useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -219,11 +219,11 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
   }, [router]);
 
   const handleMarkAsRead = (notificationId: string) => {
-    setNotifications(prev => prev.map(n => n.NotificationId === notificationId ? { ...n, is_read: true } : n));
+    setNotifications(prev => prev.map(n => n.notificationId === notificationId ? { ...n, isRead: true } : n));
   };
   
   const handleMarkAllAsRead = () => {
-    setNotifications(prev => prev.map(n => ({...n, is_read: true})));
+    setNotifications(prev => prev.map(n => ({...n, isRead: true})));
   };
 
   const filteredNotifications = React.useMemo(() => {
@@ -330,20 +330,20 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
                       filteredNotifications.map((notification) => (
                         <Link
                           href={notification.link || '#'}
-                          key={notification.NotificationId}
-                          onClick={() => handleMarkAsRead(notification.NotificationId)}
+                          key={notification.notificationId}
+                          onClick={() => handleMarkAsRead(notification.notificationId)}
                           className="block"
                         >
                            <div className={cn(
                             'flex items-start gap-3 rounded-lg p-3 text-sm transition-colors hover:bg-muted',
-                            !notification.is_read && 'bg-primary/5'
+                            !notification.isRead && 'bg-primary/5'
                            )}>
-                            {!notification.is_read && <div className="mt-1 h-2 w-2 rounded-full bg-primary" />}
-                            <div className={cn('flex-1 space-y-1', notification.is_read && 'pl-5')}>
+                            {!notification.isRead && <div className="mt-1 h-2 w-2 rounded-full bg-primary" />}
+                            <div className={cn('flex-1 space-y-1', notification.isRead && 'pl-5')}>
                               <p className="font-medium">{notification.title}</p>
                               <p className="text-muted-foreground">{notification.description}</p>
                               <p className="text-xs text-muted-foreground/80">
-                                <RelativeTime date={notification.created_at} />
+                                <RelativeTime date={notification.createdAt} />
                               </p>
                             </div>
                           </div>

@@ -84,12 +84,12 @@ import { useLanguage } from '@/contexts/LanguageContext';
 type User = typeof mockUsers[0];
 
 const userSchema = z.object({
-  full_name: z.string().min(1, { message: "Họ tên không được để trống." }),
+  fullName: z.string().min(1, { message: "Họ tên không được để trống." }),
   username: z.string().min(3, { message: "Tên đăng nhập phải có ít nhất 3 ký tự." }),
   email: z.string().email({ message: "Email không hợp lệ." }),
   phone: z.string().optional(),
   role: z.enum(['Admin', 'Staff']),
-  is_active: z.boolean().default(true),
+  isActive: z.boolean().default(true),
   password: z.string().optional(),
   confirmPassword: z.string().optional(),
 }).refine((data) => {
@@ -128,12 +128,12 @@ export default function UsersPage() {
   const form = useForm<UserFormValues>({
     resolver: zodResolver(userSchema),
     defaultValues: {
-      full_name: '',
+      fullName: '',
       username: '',
       email: '',
       phone: '',
       role: 'Staff',
-      is_active: true,
+      isActive: true,
       password: '',
       confirmPassword: ''
     },
@@ -142,7 +142,7 @@ export default function UsersPage() {
   const filteredUsers = useMemo(() => {
     if (!searchTerm) return users;
     return users.filter(user =>
-      user.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       user.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
       user.email.toLowerCase().includes(searchTerm.toLowerCase())
     );
@@ -152,24 +152,24 @@ export default function UsersPage() {
     if (isAddEditDialogOpen) {
       if (selectedUser) {
         form.reset({
-          full_name: selectedUser.full_name,
+          fullName: selectedUser.fullName,
           username: selectedUser.username,
           email: selectedUser.email,
           phone: selectedUser.phone,
           role: selectedUser.role,
-          is_active: selectedUser.is_active,
+          isActive: selectedUser.isActive,
           password: '',
           confirmPassword: '',
         });
         form.getFieldState('password').isDirty = false;
       } else {
         form.reset({
-            full_name: '',
+            fullName: '',
             username: '',
             email: '',
             phone: '',
             role: 'Staff',
-            is_active: true,
+            isActive: true,
             password: '',
             confirmPassword: '',
         });
@@ -194,7 +194,7 @@ export default function UsersPage() {
 
   const confirmDelete = () => {
     if (selectedUser) {
-      setUsers(users.filter(u => u.id !== selectedUser.id));
+      setUsers(users.filter(u => u.userId !== selectedUser.userId));
       toast({ title: "Thành công", description: "Người dùng đã được xóa." });
     }
     setDeleteDialogOpen(false);
@@ -209,32 +209,32 @@ export default function UsersPage() {
     const now = new Date().toISOString();
     if (selectedUser) {
       const updatedUsers = users.map(u => 
-        u.id === selectedUser.id ? { 
+        u.userId === selectedUser.userId ? { 
             ...u, 
             ...values, 
-            password_hash: values.password ? `hashed_${values.password}` : u.password_hash,
-            updated_at: now 
+            passwordHash: values.password ? `hashed_${values.password}` : u.passwordHash,
+            updatedAt: now 
         } : u
       );
       setUsers(updatedUsers);
       toast({ title: "Thành công", description: "Người dùng đã được cập nhật." });
     } else {
       const newUser: User = {
-        id: `user-${Math.floor(1000 + Math.random() * 9000)}`,
+        userId: `user-${Math.floor(1000 + Math.random() * 9000)}`,
         username: values.username,
-        password_hash: `hashed_${values.password}`,
-        full_name: values.full_name,
+        passwordHash: `hashed_${values.password}`,
+        fullName: values.fullName,
         email: values.email,
         phone: values.phone || '',
         role: values.role,
-        associated_store_ids: ['store-001'],
-        is_active: values.is_active,
-        is_superadmin: values.role === 'Admin',
-        last_login_at: null,
-        created_at: now,
-        updated_at: now,
-        password_reset_token: null,
-        token_expiry_at: null,
+        associatedStoreIds: ['store-001'],
+        isActive: values.isActive,
+        isSuperadmin: values.role === 'Admin',
+        lastLoginAt: null,
+        createdAt: now,
+        updatedAt: now,
+        passwordResetToken: null,
+        tokenExpiryAt: null,
       };
       setUsers([newUser, ...users]);
       toast({ title: "Thành công", description: "Người dùng mới đã được thêm." });
@@ -245,7 +245,7 @@ export default function UsersPage() {
 
   // --- Role-based View ---
   if (currentUser.role !== 'Admin') {
-    const user = mockUsers.find(u => u.id === currentUser.id);
+    const user = mockUsers.find(u => u.userId === currentUser.userId);
 
     if (!user) {
       return (
@@ -261,11 +261,11 @@ export default function UsersPage() {
         <CardHeader>
           <div className="flex items-start gap-4">
             <Avatar className="h-20 w-20 border">
-              <AvatarImage src={`https://placehold.co/128x128.png`} alt={user.full_name} />
-              <AvatarFallback>{user.full_name.charAt(0)}</AvatarFallback>
+              <AvatarImage src={`https://placehold.co/128x128.png`} alt={user.fullName} />
+              <AvatarFallback>{user.fullName.charAt(0)}</AvatarFallback>
             </Avatar>
             <div className="pt-2">
-              <CardTitle className="font-headline text-2xl">{user.full_name}</CardTitle>
+              <CardTitle className="font-headline text-2xl">{user.fullName}</CardTitle>
               <CardDescription>@{user.username}</CardDescription>
             </div>
           </div>
@@ -294,8 +294,8 @@ export default function UsersPage() {
                   <span>Vai trò: {user.role}</span>
                 </div>
                  <div className="flex items-center gap-3">
-                   <Badge variant={user.is_active ? 'default' : 'secondary'}>
-                      {t(user.is_active ? 'status.active' : 'status.inactive')}
+                   <Badge variant={user.isActive ? 'default' : 'secondary'}>
+                      {t(user.isActive ? 'status.active' : 'status.inactive')}
                     </Badge>
                 </div>
               </div>
@@ -356,9 +356,9 @@ export default function UsersPage() {
             </TableHeader>
             <TableBody>
               {filteredUsers.map((user) => (
-                <TableRow key={user.id} onClick={() => router.push(`/users/${user.id}`)} className="cursor-pointer">
+                <TableRow key={user.userId} onClick={() => router.push(`/users/${user.userId}`)} className="cursor-pointer">
                   <TableCell>
-                    <div className="font-medium">{user.full_name}</div>
+                    <div className="font-medium">{user.fullName}</div>
                     <div className="text-sm text-muted-foreground">@{user.username}</div>
                   </TableCell>
                   <TableCell>
@@ -367,8 +367,8 @@ export default function UsersPage() {
                   </TableCell>
                   <TableCell>{user.role}</TableCell>
                   <TableCell>
-                      <Badge variant={user.is_active ? 'default' : 'secondary'}>
-                        {t(user.is_active ? 'status.active' : 'status.inactive')}
+                      <Badge variant={user.isActive ? 'default' : 'secondary'}>
+                        {t(user.isActive ? 'status.active' : 'status.inactive')}
                       </Badge>
                   </TableCell>
                   <TableCell onClick={(e) => e.stopPropagation()}>
@@ -409,7 +409,7 @@ export default function UsersPage() {
             <form onSubmit={form.handleSubmit(onSubmit)} className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4 max-h-[70vh] overflow-y-auto pr-6">
                 <FormField
                   control={form.control}
-                  name="full_name"
+                  name="fullName"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Họ và tên</FormLabel>
@@ -495,7 +495,7 @@ export default function UsersPage() {
                   />
                 <FormField
                   control={form.control}
-                  name="is_active"
+                  name="isActive"
                   render={({ field }) => (
                     <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm md:col-span-2">
                        <div className="space-y-0.5">
@@ -527,7 +527,7 @@ export default function UsersPage() {
             <AlertDialogTitle>Bạn có chắc chắn không?</AlertDialogTitle>
             <AlertDialogDescription>
               Hành động này không thể hoàn tác. Thao tác này sẽ xóa vĩnh viễn người dùng
-               <strong> "{selectedUser?.full_name}"</strong>.
+               <strong> "{selectedUser?.fullName}"</strong>.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

@@ -64,11 +64,11 @@ export default function OrdersPage() {
   const [orderToCancel, setOrderToCancel] = useState<Order | null>(null);
 
   const getCustomerName = (customerId: string) => {
-    return mockCustomers.find(c => c.id === customerId)?.name || t('pos.guest');
+    return mockCustomers.find(c => c.customerId === customerId)?.name || t('pos.guest');
   };
 
   const filteredOrders = useMemo(() => {
-    const sortedOrders = [...orders].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+    const sortedOrders = [...orders].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
     
     let ordersToFilter = sortedOrders;
     if (activeTab !== 'all') {
@@ -77,8 +77,8 @@ export default function OrdersPage() {
     
     if (searchTerm) {
         ordersToFilter = ordersToFilter.filter(order => 
-            order.order_code.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            getCustomerName(order.customer_id).toLowerCase().includes(searchTerm.toLowerCase())
+            order.orderCode.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            getCustomerName(order.customerId).toLowerCase().includes(searchTerm.toLowerCase())
         );
     }
     
@@ -130,10 +130,10 @@ export default function OrdersPage() {
     if (!orderToCancel) return;
     setOrders(prevOrders =>
       prevOrders.map(o =>
-        o.id === orderToCancel.id ? { ...o, status: 'Cancelled', delivery_status: 'Cancelled', updated_at: new Date().toISOString() } : o
+        o.orderId === orderToCancel.orderId ? { ...o, status: 'Cancelled', deliveryStatus: 'Cancelled', updatedAt: new Date().toISOString() } : o
       )
     );
-    toast({ title: t('common.success'), description: t('pages.orders.success_cancel', { code: orderToCancel.order_code }) });
+    toast({ title: t('common.success'), description: t('pages.orders.success_cancel', { code: orderToCancel.orderCode }) });
     setOrderToCancel(null);
   };
 
@@ -143,19 +143,19 @@ export default function OrdersPage() {
 
     const newOrder: Order = {
       ...cancelledOrder,
-      id: `ord-${now.getTime()}`,
-      order_code: newOrderCode,
+      orderId: `ord-${now.getTime()}`,
+      orderCode: newOrderCode,
       status: 'Pending',
-      delivery_status: 'Processing',
-      created_at: now.toISOString(),
-      updated_at: now.toISOString(),
+      deliveryStatus: 'Processing',
+      createdAt: now.toISOString(),
+      updatedAt: now.toISOString(),
     };
 
-    const originalItems = mockOrderItems.filter(item => item.order_id === cancelledOrder.id);
+    const originalItems = mockOrderItems.filter(item => item.orderId === cancelledOrder.orderId);
     const newItems = originalItems.map(item => ({
       ...item,
-      id: `item-${now.getTime()}-${Math.floor(Math.random() * 1000)}`,
-      order_id: newOrder.id,
+      orderItemId: `item-${now.getTime()}-${Math.floor(Math.random() * 1000)}`,
+      orderId: newOrder.orderId,
     }));
     
     mockOrderItems.push(...newItems);
@@ -165,7 +165,7 @@ export default function OrdersPage() {
 
     toast({
       title: t('common.success'),
-      description: t('pages.orders.success_recreate', { code: newOrder.order_code }),
+      description: t('pages.orders.success_recreate', { code: newOrder.orderCode }),
     });
   };
 
@@ -191,14 +191,14 @@ export default function OrdersPage() {
     ];
     
     const rows = filteredOrders.map(order => [
-      `"${order.order_code}"`,
-      `"${getCustomerName(order.customer_id)}"`,
-      `"${formatDate(order.created_at)}"`,
+      `"${order.orderCode}"`,
+      `"${getCustomerName(order.customerId)}"`,
+      `"${formatDate(order.createdAt)}"`,
       `"${t(`status.${order.status.toLowerCase()}`)}"`,
-      order.total_amount,
-      order.total_paid,
-      order.total_amount - order.total_paid,
-      `"${order.payment_type}"`
+      order.totalAmount,
+      order.totalPaid,
+      order.totalAmount - order.totalPaid,
+      `"${order.paymentType}"`
     ]);
 
     let csvContent = "data:text/csv;charset=utf-8,\uFEFF" 
@@ -290,11 +290,11 @@ export default function OrdersPage() {
                 </TableHeader>
                 <TableBody>
                   {filteredOrders.map((order) => (
-                    <TableRow key={order.id} onClick={() => router.push(`/orders/${order.id}`)} className="cursor-pointer">
-                      <TableCell className="font-medium">{order.order_code}</TableCell>
-                      <TableCell>{getCustomerName(order.customer_id)}</TableCell>
+                    <TableRow key={order.orderId} onClick={() => router.push(`/orders/${order.orderId}`)} className="cursor-pointer">
+                      <TableCell className="font-medium">{order.orderCode}</TableCell>
+                      <TableCell>{getCustomerName(order.customerId)}</TableCell>
                       <TableCell className="hidden md:table-cell">
-                        {formatDate(order.created_at)}
+                        {formatDate(order.createdAt)}
                       </TableCell>
                       <TableCell>
                         <Badge variant={getStatusVariant(order.status) as any}>
@@ -302,7 +302,7 @@ export default function OrdersPage() {
                         </Badge>
                       </TableCell>
                       <TableCell className="text-right">
-                        {formatCurrency(order.total_amount)}
+                        {formatCurrency(order.totalAmount)}
                       </TableCell>
                       <TableCell onClick={(e) => e.stopPropagation()}>
                         <DropdownMenu>
@@ -349,7 +349,7 @@ export default function OrdersPage() {
           <AlertDialogHeader>
             <AlertDialogTitle>{t('common.are_you_sure')}</AlertDialogTitle>
             <AlertDialogDescription>
-              {t('pages.orders.cancel_dialog_description', { code: orderToCancel?.order_code })}
+              {t('pages.orders.cancel_dialog_description', { code: orderToCancel?.orderCode })}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

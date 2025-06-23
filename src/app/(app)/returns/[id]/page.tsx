@@ -46,26 +46,26 @@ export default function ReturnOrderDetailPage() {
   const params = useParams<{ id: string }>();
   const { t } = useLanguage();
   
-  const initialRO = React.useMemo(() => mockReturnOrders.find((ro) => ro.id === params.id), [params.id]);
+  const initialRO = React.useMemo(() => mockReturnOrders.find((ro) => ro.returnOrderId === params.id), [params.id]);
   
   const [returnOrder, setReturnOrder] = React.useState<ReturnOrder | undefined>(initialRO);
   const { toast } = useToast();
 
   React.useEffect(() => {
-    setReturnOrder(mockReturnOrders.find((ro) => ro.id === params.id));
+    setReturnOrder(mockReturnOrders.find((ro) => ro.returnOrderId === params.id));
   }, [params.id]);
 
   if (!returnOrder) {
     notFound();
   }
   
-  const originalOrder = mockOrders.find(o => o.id === returnOrder.order_id);
-  const customer = mockCustomers.find(c => c.id === returnOrder.customer_id);
-  const processor = mockUsers.find(u => u.id === returnOrder.processed_by_user_id);
-  const items = mockReturnOrderItems.filter(item => item.return_order_id === returnOrder.id);
+  const originalOrder = mockOrders.find(o => o.orderId === returnOrder.orderId);
+  const customer = mockCustomers.find(c => c.customerId === returnOrder.customerId);
+  const processor = mockUsers.find(u => u.userId === returnOrder.processedByUserId);
+  const items = mockReturnOrderItems.filter(item => item.returnOrderId === returnOrder.returnOrderId);
   
   const handleAction = (action: 'approve' | 'reject' | 'restock' | 'refund') => {
-    const roInDb = mockReturnOrders.find(ro => ro.id === returnOrder.id);
+    const roInDb = mockReturnOrders.find(ro => ro.returnOrderId === returnOrder.returnOrderId);
     if (!roInDb) return;
 
     let newStatus = roInDb.status;
@@ -81,10 +81,10 @@ export default function ReturnOrderDetailPage() {
       newStatus = 'refunded';
       toastMessage = t('pages.returns.success_refund');
     } else if (action === 'restock') {
-        const itemsToRestock = mockReturnOrderItems.filter(item => item.return_order_id === returnOrder.id && !item.restocked);
+        const itemsToRestock = mockReturnOrderItems.filter(item => item.returnOrderId === returnOrder.returnOrderId && !item.restocked);
         itemsToRestock.forEach(item => {
             if (item.condition === 'new') {
-                const product = mockProducts.find(p => p.id === item.product_id);
+                const product = mockProducts.find(p => p.productId === item.productId);
                 if (product) {
                     product.stock += item.quantity;
                 }
@@ -98,7 +98,7 @@ export default function ReturnOrderDetailPage() {
     }
     
     roInDb.status = newStatus;
-    roInDb.updated_at = new Date().toISOString();
+    roInDb.updatedAt = new Date().toISOString();
     setReturnOrder({ ...roInDb });
 
     toast({ title: t('common.success'), description: toastMessage });
@@ -127,7 +127,7 @@ export default function ReturnOrderDetailPage() {
     }
   };
   
-  const getProduct = (productId: string) => mockProducts.find(p => p.id === productId);
+  const getProduct = (productId: string) => mockProducts.find(p => p.productId === productId);
 
   return (
     <div className="flex flex-col gap-4">
@@ -158,9 +158,9 @@ export default function ReturnOrderDetailPage() {
         <CardHeader>
           <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
             <div>
-              <CardTitle className="font-headline text-2xl">Chi tiết đơn trả hàng #{returnOrder.id.slice(-6)}</CardTitle>
+              <CardTitle className="font-headline text-2xl">Chi tiết đơn trả hàng #{returnOrder.returnOrderId.slice(-6)}</CardTitle>
               <CardDescription>
-                Ngày tạo: {formatDate(returnOrder.created_at)}
+                Ngày tạo: {formatDate(returnOrder.createdAt)}
               </CardDescription>
             </div>
             <Badge className="text-base" variant={getStatusVariant(returnOrder.status)}>{t(`status.${returnOrder.status.toLowerCase()}`)}</Badge>
@@ -185,10 +185,10 @@ export default function ReturnOrderDetailPage() {
                            <h3 className="font-headline text-lg">Thông tin đơn hàng</h3>
                         </CardHeader>
                         <CardContent className="space-y-1 text-sm">
-                            <p><span className="font-semibold">Đơn gốc:</span> <Button variant="link" size="sm" className="p-0 h-auto" onClick={() => router.push(`/orders/${originalOrder?.id}`)}>{originalOrder?.order_code}</Button></p>
-                            <p><span className="font-semibold">Tổng hoàn tiền:</span> {formatCurrency(returnOrder.total_refund_amount)}</p>
-                            <p><span className="font-semibold">Ngày trả:</span> {formatDate(returnOrder.return_date)}</p>
-                            <p><span className="font-semibold">Người xử lý:</span> {processor?.full_name || 'Chưa có'}</p>
+                            <p><span className="font-semibold">Đơn gốc:</span> <Button variant="link" size="sm" className="p-0 h-auto" onClick={() => router.push(`/orders/${originalOrder?.orderId}`)}>{originalOrder?.orderCode}</Button></p>
+                            <p><span className="font-semibold">Tổng hoàn tiền:</span> {formatCurrency(returnOrder.totalRefundAmount)}</p>
+                            <p><span className="font-semibold">Ngày trả:</span> {formatDate(returnOrder.returnDate)}</p>
+                            <p><span className="font-semibold">Người xử lý:</span> {processor?.fullName || 'Chưa có'}</p>
                         </CardContent>
                     </Card>
                     <Card>
@@ -220,12 +220,12 @@ export default function ReturnOrderDetailPage() {
                                 </TableHeader>
                                 <TableBody>
                                 {items.map(item => {
-                                    const product = getProduct(item.product_id);
+                                    const product = getProduct(item.productId);
                                     return (
-                                        <TableRow key={item.id}>
+                                        <TableRow key={item.returnOrderItemId}>
                                             <TableCell className="font-medium">{product?.name || 'Sản phẩm không tìm thấy'}</TableCell>
                                             <TableCell className="text-center">{item.quantity}</TableCell>
-                                            <TableCell className="text-right">{formatCurrency(item.unit_price)}</TableCell>
+                                            <TableCell className="text-right">{formatCurrency(item.unitPrice)}</TableCell>
                                             <TableCell><Badge variant="outline">{item.condition}</Badge></TableCell>
                                             <TableCell>{item.restocked ? <Badge variant="default">Đã nhập lại</Badge> : <Badge variant="secondary">Chưa</Badge>}</TableCell>
                                         </TableRow>

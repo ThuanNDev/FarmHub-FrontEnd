@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
@@ -76,18 +77,18 @@ export default function StockAdjustmentsPage() {
     },
   });
 
-  const getProductName = (productId: string) => mockProducts.find(p => p.id === productId)?.name || 'N/A';
+  const getProductName = (productId: string) => mockProducts.find(p => p.productId === productId)?.name || 'N/A';
 
   const filteredAdjustments = useMemo(() => {
     if (!searchTerm) return adjustments;
     return adjustments.filter(adj => 
-        getProductName(adj.product_id).toLowerCase().includes(searchTerm.toLowerCase()) ||
+        getProductName(adj.productId).toLowerCase().includes(searchTerm.toLowerCase()) ||
         adj.reason.toLowerCase().includes(searchTerm.toLowerCase())
     );
   }, [searchTerm, adjustments]);
 
   const onSubmit = (values: AdjustmentFormValues) => {
-    const product = mockProducts.find(p => p.id === values.productId);
+    const product = mockProducts.find(p => p.productId === values.productId);
     if (!product) {
       toast({ variant: 'destructive', title: 'Lỗi', description: 'Không tìm thấy sản phẩm.' });
       return;
@@ -98,13 +99,13 @@ export default function StockAdjustmentsPage() {
     product.stock += quantity;
 
     const newAdjustment: StockAdjustment = {
-      id: `adj-${Date.now()}`,
-      product_id: values.productId,
-      adjustment_type: values.adjustmentType,
-      quantity_change: quantity,
+      stockAdjustmentId: `adj-${Date.now()}`,
+      productId: values.productId,
+      adjustmentType: values.adjustmentType,
+      quantityChange: quantity,
       reason: values.reason,
-      adjusted_by_user_id: mockUsers[0].id, // Mocked current user
-      created_at: new Date().toISOString(),
+      adjustedByUserId: mockUsers[0].userId, // Mocked current user
+      createdAt: new Date().toISOString(),
     };
     
     mockStockAdjustments.unshift(newAdjustment);
@@ -115,7 +116,7 @@ export default function StockAdjustmentsPage() {
     form.reset();
   };
   
-  const getUserName = (userId: string) => mockUsers.find(u => u.id === userId)?.full_name || 'N/A';
+  const getUserName = (userId: string) => mockUsers.find(u => u.userId === userId)?.fullName || 'N/A';
   const formatDate = (dateString: string) => new Date(dateString).toLocaleString('vi-VN');
 
   return (
@@ -163,17 +164,17 @@ export default function StockAdjustmentsPage() {
             </TableHeader>
             <TableBody>
               {filteredAdjustments.map((adj) => (
-                <TableRow key={adj.id}>
-                  <TableCell>{formatDate(adj.created_at)}</TableCell>
-                  <TableCell className="font-medium">{getProductName(adj.product_id)}</TableCell>
+                <TableRow key={adj.stockAdjustmentId}>
+                  <TableCell>{formatDate(adj.createdAt)}</TableCell>
+                  <TableCell className="font-medium">{getProductName(adj.productId)}</TableCell>
                   <TableCell>
-                    <Badge variant={adj.adjustment_type === 'increase' ? 'default' : 'destructive'}>
-                      {adj.adjustment_type === 'increase' ? 'Tăng' : 'Giảm'}
+                    <Badge variant={adj.adjustmentType === 'increase' ? 'default' : 'destructive'}>
+                      {adj.adjustmentType === 'increase' ? 'Tăng' : 'Giảm'}
                     </Badge>
                   </TableCell>
-                  <TableCell className="text-center font-bold">{adj.quantity_change}</TableCell>
+                  <TableCell className="text-center font-bold">{adj.quantityChange}</TableCell>
                   <TableCell>{adj.reason}</TableCell>
-                  <TableCell>{getUserName(adj.adjusted_by_user_id)}</TableCell>
+                  <TableCell>{getUserName(adj.adjustedByUserId)}</TableCell>
                 </TableRow>
               ))}
             </TableBody>
@@ -278,17 +279,17 @@ export default function StockAdjustmentsPage() {
 function ProductCombobox({ field }: { field: any }) {
     const [open, setOpen] = useState(false);
     const [search, setSearch] = useState("");
-    const availableProducts = useMemo(() => mockProducts.filter(p => p.is_active && !p.is_deleted), []);
+    const availableProducts = useMemo(() => mockProducts.filter(p => p.isActive && !p.isDeleted), []);
 
     const filteredProducts = useMemo(() => {
         if (!search) return availableProducts;
         return availableProducts.filter(p =>
             p.name.toLowerCase().includes(search.toLowerCase()) ||
-            p.product_code.toLowerCase().includes(search.toLowerCase())
+            p.productCode.toLowerCase().includes(search.toLowerCase())
         );
     }, [search, availableProducts]);
 
-    const selectedProduct = availableProducts.find(p => p.id === field.value);
+    const selectedProduct = availableProducts.find(p => p.productId === field.value);
 
     return (
          <Popover open={open} onOpenChange={setOpen}>
@@ -315,18 +316,18 @@ function ProductCombobox({ field }: { field: any }) {
                     <div className="p-2 space-y-1">
                     {filteredProducts.length > 0 ? filteredProducts.map((product) => (
                         <Button
-                            key={product.id}
+                            key={product.productId}
                             variant="ghost"
                             className="w-full justify-start font-normal h-auto py-2 text-left"
                             onClick={() => {
-                                field.onChange(product.id);
+                                field.onChange(product.productId);
                                 setSearch('');
                                 setOpen(false);
                             }}
                         >
                             <div>
                                 <div>{product.name}</div>
-                                <div className="text-xs text-muted-foreground">{product.product_code}</div>
+                                <div className="text-xs text-muted-foreground">{product.productCode}</div>
                             </div>
                         </Button>
                     )) : <p className="p-2 text-center text-sm text-muted-foreground">Không tìm thấy sản phẩm.</p>}

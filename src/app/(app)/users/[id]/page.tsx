@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -20,7 +21,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 
 export default function UserDetailPage() {
   const params = useParams<{ id: string }>();
-  const user = mockUsers.find((u) => u.id === params.id);
+  const user = mockUsers.find((u) => u.userId === params.id);
   const { t } = useLanguage();
   
   const [createdAt, setCreatedAt] = React.useState('');
@@ -33,8 +34,8 @@ export default function UserDetailPage() {
         return new Date(dateString).toLocaleDateString('vi-VN', options);
     }
     if (user) {
-        setCreatedAt(formatDate(user.created_at));
-        setLastLoginAt(formatDate(user.last_login_at));
+        setCreatedAt(formatDate(user.createdAt));
+        setLastLoginAt(formatDate(user.lastLoginAt));
     }
   }, [user]);
 
@@ -42,7 +43,7 @@ export default function UserDetailPage() {
     notFound();
   }
   
-  const associatedStores = mockStores.filter(store => user.associated_store_ids.includes(store.id));
+  const associatedStores = mockStores.filter(store => user.associatedStoreIds.includes(store.storeId));
 
   return (
     <div className="flex flex-col gap-4">
@@ -59,15 +60,15 @@ export default function UserDetailPage() {
         <CardHeader>
           <div className="flex items-center gap-4">
             <Avatar className="h-16 w-16">
-              <AvatarImage src={`https://picsum.photos/seed/${user.id}/128/128`} alt={user.full_name} />
-              <AvatarFallback>{user.full_name.charAt(0)}</AvatarFallback>
+              <AvatarImage src={`https://picsum.photos/seed/${user.userId}/128/128`} alt={user.fullName} />
+              <AvatarFallback>{user.fullName.charAt(0)}</AvatarFallback>
             </Avatar>
             <div>
-              <CardTitle className="font-headline text-2xl">{user.full_name}</CardTitle>
+              <CardTitle className="font-headline text-2xl">{user.fullName}</CardTitle>
               <CardDescription>@{user.username}</CardDescription>
             </div>
-            <Badge variant={user.is_active ? 'default' : 'secondary'} className="ml-auto">
-              {t(user.is_active ? 'status.active' : 'status.inactive')}
+            <Badge variant={user.isActive ? 'default' : 'secondary'} className="ml-auto">
+              {t(user.isActive ? 'status.active' : 'status.inactive')}
             </Badge>
           </div>
         </CardHeader>
@@ -84,7 +85,7 @@ export default function UserDetailPage() {
                 </div>
                 <div className="flex items-center gap-3">
                     <Shield className="h-5 w-5 text-muted-foreground" />
-                    <span className="text-sm">{user.role} {user.is_superadmin && '(Superadmin)'}</span>
+                    <span className="text-sm">{user.role} {user.isSuperadmin && '(Superadmin)'}</span>
                 </div>
                 <div className="flex items-center gap-3">
                     <Briefcase className="h-5 w-5 text-muted-foreground" />

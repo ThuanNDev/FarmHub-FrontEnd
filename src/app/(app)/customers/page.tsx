@@ -83,10 +83,10 @@ const customerSchema = z.object({
   phone: z.string().min(1, "Số điện thoại không được để trống."),
   email: z.string().email("Email không hợp lệ.").optional().or(z.literal('')),
   address: z.string().optional(),
-  tax_code: z.string().optional(),
-  customer_type: z.enum(['Retail', 'Wholesale']),
+  taxCode: z.string().optional(),
+  customerType: z.enum(['Retail', 'Wholesale']),
   note: z.string().optional(),
-  credit_limit: z.coerce.number().min(0).optional(),
+  creditLimit: z.coerce.number().min(0).optional(),
   status: z.enum(['Active', 'Inactive', 'Blocked']),
 });
 
@@ -111,10 +111,10 @@ export default function CustomersPage() {
       phone: '',
       email: '',
       address: '',
-      tax_code: '',
-      customer_type: 'Retail',
+      taxCode: '',
+      customerType: 'Retail',
       note: '',
-      credit_limit: 0,
+      creditLimit: 0,
       status: 'Active',
     },
   });
@@ -131,12 +131,12 @@ export default function CustomersPage() {
       if (selectedCustomer) {
         form.reset({
           ...selectedCustomer,
-          credit_limit: selectedCustomer.credit_limit || 0,
+          creditLimit: selectedCustomer.creditLimit || 0,
         });
       } else {
         form.reset({
-          name: '', phone: '', email: '', address: '', tax_code: '', 
-          customer_type: 'Retail', note: '', credit_limit: 0, status: 'Active'
+          name: '', phone: '', email: '', address: '', taxCode: '', 
+          customerType: 'Retail', note: '', creditLimit: 0, status: 'Active'
         });
       }
     }
@@ -159,7 +159,7 @@ export default function CustomersPage() {
 
   const confirmDelete = () => {
     if (selectedCustomer) {
-      setCustomers(customers.map(c => c.CustomerId === selectedCustomer.CustomerId ? { ...c, is_deleted: true } : c));
+      setCustomers(customers.map(c => c.customerId === selectedCustomer.customerId ? { ...c, isDeleted: true } : c));
       toast({ title: "Thành công", description: "Khách hàng đã được xóa." });
     }
     setDeleteDialogOpen(false);
@@ -170,14 +170,14 @@ export default function CustomersPage() {
     const now = new Date().toISOString();
     if (selectedCustomer) {
       const updatedCustomers = customers.map(c => 
-        c.CustomerId === selectedCustomer.CustomerId 
+        c.customerId === selectedCustomer.customerId 
           ? { 
               ...c, 
               ...values, 
-              updated_at: now,
-              credit_limit: values.credit_limit || null,
+              updatedAt: now,
+              creditLimit: values.creditLimit || null,
               address: values.address || null,
-              tax_code: values.tax_code || null,
+              taxCode: values.taxCode || null,
               note: values.note || null,
             } 
           : c
@@ -186,19 +186,19 @@ export default function CustomersPage() {
       toast({ title: "Thành công", description: "Khách hàng đã được cập nhật." });
     } else {
       const newCustomer: Customer = {
-        CustomerId: `cust-${Math.floor(1000 + Math.random() * 9000)}`,
+        customerId: `cust-${Math.floor(1000 + Math.random() * 9000)}`,
         ...values,
-        total_debt: 0,
-        debt_due_date: null,
-        last_purchase_date: null,
-        loyalty_points: 0,
-        loyalty_tier: 'Bronze',
-        created_at: now,
-        updated_at: now,
-        is_deleted: false,
-        credit_limit: values.credit_limit || null,
+        totalDebt: 0,
+        debtDueDate: null,
+        lastPurchaseDate: null,
+        loyaltyPoints: 0,
+        loyaltyTier: 'Bronze',
+        createdAt: now,
+        updatedAt: now,
+        isDeleted: false,
+        creditLimit: values.creditLimit || null,
         address: values.address || null,
-        tax_code: values.tax_code || null,
+        taxCode: values.taxCode || null,
         note: values.note || null,
       };
       setCustomers([newCustomer, ...customers]);
@@ -215,7 +215,7 @@ export default function CustomersPage() {
   }
 
   const filteredCustomers = customers.filter(customer =>
-    !customer.is_deleted &&
+    !customer.isDeleted &&
     (customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
      customer.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
      customer.phone.toLowerCase().includes(searchTerm.toLowerCase()))
@@ -273,7 +273,7 @@ export default function CustomersPage() {
             </TableHeader>
             <TableBody>
               {filteredCustomers.map((customer) => (
-                <TableRow key={customer.CustomerId} onClick={() => router.push(`/customers/${customer.CustomerId}`)} className="cursor-pointer">
+                <TableRow key={customer.customerId} onClick={() => router.push(`/customers/${customer.customerId}`)} className="cursor-pointer">
                   <TableCell className="font-medium">{customer.name}</TableCell>
                   <TableCell>
                     <div className="font-medium">{customer.phone}</div>
@@ -281,10 +281,10 @@ export default function CustomersPage() {
                       {customer.email}
                     </div>
                   </TableCell>
-                  <TableCell className="hidden md:table-cell">{customer.customer_type}</TableCell>
+                  <TableCell className="hidden md:table-cell">{customer.customerType}</TableCell>
                   <TableCell className="hidden md:table-cell text-right">
-                    <Badge variant={customer.total_debt > 0 ? "destructive" : "outline"}>
-                      {formatCurrency(customer.total_debt)}
+                    <Badge variant={customer.totalDebt > 0 ? "destructive" : "outline"}>
+                      {formatCurrency(customer.totalDebt)}
                     </Badge>
                   </TableCell>
                   <TableCell>
@@ -313,7 +313,7 @@ export default function CustomersPage() {
         </CardContent>
         <CardFooter>
           <div className="text-xs text-muted-foreground">
-            Hiển thị <strong>{filteredCustomers.length}</strong> trên <strong>{customers.filter(c => !c.is_deleted).length}</strong> khách hàng
+            Hiển thị <strong>{filteredCustomers.length}</strong> trên <strong>{customers.filter(c => !c.isDeleted).length}</strong> khách hàng
           </div>
         </CardFooter>
       </Card>
@@ -374,7 +374,7 @@ export default function CustomersPage() {
               />
               <FormField
                 control={form.control}
-                name="tax_code"
+                name="taxCode"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Mã số thuế</FormLabel>
@@ -385,7 +385,7 @@ export default function CustomersPage() {
               />
               <FormField
                 control={form.control}
-                name="credit_limit"
+                name="creditLimit"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Hạn mức công nợ</FormLabel>
@@ -396,7 +396,7 @@ export default function CustomersPage() {
               />
                <FormField
                 control={form.control}
-                name="customer_type"
+                name="customerType"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Loại khách hàng</FormLabel>

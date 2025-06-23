@@ -48,34 +48,34 @@ export default function OrderDetailPage() {
   const { store } = useStore();
   const { t } = useLanguage();
   
-  const initialOrder = React.useMemo(() => mockOrders.find((o) => o.id === params.id), [params.id]);
+  const initialOrder = React.useMemo(() => mockOrders.find((o) => o.orderId === params.id), [params.id]);
   
   const [order, setOrder] = React.useState<Order | undefined>(initialOrder);
   const { toast } = useToast();
 
   React.useEffect(() => {
-    setOrder(mockOrders.find((o) => o.id === params.id));
+    setOrder(mockOrders.find((o) => o.orderId === params.id));
   }, [params.id]);
 
   if (!order) {
     notFound();
   }
   
-  const customer = mockCustomers.find(c => c.id === order.customer_id);
-  const processor = mockUsers.find(u => u.id === order.processed_by_user_id);
-  const items = mockOrderItems.filter(item => item.order_id === order.id);
+  const customer = mockCustomers.find(c => c.customerId === order.customerId);
+  const processor = mockUsers.find(u => u.userId === order.processedByUserId);
+  const items = mockOrderItems.filter(item => item.orderId === order.orderId);
 
   const handleCancelOrder = () => {
-    const orderInMock = mockOrders.find(o => o.id === order.id);
+    const orderInMock = mockOrders.find(o => o.orderId === order.orderId);
     if (orderInMock) {
       orderInMock.status = 'Cancelled';
-      orderInMock.delivery_status = 'Cancelled';
-      orderInMock.updated_at = new Date().toISOString();
+      orderInMock.deliveryStatus = 'Cancelled';
+      orderInMock.updatedAt = new Date().toISOString();
     }
     setOrder({ ...order, status: 'Cancelled' });
     toast({
       title: t('common.success'),
-      description: `Đơn hàng ${order.order_code} đã được hủy.`,
+      description: `Đơn hàng ${order.orderCode} đã được hủy.`,
     });
   };
 
@@ -110,24 +110,24 @@ export default function OrderDetailPage() {
     }
     
     const storeInfo = store;
-    const paperSize = store.printing_preferences?.default_paper_size || 'k80';
+    const paperSize = store.printingPreferences?.defaultPaperSize || 'k80';
     
     const itemsHtmlA5 = items.map(item => `
-        <tr key=${item.id} class="border-b">
-            <td class="p-2">${item.product_name}</td>
+        <tr key=${item.orderItemId} class="border-b">
+            <td class="p-2">${item.productName}</td>
             <td class="p-2 text-center">${item.quantity}</td>
-            <td class="p-2 text-right">${formatCurrency(item.unit_price)}</td>
-            <td class="p-2 text-right">${formatCurrency(item.total_price)}</td>
+            <td class="p-2 text-right">${formatCurrency(item.unitPrice)}</td>
+            <td class="p-2 text-right">${formatCurrency(item.totalPrice)}</td>
         </tr>
     `).join('');
 
     const itemsHtmlThermal = items.map(item => `
       <tr class="item">
         <td>
-          <div class="item-name">${item.product_name}</div>
-          <div class="item-details">SL: ${item.quantity} x ${formatCurrency(item.unit_price)}</div>
+          <div class="item-name">${item.productName}</div>
+          <div class="item-details">SL: ${item.quantity} x ${formatCurrency(item.unitPrice)}</div>
         </td>
-        <td class="text-right">${formatCurrency(item.total_price)}</td>
+        <td class="text-right">${formatCurrency(item.totalPrice)}</td>
       </tr>
     `).join('');
     
@@ -137,7 +137,7 @@ export default function OrderDetailPage() {
        invoiceHtml = `
         <html>
         <head>
-          <title>Hóa đơn ${order.order_code}</title>
+          <title>Hóa đơn ${order.orderCode}</title>
           <style>
             body { font-family: Arial, sans-serif; font-size: 14px; line-height: 1.6; color: #000; background: #fff;}
             .a5-preview { background-color: white; color: black; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1); margin: 0 auto; padding: 2rem; width: 148mm; min-height: 210mm; }
@@ -175,15 +175,15 @@ export default function OrderDetailPage() {
                 </div>
                 <div class="text-right">
                     <h2 class="font-bold text-xl uppercase">Hóa Đơn Bán Hàng</h2>
-                    <p class="text-xs">Mã ĐH: ${order.order_code}</p>
-                    <p class="text-xs">Ngày: ${formatDate(order.created_at)}</p>
+                    <p class="text-xs">Mã ĐH: ${order.orderCode}</p>
+                    <p class="text-xs">Ngày: ${formatDate(order.createdAt)}</p>
                 </div>
             </header>
             <section class="my-6">
                 <h3 class="font-semibold mb-2">Thông tin khách hàng:</h3>
                 <p class="text-sm"><strong>Tên:</strong> ${customer?.name || 'Khách lẻ'}</p>
                 <p class="text-sm"><strong>SĐT:</strong> ${customer?.phone || 'N/A'}</p>
-                <p class="text-sm"><strong>Địa chỉ:</strong> ${order.delivery_address || customer?.address || 'N/A'}</p>
+                <p class="text-sm"><strong>Địa chỉ:</strong> ${order.deliveryAddress || customer?.address || 'N/A'}</p>
             </section>
             <table class="w-full text-sm">
                 <thead class="bg-gray-100">
@@ -197,16 +197,16 @@ export default function OrderDetailPage() {
                 <tbody>${itemsHtmlA5}</tbody>
             </table>
              <div class="total-container">
-                <div class="total-row"><span style="color: #6b7281;">Tạm tính:</span> <strong>${formatCurrency(items.reduce((s, i) => s + i.total_price, 0))}</strong></div>
-                <div class="total-row"><span style="color: #6b7281;">Giảm giá:</span> <strong>-${formatCurrency(order.discount_amount)}</strong></div>
-                <div class="total-row"><span style="color: #6b7281;">Phí VC:</span> <strong>${formatCurrency(order.shipping_fee)}</strong></div>
-                <div class="total-row total-main"><span style="font-weight: bold;">Tổng cộng:</span> <strong style="font-size: 1.125rem; line-height: 1.75rem;">${formatCurrency(order.total_amount)}</strong></div>
-                <div class="total-row"><span style="color: #6b7281;">Đã trả:</span> <strong>${formatCurrency(order.total_paid)}</strong></div>
-                <div class="total-row" style="color: #dc2626; font-weight: 600;"><span class="">Còn lại:</span> <strong>${formatCurrency(order.total_amount - order.total_paid)}</strong></div>
+                <div class="total-row"><span style="color: #6b7281;">Tạm tính:</span> <strong>${formatCurrency(items.reduce((s, i) => s + i.totalPrice, 0))}</strong></div>
+                <div class="total-row"><span style="color: #6b7281;">Giảm giá:</span> <strong>-${formatCurrency(order.discountAmount)}</strong></div>
+                <div class="total-row"><span style="color: #6b7281;">Phí VC:</span> <strong>${formatCurrency(order.shippingFee)}</strong></div>
+                <div class="total-row total-main"><span style="font-weight: bold;">Tổng cộng:</span> <strong style="font-size: 1.125rem; line-height: 1.75rem;">${formatCurrency(order.totalAmount)}</strong></div>
+                <div class="total-row"><span style="color: #6b7281;">Đã trả:</span> <strong>${formatCurrency(order.totalPaid)}</strong></div>
+                <div class="total-row" style="color: #dc2626; font-weight: 600;"><span class="">Còn lại:</span> <strong>${formatCurrency(order.totalAmount - order.totalPaid)}</strong></div>
             </div>
             <footer class="mt-12 text-center text-xs text-gray-500 border-t pt-4">
-                <p>${storeInfo.invoice_footer || 'Cảm ơn quý khách!'}</p>
-                <p>Nhân viên: ${processor?.full_name || 'N/A'}</p>
+                <p>${storeInfo.invoiceFooter || 'Cảm ơn quý khách!'}</p>
+                <p>Nhân viên: ${processor?.fullName || 'N/A'}</p>
             </footer>
           </div>
         </body>
@@ -217,7 +217,7 @@ export default function OrderDetailPage() {
        invoiceHtml = `
         <html>
         <head>
-          <title>Hóa đơn ${order.order_code}</title>
+          <title>Hóa đơn ${order.orderCode}</title>
           <style>
             @page { margin: 0mm; }
             @media print { body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
@@ -252,11 +252,11 @@ export default function OrderDetailPage() {
             </div>
 
             <div class="info">
-              <p><strong>Hóa đơn:</strong> ${order.order_code}</p>
-              <p><strong>Ngày:</strong> ${formatDate(order.created_at)}</p>
+              <p><strong>Hóa đơn:</strong> ${order.orderCode}</p>
+              <p><strong>Ngày:</strong> ${formatDate(order.createdAt)}</p>
               <p><strong>KH:</strong> ${customer?.name || 'Khách lẻ'}</p>
               ${customer ? `<p><strong>SĐT:</strong> ${customer.phone}</p>` : ''}
-              <p><strong>NV:</strong> ${processor?.full_name || 'N/A'}</p>
+              <p><strong>NV:</strong> ${processor?.fullName || 'N/A'}</p>
             </div>
 
             <table class="items-table">
@@ -274,32 +274,32 @@ export default function OrderDetailPage() {
             <div class="totals">
               <div class="row">
                 <span>Tạm tính:</span>
-                <span>${formatCurrency(items.reduce((sum, item) => sum + item.total_price, 0))}</span>
+                <span>${formatCurrency(items.reduce((sum, item) => sum + item.totalPrice, 0))}</span>
               </div>
               <div class="row">
                 <span>Giảm giá:</span>
-                <span>-${formatCurrency(order.discount_amount)}</span>
+                <span>-${formatCurrency(order.discountAmount)}</span>
               </div>
                <div class="row">
                 <span>Phí VC:</span>
-                <span>${formatCurrency(order.shipping_fee)}</span>
+                <span>${formatCurrency(order.shippingFee)}</span>
               </div>
               <div class="row total">
                 <span>TỔNG CỘNG:</span>
-                <span>${formatCurrency(order.total_amount)}</span>
+                <span>${formatCurrency(order.totalAmount)}</span>
               </div>
               <div class="row">
                 <span>Đã trả:</span>
-                <span>${formatCurrency(order.total_paid)}</span>
+                <span>${formatCurrency(order.totalPaid)}</span>
               </div>
               <div class="row">
                 <span style="font-weight: bold;">Còn lại:</span>
-                <span style="font-weight: bold;">${formatCurrency(order.total_amount - order.total_paid)}</span>
+                <span style="font-weight: bold;">${formatCurrency(order.totalAmount - order.totalPaid)}</span>
               </div>
             </div>
 
             <div class="footer">
-              <p>${storeInfo.invoice_footer || 'Cảm ơn quý khách và hẹn gặp lại!'}</p>
+              <p>${storeInfo.invoiceFooter || 'Cảm ơn quý khách và hẹn gặp lại!'}</p>
               <p>${storeInfo.email}</p>
             </div>
           </div>
@@ -366,7 +366,7 @@ export default function OrderDetailPage() {
               <AlertDialogContent>
                 <AlertDialogHeader>
                   <AlertDialogTitle>{t('common.are_you_sure')}</AlertDialogTitle>
-                  <AlertDialogDescription dangerouslySetInnerHTML={{ __html: t('pages.order_details.cancel_dialog_description', { code: order.order_code }) }} />
+                  <AlertDialogDescription dangerouslySetInnerHTML={{ __html: t('pages.order_details.cancel_dialog_description', { code: order.orderCode }) }} />
                 </AlertDialogHeader>
                 <AlertDialogFooter>
                   <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
@@ -383,9 +383,9 @@ export default function OrderDetailPage() {
         <CardHeader>
           <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
             <div>
-              <CardTitle className="font-headline text-2xl">{t('pages.order_details.title', { code: order.order_code })}</CardTitle>
+              <CardTitle className="font-headline text-2xl">{t('pages.order_details.title', { code: order.orderCode })}</CardTitle>
               <CardDescription>
-                {t('pages.order_details.created_date', { date: formatDate(order.created_at) })}
+                {t('pages.order_details.created_date', { date: formatDate(order.createdAt) })}
               </CardDescription>
             </div>
             <Badge className="text-base" variant={getStatusVariant(order.status) as any}>{t(`status.${order.status.toLowerCase()}`)}</Badge>
@@ -404,7 +404,7 @@ export default function OrderDetailPage() {
                             <p className="font-semibold">{customer?.name || 'Khách lẻ'}</p>
                             <p className="text-sm text-muted-foreground">{customer?.phone}</p>
                             <p className="text-sm text-muted-foreground">{customer?.email}</p>
-                            {customer && <Button variant="link" size="sm" className="p-0 h-auto" onClick={() => router.push(`/customers/${customer.id}`)}>{t('pages.order_details.view_customer_details')}</Button>}
+                            {customer && <Button variant="link" size="sm" className="p-0 h-auto" onClick={() => router.push(`/customers/${customer.customerId}`)}>{t('pages.order_details.view_customer_details')}</Button>}
                         </CardContent>
                     </Card>
                      <Card>
@@ -413,9 +413,9 @@ export default function OrderDetailPage() {
                            <h3 className="font-headline text-lg">{t('pages.order_details.shipping_info')}</h3>
                         </CardHeader>
                         <CardContent className="space-y-1 text-sm">
-                            <p><span className="font-semibold">{t('pages.order_details.shipping_address')}</span> {order.delivery_address || t('pages.order_details.shipping_address_pickup')}</p>
-                             <p><span className="font-semibold">{t('pages.order_details.shipping_status')}</span> {order.delivery_status}</p>
-                            <p><span className="font-semibold">{t('pages.order_details.shipping_expected_date')}</span> {formatDate(order.expected_delivery_date)}</p>
+                            <p><span className="font-semibold">{t('pages.order_details.shipping_address')}</span> {order.deliveryAddress || t('pages.order_details.shipping_address_pickup')}</p>
+                             <p><span className="font-semibold">{t('pages.order_details.shipping_status')}</span> {order.deliveryStatus}</p>
+                            <p><span className="font-semibold">{t('pages.order_details.shipping_expected_date')}</span> {formatDate(order.expectedDeliveryDate)}</p>
                         </CardContent>
                     </Card>
                      <Card>
@@ -424,8 +424,8 @@ export default function OrderDetailPage() {
                            <h3 className="font-headline text-lg">{t('pages.order_details.payment_info')}</h3>
                         </CardHeader>
                         <CardContent className="space-y-1 text-sm">
-                            <p><span className="font-semibold">{t('pages.order_details.payment_method')}</span> {order.payment_type}</p>
-                            <p><span className="font-semibold">{t('pages.order_details.payment_details')}</span> {order.payment_details}</p>
+                            <p><span className="font-semibold">{t('pages.order_details.payment_method')}</span> {order.paymentType}</p>
+                            <p><span className="font-semibold">{t('pages.order_details.payment_details')}</span> {order.paymentDetails}</p>
                         </CardContent>
                     </Card>
                     <Card>
@@ -457,11 +457,11 @@ export default function OrderDetailPage() {
                                 </TableHeader>
                                 <TableBody>
                                 {items.map(item => (
-                                    <TableRow key={item.id}>
-                                        <TableCell className="font-medium">{item.product_name}</TableCell>
-                                        <TableCell className="text-center">{item.quantity} {item.product_unit}</TableCell>
-                                        <TableCell className="text-right">{formatCurrency(item.unit_price)}</TableCell>
-                                        <TableCell className="text-right">{formatCurrency(item.total_price)}</TableCell>
+                                    <TableRow key={item.orderItemId}>
+                                        <TableCell className="font-medium">{item.productName}</TableCell>
+                                        <TableCell className="text-center">{item.quantity} {item.productUnit}</TableCell>
+                                        <TableCell className="text-right">{formatCurrency(item.unitPrice)}</TableCell>
+                                        <TableCell className="text-right">{formatCurrency(item.totalPrice)}</TableCell>
                                     </TableRow>
                                 ))}
                                 </TableBody>
@@ -470,28 +470,28 @@ export default function OrderDetailPage() {
                             <div className="space-y-2 text-right">
                                  <div className="flex justify-between">
                                     <span className="text-muted-foreground">{t('pages.order_details.subtotal')}</span>
-                                    <span>{formatCurrency(items.reduce((sum, item) => sum + item.total_price, 0))}</span>
+                                    <span>{formatCurrency(items.reduce((sum, item) => sum + item.totalPrice, 0))}</span>
                                  </div>
                                  <div className="flex justify-between">
                                     <span className="text-muted-foreground">{t('pages.order_details.discount')}</span>
-                                    <span>- {formatCurrency(order.discount_amount)}</span>
+                                    <span>- {formatCurrency(order.discountAmount)}</span>
                                  </div>
                                   <div className="flex justify-between">
                                     <span className="text-muted-foreground">{t('pages.order_details.shipping_fee')}</span>
-                                    <span>{formatCurrency(order.shipping_fee)}</span>
+                                    <span>{formatCurrency(order.shippingFee)}</span>
                                  </div>
                                  <Separator className="my-2"/>
                                  <div className="flex justify-between font-bold text-lg">
                                     <span>{t('pages.order_details.grand_total')}</span>
-                                    <span>{formatCurrency(order.total_amount)}</span>
+                                    <span>{formatCurrency(order.totalAmount)}</span>
                                  </div>
                                  <div className="flex justify-between text-primary">
                                     <span>{t('pages.order_details.paid')}</span>
-                                    <span>{formatCurrency(order.total_paid)}</span>
+                                    <span>{formatCurrency(order.totalPaid)}</span>
                                  </div>
                                  <div className="flex justify-between text-destructive font-semibold">
                                     <span>{t('pages.order_details.remaining')}</span>
-                                    <span>{formatCurrency(order.total_amount - order.total_paid)}</span>
+                                    <span>{formatCurrency(order.totalAmount - order.totalPaid)}</span>
                                  </div>
                             </div>
                         </CardContent>

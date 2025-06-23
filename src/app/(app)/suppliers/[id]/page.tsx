@@ -30,14 +30,14 @@ import { format } from 'date-fns';
 export default function SupplierDetailPage() {
   const router = useRouter();
   const params = useParams<{ id: string }>();
-  const supplier = mockSuppliers.find((s) => s.id === params.id && !s.is_deleted);
+  const supplier = mockSuppliers.find((s) => s.supplierId === params.id && !s.isDeleted);
 
   if (!supplier) {
     notFound();
   }
   
-  const productsFromSupplier = mockProducts.filter(p => p.supplier_id === supplier.id && !p.is_deleted);
-  const purchaseOrdersFromSupplier = mockPurchaseOrders.filter(po => po.supplier_id === supplier.id);
+  const productsFromSupplier = mockProducts.filter(p => p.supplierId === supplier.supplierId && !p.isDeleted);
+  const purchaseOrdersFromSupplier = mockPurchaseOrders.filter(po => po.supplierId === supplier.supplierId);
   
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
@@ -87,7 +87,7 @@ export default function SupplierDetailPage() {
                 <CardContent className="space-y-4">
                     <div className="flex items-center gap-3">
                         <User className="h-4 w-4 text-muted-foreground" />
-                        <span>{supplier.contact_person || 'Chưa có'}</span>
+                        <span>{supplier.contactPerson || 'Chưa có'}</span>
                     </div>
                     <div className="flex items-center gap-3">
                         <Phone className="h-4 w-4 text-muted-foreground" />
@@ -104,7 +104,7 @@ export default function SupplierDetailPage() {
                     <Separator />
                      <div className="space-y-2">
                         <h4 className="font-semibold">Thông tin thêm</h4>
-                        <p className="text-sm"><span className="text-muted-foreground">Mã số thuế:</span> {supplier.tax_code || 'N/A'}</p>
+                        <p className="text-sm"><span className="text-muted-foreground">Mã số thuế:</span> {supplier.taxCode || 'N/A'}</p>
                         <p className="text-sm"><span className="text-muted-foreground">Ghi chú:</span> {supplier.note || 'Không có'}</p>
                      </div>
                 </CardContent>
@@ -129,12 +129,12 @@ export default function SupplierDetailPage() {
                  </TableHeader>
                  <TableBody>
                    {purchaseOrdersFromSupplier.map((po) => (
-                     <TableRow key={po.id} onClick={() => router.push(`/purchases/${po.id}`)} className="cursor-pointer">
-                       <TableCell className="font-medium">{po.order_code}</TableCell>
+                     <TableRow key={po.purchaseOrderId} onClick={() => router.push(`/purchases/${po.purchaseOrderId}`)} className="cursor-pointer">
+                       <TableCell className="font-medium">{po.orderCode}</TableCell>
                        <TableCell>
                          <Badge variant={getStatusVariant(po.status)}>{po.status}</Badge>
                        </TableCell>
-                       <TableCell className="text-right">{formatCurrency(po.total_amount)}</TableCell>
+                       <TableCell className="text-right">{formatCurrency(po.totalAmount)}</TableCell>
                      </TableRow>
                    ))}
                  </TableBody>
@@ -170,7 +170,7 @@ export default function SupplierDetailPage() {
                  </TableHeader>
                  <TableBody>
                    {productsFromSupplier.map((product) => (
-                     <TableRow key={product.id} onClick={() => router.push(`/products/${product.slug}`)} className="cursor-pointer">
+                     <TableRow key={product.productId} onClick={() => router.push(`/products/${product.slug}`)} className="cursor-pointer">
                        <TableCell className="hidden sm:table-cell">
                          <Image
                            alt={product.name}

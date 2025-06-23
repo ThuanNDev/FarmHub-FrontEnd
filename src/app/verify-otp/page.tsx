@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -70,12 +71,12 @@ export default function VerifyOtpPage() {
         // In a real app, you would verify the OTP against a backend service.
         // For this mock, any 6-digit code is considered valid.
         
-        // Update last_login_at to prevent this page from showing again
-        user.last_login_at = new Date().toISOString();
+        // Update lastLoginAt to prevent this page from showing again
+        user.lastLoginAt = new Date().toISOString();
 
         toast({
           title: 'Xác thực thành công',
-          description: `Chào mừng bạn đến với ${mockStores[0].name}, ${user.full_name}!`,
+          description: `Chào mừng bạn đến với ${mockStores[0].name}, ${user.fullName}!`,
         });
         router.push('/dashboard');
       } else {

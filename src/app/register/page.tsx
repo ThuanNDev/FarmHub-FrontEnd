@@ -30,7 +30,7 @@ import { useToast } from '@/hooks/use-toast';
 import { mockUsers, mockStores } from '@/lib/data';
 
 const registerSchema = z.object({
-  full_name: z.string().min(1, { message: 'Họ tên không được để trống.' }),
+  fullName: z.string().min(1, { message: 'Họ tên không được để trống.' }),
   username: z.string().min(3, { message: 'Tên đăng nhập phải có ít nhất 3 ký tự.' }),
   email: z.string().email({ message: 'Email không hợp lệ.' }),
   password: z.string().min(8, { message: 'Mật khẩu phải có ít nhất 8 ký tự.' }),
@@ -50,7 +50,7 @@ export default function RegisterPage() {
   const form = useForm<RegisterFormValues>({
     resolver: zodResolver(registerSchema),
     defaultValues: {
-      full_name: '',
+      fullName: '',
       username: '',
       email: '',
       password: '',
@@ -77,21 +77,21 @@ export default function RegisterPage() {
 
         const now = new Date().toISOString();
         const newUser: (typeof mockUsers)[0] = {
-            UserId: `user-${Math.floor(1000 + Math.random() * 9000)}`,
+            userId: `user-${Math.floor(1000 + Math.random() * 9000)}`,
             username: values.username,
-            password_hash: `hashed_${values.password}`, // Mock hashing
-            full_name: values.full_name,
+            passwordHash: `hashed_${values.password}`, // Mock hashing
+            fullName: values.fullName,
             email: values.email,
             phone: '',
             role: 'Staff' as const,
-            AssociatedStoreIds: ['store-001'],
-            is_active: true,
-            is_superadmin: false,
-            last_login_at: null,
-            created_at: now,
-            updated_at: now,
-            password_reset_token: null,
-            token_expiry_at: null,
+            associatedStoreIds: ['store-001'],
+            isActive: true,
+            isSuperadmin: false,
+            lastLoginAt: null,
+            createdAt: now,
+            updatedAt: now,
+            passwordResetToken: null,
+            tokenExpiryAt: null,
         };
         
         // This adds the user to the array in memory for the current session.
@@ -122,7 +122,7 @@ export default function RegisterPage() {
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <FormField
               control={form.control}
-              name="full_name"
+              name="fullName"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Họ và tên</FormLabel>

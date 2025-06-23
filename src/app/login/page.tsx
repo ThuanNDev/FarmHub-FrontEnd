@@ -69,10 +69,10 @@ export default function LoginPage() {
         const user = mockUsers.find((u) => u.username === values.username || u.email === values.username);
 
         // In a real app, you would compare a hashed password.
-        if (user && user.is_active) {
-            localStorage.setItem('loggedInUserId', user.UserId); // Save user ID
+        if (user && user.isActive) {
+            localStorage.setItem('loggedInUserId', user.userId); // Save user ID
 
-            if (user.last_login_at === null) {
+            if (user.lastLoginAt === null) {
                 // First time login, redirect to OTP verification
                 toast({
                     title: t('login.first_login_title'),
@@ -81,14 +81,14 @@ export default function LoginPage() {
                 router.push(`/verify-otp?username=${user.username}`);
             } else {
                 // Subsequent login
-                user.last_login_at = new Date().toISOString();
+                user.lastLoginAt = new Date().toISOString();
                 toast({
                     title: t('login.success'),
-                    description: t('login.welcome_back', { name: user.full_name }),
+                    description: t('login.welcome_back', { name: user.fullName }),
                 });
                 router.push('/dashboard');
             }
-        } else if (user && !user.is_active) {
+        } else if (user && !user.isActive) {
             toast({
                 variant: 'destructive',
                 title: t('login.failure'),
@@ -111,11 +111,11 @@ export default function LoginPage() {
     // Mock Google authentication
     setTimeout(() => {
         const googleUser = mockUsers[0]; // Let's pretend Google sign-in always logs in the admin
-        localStorage.setItem('loggedInUserId', googleUser.UserId);
+        localStorage.setItem('loggedInUserId', googleUser.userId);
         
         toast({
             title: t('login.success'),
-            description: t('login.welcome_back', { name: googleUser.full_name }),
+            description: t('login.welcome_back', { name: googleUser.fullName }),
         });
         router.push('/dashboard');
     }, 1500);

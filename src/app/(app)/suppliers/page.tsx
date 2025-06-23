@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
@@ -72,15 +73,15 @@ const supplierSchema = z.object({
   phone: z.string().min(1, { message: "Số điện thoại không được để trống." }),
   email: z.string().email("Email không hợp lệ.").optional().or(z.literal('')),
   address: z.string().optional(),
-  tax_code: z.string().optional(),
-  contact_person: z.string().optional(),
+  taxCode: z.string().optional(),
+  contactPerson: z.string().optional(),
   note: z.string().optional(),
 });
 
 type SupplierFormValues = z.infer<typeof supplierSchema>;
 
 export default function SuppliersPage() {
-  const [suppliers, setSuppliers] = useState<Supplier[]>(mockSuppliers.filter(s => !s.is_deleted));
+  const [suppliers, setSuppliers] = useState<Supplier[]>(mockSuppliers.filter(s => !s.isDeleted));
   const [searchTerm, setSearchTerm] = useState('');
   const [isAddEditDialogOpen, setAddEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -96,8 +97,8 @@ export default function SuppliersPage() {
       phone: '',
       email: '',
       address: '',
-      tax_code: '',
-      contact_person: '',
+      taxCode: '',
+      contactPerson: '',
       note: '',
     },
   });
@@ -108,7 +109,7 @@ export default function SuppliersPage() {
       supplier.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       supplier.phone.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (supplier.email && supplier.email.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (supplier.contact_person && supplier.contact_person.toLowerCase().includes(searchTerm.toLowerCase()))
+      (supplier.contactPerson && supplier.contactPerson.toLowerCase().includes(searchTerm.toLowerCase()))
     );
   }, [suppliers, searchTerm]);
 
@@ -118,7 +119,7 @@ export default function SuppliersPage() {
             form.reset(selectedSupplier);
         } else {
             form.reset({
-              name: '', phone: '', email: '', address: '', tax_code: '', contact_person: '', note: ''
+              name: '', phone: '', email: '', address: '', taxCode: '', contactPerson: '', note: ''
             });
         }
     }
@@ -141,7 +142,7 @@ export default function SuppliersPage() {
 
   const confirmDelete = () => {
     if (selectedSupplier) {
-      setSuppliers(suppliers.map(s => s.id === selectedSupplier.id ? { ...s, is_deleted: true } : s).filter(s => !s.is_deleted));
+      setSuppliers(suppliers.map(s => s.supplierId === selectedSupplier.supplierId ? { ...s, isDeleted: true } : s).filter(s => !s.isDeleted));
       toast({ title: "Thành công", description: "Nhà cung cấp đã được xóa." });
     }
     setDeleteDialogOpen(false);
@@ -152,17 +153,17 @@ export default function SuppliersPage() {
     const now = new Date().toISOString();
     if (selectedSupplier) {
       const updatedSuppliers = suppliers.map(s => 
-        s.id === selectedSupplier.id ? { ...s, ...values, updated_at: now } : s
+        s.supplierId === selectedSupplier.supplierId ? { ...s, ...values, updatedAt: now } : s
       );
       setSuppliers(updatedSuppliers);
       toast({ title: "Thành công", description: "Nhà cung cấp đã được cập nhật." });
     } else {
       const newSupplier: Supplier = {
-        id: `supp-${Math.floor(1000 + Math.random() * 9000)}`,
+        supplierId: `supp-${Math.floor(1000 + Math.random() * 9000)}`,
         ...values,
-        created_at: now,
-        updated_at: now,
-        is_deleted: false,
+        createdAt: now,
+        updatedAt: now,
+        isDeleted: false,
       };
       setSuppliers([newSupplier, ...suppliers]);
       toast({ title: "Thành công", description: "Nhà cung cấp mới đã được thêm." });
@@ -216,7 +217,7 @@ export default function SuppliersPage() {
             </TableHeader>
             <TableBody>
               {filteredSuppliers.map((supplier) => (
-                <TableRow key={supplier.id} onClick={() => router.push(`/suppliers/${supplier.id}`)} className="cursor-pointer">
+                <TableRow key={supplier.supplierId} onClick={() => router.push(`/suppliers/${supplier.supplierId}`)} className="cursor-pointer">
                   <TableCell className="font-medium">{supplier.name}</TableCell>
                   <TableCell>
                     <div className="font-medium">{supplier.phone}</div>
@@ -224,7 +225,7 @@ export default function SuppliersPage() {
                       {supplier.email}
                     </div>
                   </TableCell>
-                  <TableCell className="hidden md:table-cell">{supplier.contact_person || '-'}</TableCell>
+                  <TableCell className="hidden md:table-cell">{supplier.contactPerson || '-'}</TableCell>
                   <TableCell onClick={(e) => e.stopPropagation()}>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
@@ -274,7 +275,7 @@ export default function SuppliersPage() {
               />
                <FormField
                 control={form.control}
-                name="contact_person"
+                name="contactPerson"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Người liên hệ</FormLabel>
@@ -318,7 +319,7 @@ export default function SuppliersPage() {
               />
               <FormField
                 control={form.control}
-                name="tax_code"
+                name="taxCode"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Mã số thuế</FormLabel>

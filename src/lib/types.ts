@@ -3,258 +3,258 @@
 // Timestamps are in ISO 8601 format.
 
 export type BankInfo = {
-  BankId: string;
-  account_no: string;
-  account_name: string;
+  bankId: string;
+  accountNo: string;
+  accountName: string;
 };
 
 export type PrintingPreferences = {
-  default_paper_size: 'k80' | 'a5' | 'k58';
+  defaultPaperSize: 'k80' | 'a5' | 'k58';
 };
 
 export type Defaults = {
   unit: string;
   discount: number;
-  shipping_fee: number;
+  shippingFee: number;
 };
 
 export type Store = {
-  StoreId: string;
+  storeId: string;
   name: string;
   address: string;
   phone: string;
   email: string;
-  database_name: string;
-  UserId: string; // manager_id
-  opening_hours: string;
-  is_active: boolean;
-  created_at: string;
-  updated_at: string;
-  bank_info: BankInfo;
-  is_vat_enabled: boolean;
-  vat_rate: number;
-  invoice_footer: string;
-  printing_preferences: PrintingPreferences;
-  backup_schedule: string;
+  databaseName: string;
+  userId: string; // manager_id
+  openingHours: string;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+  bankInfo: BankInfo;
+  isVatEnabled: boolean;
+  vatRate: number;
+  invoiceFooter: string;
+  printingPreferences: PrintingPreferences;
+  backupSchedule: string;
   defaults: Defaults;
 };
 
 export type User = {
-  UserId: string;
+  userId: string;
   username: string;
-  password_hash: string;
-  full_name: string;
+  passwordHash: string;
+  fullName: string;
   email: string;
   phone: string;
   role: 'Admin' | 'Staff';
-  AssociatedStoreIds: string[];
-  is_active: boolean;
-  is_superadmin: boolean;
-  last_login_at: string | null;
-  created_at: string;
-  updated_at: string;
-  password_reset_token: string | null;
-  token_expiry_at: string | null;
+  associatedStoreIds: string[];
+  isActive: boolean;
+  isSuperadmin: boolean;
+  lastLoginAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+  passwordResetToken: string | null;
+  tokenExpiryAt: string | null;
 };
 
 export type Category = {
-  CategoryId: string;
+  categoryId: string;
   name: string;
   slug: string;
   description: string;
-  ParentCategoryId: string | null;
+  parentCategoryId: string | null;
   image: string;
   order: number;
-  is_active: boolean;
-  created_at: string;
-  updated_at: string;
-  is_deleted: boolean;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+  isDeleted: boolean;
 };
 
 export type Supplier = {
-  SupplierId: string;
+  supplierId: string;
   name: string;
   phone: string;
   email: string;
   address: string;
-  tax_code: string | null;
-  contact_person: string | null;
+  taxCode: string | null;
+  contactPerson: string | null;
   note: string | null;
-  created_at: string;
-  updated_at: string;
-  is_deleted: boolean;
+  createdAt: string;
+  updatedAt: string;
+  isDeleted: boolean;
 };
 
 export type Product = {
-  ProductId: string;
-  product_code: string;
+  productId: string;
+  productCode: string;
   name: string;
   slug: string;
   description: string;
-  CategoryId: string;
+  categoryId: string;
   brand: string;
   unit: string;
-  import_price: number;
-  wholesale_price: number;
+  importPrice: number;
+  wholesalePrice: number;
   price: number;
-  credit_price: number;
+  creditPrice: number;
   stock: number;
-  min_stock_level: number;
+  minStockLevel: number;
   images: string; // JSON string of URLs
   specs: string; // JSON string of specs
-  warranty_info: string;
-  SupplierId: string;
-  is_active: boolean;
-  is_deleted: boolean;
-  created_at: string;
-  updated_at: string;
+  warrantyInfo: string;
+  supplierId: string;
+  isActive: boolean;
+  isDeleted: boolean;
+  createdAt: string;
+  updatedAt: string;
   hint: string;
 };
 
 export type Customer = {
-  CustomerId: string;
+  customerId: string;
   name: string;
   phone: string;
   email: string;
   address: string | null;
-  tax_code: string | null;
-  customer_type: 'Retail' | 'Wholesale';
+  taxCode: string | null;
+  customerType: 'Retail' | 'Wholesale';
   note: string | null;
-  credit_limit: number | null;
-  total_debt: number;
-  debt_due_date: string | null;
-  last_purchase_date: string | null;
-  loyalty_points: number;
-  loyalty_tier: 'Bronze' | 'Silver' | 'Gold' | 'Diamond';
+  creditLimit: number | null;
+  totalDebt: number;
+  debtDueDate: string | null;
+  lastPurchaseDate: string | null;
+  loyaltyPoints: number;
+  loyaltyTier: 'Bronze' | 'Silver' | 'Gold' | 'Diamond';
   status: 'Active' | 'Inactive' | 'Blocked';
-  created_at: string;
-  updated_at: string;
-  is_deleted: boolean;
+  createdAt: string;
+  updatedAt: string;
+  isDeleted: boolean;
 };
 
 export type Order = {
-  OrderId: string;
-  order_code: string;
-  CustomerId: string;
-  total_amount: number;
-  discount_amount: number;
-  shipping_fee: number;
-  total_paid: number;
-  payment_type: 'Cash' | 'Card' | 'Transfer' | 'Credit' | 'Installment';
-  payment_details: string;
+  orderId: string;
+  orderCode: string;
+  customerId: string;
+  totalAmount: number;
+  discountAmount: number;
+  shippingFee: number;
+  totalPaid: number;
+  paymentType: 'Cash' | 'Card' | 'Transfer' | 'Credit' | 'Installment';
+  paymentDetails: string;
   status: 'Pending' | 'Delivered' | 'Cancelled';
-  expected_delivery_date: string | null;
-  delivery_address: string | null;
-  delivery_status: 'Processing' | 'Shipped' | 'Completed' | 'Cancelled' | 'N/A';
+  expectedDeliveryDate: string | null;
+  deliveryAddress: string | null;
+  deliveryStatus: 'Processing' | 'Shipped' | 'Completed' | 'Cancelled' | 'N/A';
   note: string | null;
-  ProcessedByUserId: string;
-  created_at: string;
-  updated_at: string;
+  processedByUserId: string;
+  createdAt: string;
+  updatedAt: string;
 };
 
 export type OrderItem = {
-  OrderItemId: string;
-  OrderId: string;
-  ProductId: string;
-  product_name: string;
-  product_unit: string;
+  orderItemId: string;
+  orderId: string;
+  productId: string;
+  productName: string;
+  productUnit: string;
   quantity: number;
-  unit_price: number;
-  total_price: number;
+  unitPrice: number;
+  totalPrice: number;
 };
 
 export type InstallmentTerm = {
-  InstallmentTermId: string;
-  OrderId: string;
-  installment_number: number;
-  due_date: string;
+  installmentTermId: string;
+  orderId: string;
+  installmentNumber: number;
+  dueDate: string;
   amount: number;
-  paid_at: string | null;
-  payment_method: string | null;
-  is_late: boolean;
+  paidAt: string | null;
+  paymentMethod: string | null;
+  isLate: boolean;
   note: string | null;
-  CollectedByUserId: string | null;
-  created_at: string;
+  collectedByUserId: string | null;
+  createdAt: string;
   updatedAt: string;
 };
 
 export type Bank = {
-    BankId: string;
+    bankId: string;
     name: string;
 }
 
 export type PurchaseOrder = {
-    PurchaseOrderId: string;
-    order_code: string;
-    SupplierId: string;
-    total_amount: number;
+    purchaseOrderId: string;
+    orderCode: string;
+    supplierId: string;
+    totalAmount: number;
     status: 'pending' | 'ordered' | 'received' | 'cancelled';
-    expected_delivery_date: string | null;
-    received_date: string | null;
+    expectedDeliveryDate: string | null;
+    receivedDate: string | null;
     note: string | null;
-    CreatedByUserId: string;
-    created_at: string;
-    updated_at: string;
+    createdByUserId: string;
+    createdAt: string;
+    updatedAt: string;
 }
 
 export type PurchaseOrderItem = {
-    PurchaseOrderItemId: string;
-    PurchaseOrderId: string;
-    ProductId: string;
+    purchaseOrderItemId: string;
+    purchaseOrderId: string;
+    productId: string;
     quantity: number;
-    unit_price: number;
-    total_price: number;
-    received_quantity: number;
+    unitPrice: number;
+    totalPrice: number;
+    receivedQuantity: number;
 }
 
 export type StockAdjustment = {
-    StockAdjustmentId: string;
-    ProductId: string;
-    adjustment_type: 'increase' | 'decrease';
-    quantity_change: number;
+    stockAdjustmentId: string;
+    productId: string;
+    adjustmentType: 'increase' | 'decrease';
+    quantityChange: number;
     reason: string;
-    AdjustedByUserId: string;
-    created_at: string;
+    adjustedByUserId: string;
+    createdAt: string;
 }
 
 export type ReturnOrder = {
-    ReturnOrderId: string;
-    OrderId: string;
-    CustomerId: string;
-    return_date: string;
-    total_refund_amount: number;
+    returnOrderId: string;
+    orderId: string;
+    customerId: string;
+    returnDate: string;
+    totalRefundAmount: number;
     reason: string | null;
     status: 'pending' | 'approved' | 'rejected' | 'refunded' | 'restocked';
-    ProcessedByUserId: string;
-    created_at: string;
-    updated_at: string;
+    processedByUserId: string;
+    createdAt: string;
+    updatedAt: string;
 }
 
 export type ReturnOrderItem = {
-    ReturnOrderItemId: string;
-    ReturnOrderId: string;
-    ProductId: string;
+    returnOrderItemId: string;
+    returnOrderId: string;
+    productId: string;
     quantity: number;
-    unit_price: number;
+    unitPrice: number;
     condition: 'new' | 'used' | 'damaged';
     restocked: boolean;
 }
 
 export type Notification = {
-    NotificationId: string;
+    notificationId: string;
     type: 'order' | 'inventory' | 'system';
     title: string;
     description: string;
     link?: string;
-    is_read: boolean;
-    created_at: string;
+    isRead: boolean;
+    createdAt: string;
 }
 
 export type Voucher = {
-    VoucherId: string;
+    voucherId: string;
     name: string;
     description: string;
-    points_cost: number;
+    pointsCost: number;
     value: number;
     type: 'fixed' | 'percentage' | 'shipping';
 }
