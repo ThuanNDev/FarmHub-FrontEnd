@@ -134,7 +134,7 @@ export default function StockAdjustmentsPage() {
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
                 </div>
-                <Button size="sm" className="h-10 gap-1 bg-accent hover:bg-accent/90 text-accent-foreground" onClick={() => setDialogOpen(true)}>
+                <Button size="sm" className="h-10 gap-1" onClick={() => setDialogOpen(true)}>
                     <PlusCircle className="h-3.5 w-3.5" />
                     <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
                         Tạo phiếu điều chỉnh
@@ -258,7 +258,7 @@ export default function StockAdjustmentsPage() {
                 )}
               />
               <DialogFooter>
-                <Button type="submit" className="bg-primary hover:bg-primary/90">Xác nhận</Button>
+                <Button type="submit">Xác nhận</Button>
               </DialogFooter>
             </form>
           </Form>

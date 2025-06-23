@@ -236,7 +236,7 @@ export default function CustomersPageContent() {
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
               </div>
-              <Button size="sm" className="h-10 gap-1 bg-accent hover:bg-accent/90 text-accent-foreground" onClick={handleAddNew}>
+              <Button size="sm" className="h-10 gap-1" onClick={handleAddNew}>
                 <PlusCircle className="h-3.5 w-3.5" />
                 <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
                   Thêm khách hàng
@@ -433,7 +433,7 @@ export default function CustomersPageContent() {
                 )}
               />
               <DialogFooter className="md:col-span-2">
-                <Button type="submit" className="bg-primary hover:bg-primary/90">Lưu khách hàng</Button>
+                <Button type="submit">Lưu khách hàng</Button>
               </DialogFooter>
             </form>
           </Form>

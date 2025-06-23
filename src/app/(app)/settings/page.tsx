@@ -435,7 +435,7 @@ export default function SettingsPage() {
             />
           </CardContent>
           <CardFooter className="border-t px-6 py-4">
-            <Button type="submit" className="bg-primary hover:bg-primary/90">Lưu thay đổi</Button>
+            <Button type="submit">Lưu thay đổi</Button>
           </CardFooter>
         </form>
       </Form>

@@ -213,7 +213,7 @@ export default function CategoriesPage() {
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
                 </div>
-                <Button size="sm" className="h-10 gap-1 bg-accent hover:bg-accent/90 text-accent-foreground" onClick={handleAddNew}>
+                <Button size="sm" className="h-10 gap-1" onClick={handleAddNew}>
                     <PlusCircle className="h-3.5 w-3.5" />
                     <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
                     Thêm thể loại
@@ -398,7 +398,7 @@ export default function CategoriesPage() {
                 )}
               />
               <DialogFooter className="md:col-span-2">
-                <Button type="submit" className="bg-primary hover:bg-primary/90">Lưu</Button>
+                <Button type="submit">Lưu</Button>
               </DialogFooter>
             </form>
           </Form>

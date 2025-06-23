@@ -920,7 +920,7 @@ export default function POSPageContent() {
                       <span>{formatCurrency(totalWithVat)}</span>
                   </div>
               </div>
-              <Button className="w-full bg-accent hover:bg-accent/90 text-accent-foreground" size="lg" disabled={cart.length === 0} onClick={() => setPaymentDialogOpen(true)}>
+              <Button size="lg" disabled={cart.length === 0} onClick={() => setPaymentDialogOpen(true)} className="w-full">
                 {editingOrderId ? 'Cập nhật đơn hàng' : t('pos.create_order')}
               </Button>
             </CardFooter>
@@ -1055,7 +1055,7 @@ export default function POSPageContent() {
                 )}
               />
               <DialogFooter className="md:col-span-2">
-                <Button type="submit" className="bg-primary hover:bg-primary/90">{t('common.save')}</Button>
+                <Button type="submit">{t('common.save')}</Button>
               </DialogFooter>
             </form>
           </Form>
@@ -1251,7 +1251,6 @@ export default function POSPageContent() {
                     <Button variant="ghost" onClick={() => setPaymentDialogOpen(false)}>{t('common.cancel')}</Button>
                     <Button 
                       onClick={handleConfirmPayment} 
-                      className="bg-primary hover:bg-primary/90"
                       disabled={remainingAmountInDialog > 0 && !selectedCustomer}
                     >
                       {t('pos.confirm_and_create')}

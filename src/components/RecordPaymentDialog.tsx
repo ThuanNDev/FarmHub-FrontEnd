@@ -134,7 +134,7 @@ export function RecordPaymentDialog({
             />
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Hủy</Button>
-              <Button type="submit" className="bg-primary hover:bg-primary/90">Xác nhận thanh toán</Button>
+              <Button type="submit">Xác nhận thanh toán</Button>
             </DialogFooter>
           </form>
         </Form>

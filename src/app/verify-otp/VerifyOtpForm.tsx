@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -114,7 +115,7 @@ export default function VerifyOtpForm() {
                 </FormItem>
               )}
             />
-            <Button type="submit" className="w-full bg-primary hover:bg-primary/90 mt-2" disabled={isLoading}>
+            <Button type="submit" className="w-full mt-2" disabled={isLoading}>
               {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Xác nhận
             </Button>

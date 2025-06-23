@@ -156,7 +156,7 @@ export default function LoginPage() {
                 </FormItem>
               )}
             />
-            <Button type="submit" className="w-full bg-primary hover:bg-primary/90 mt-2" disabled={isLoading || isGoogleLoading}>
+            <Button type="submit" className="w-full mt-2" disabled={isLoading || isGoogleLoading}>
               {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               {t('login.submit')}
             </Button>
