@@ -81,6 +81,7 @@ import { mockUsers } from '@/lib/data';
 import { useToast } from '@/hooks/use-toast';
 import { useLanguage } from '@/store/LanguageContext';
 import { userSchema, changePasswordSchema } from '@/lib/form-schemas';
+import { UserRole } from '@/types';
 
 type User = typeof mockUsers[0];
 type UserFormValues = z.infer<typeof userSchema>;
@@ -107,7 +108,7 @@ export default function UsersPage() {
       username: '',
       email: '',
       phone: '',
-      role: 'Staff',
+      role: UserRole.STORE_STAFF,
       isActive: true,
       password: '',
       confirmPassword: ''
@@ -152,7 +153,7 @@ export default function UsersPage() {
             username: '',
             email: '',
             phone: '',
-            role: 'Staff',
+            role: UserRole.STORE_STAFF,
             isActive: true,
             password: '',
             confirmPassword: '',
@@ -197,7 +198,8 @@ export default function UsersPage() {
             ...u, 
             ...values, 
             passwordHash: values.password ? `hashed_${values.password}` : u.passwordHash,
-            updatedAt: now 
+            updatedAt: now,
+            isSuperadmin: values.role === UserRole.ADMIN_GLOBAL
         } : u
       );
       setUsers(updatedUsers);
@@ -213,7 +215,7 @@ export default function UsersPage() {
         role: values.role,
         associatedStoreIds: ['store-001'],
         isActive: true,
-        isSuperadmin: values.role === 'Admin',
+        isSuperadmin: values.role === UserRole.ADMIN_GLOBAL,
         lastLoginAt: null,
         createdAt: now,
         updatedAt: now,
@@ -242,7 +244,7 @@ export default function UsersPage() {
   }
 
   // --- Role-based View ---
-  if (currentUser.role !== 'Admin') {
+  if (currentUser.role === UserRole.STORE_STAFF || currentUser.role === UserRole.VIEWER) {
     const user = mockUsers.find(u => u.userId === currentUser.userId);
 
     if (!user) {
@@ -536,8 +538,8 @@ export default function UsersPage() {
                               <SelectTrigger><SelectValue placeholder="Chọn vai trò" /></SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              <SelectItem value="Admin">Quản trị viên (Admin)</SelectItem>
-                              <SelectItem value="Staff">Nhân viên (Staff)</SelectItem>
+                              <SelectItem value={UserRole.STORE_MANAGER}>Quản lý Cửa hàng</SelectItem>
+                              <SelectItem value={UserRole.STORE_STAFF}>Nhân viên</SelectItem>
                             </SelectContent>
                           </Select>
                         <FormMessage />

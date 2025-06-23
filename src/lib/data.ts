@@ -1,5 +1,6 @@
 
 import type { Store, User, Category, Supplier, Product, Customer, Order, OrderItem, InstallmentTerm, Bank, PurchaseOrder, PurchaseOrderItem, StockAdjustment, ReturnOrder, ReturnOrderItem, Notification, Voucher } from '@/types';
+import { UserRole } from '@/types';
 
 // All IDs are kept simple for mocking purposes. In a real DB, these would be UUIDs or CUIDs.
 // Timestamps are in ISO 8601 format.
@@ -55,7 +56,7 @@ export const mockUsers: User[] = [
       fullName: 'Tên Của Bạn',
       email: 'email@cuaban.com',
       phone: '0123456789',
-      role: 'Admin',
+      role: UserRole.ADMIN_GLOBAL,
       associatedStoreIds: ['store-001'],
       isActive: true,
       isSuperadmin: true,
@@ -72,7 +73,7 @@ export const mockUsers: User[] = [
       fullName: 'Nguyễn Thị Bích',
       email: 'bich.nguyen@nongcoxanh.com',
       phone: '0912345678',
-      role: 'Staff',
+      role: UserRole.STORE_STAFF,
       associatedStoreIds: ['store-001'],
       isActive: true,
       isSuperadmin: false,
@@ -1214,6 +1215,7 @@ export const mockVouchers: Voucher[] = [
   { voucherId: 'v-004', name: 'Miễn phí vận chuyển', description: 'Hỗ trợ tối đa 50.000đ phí ship.', pointsCost: 4000, value: 50000, type: 'shipping' },
   { voucherId: 'v-005', name: 'Giảm giá 500.000đ', description: 'Cho đơn hàng từ 5.000.000đ.', pointsCost: 48000, value: 500000, type: 'fixed' }
 ];
+
 
 
 

@@ -1,5 +1,6 @@
 
 import * as z from 'zod';
+import { UserRole } from '@/types';
 
 export const categorySchema = z.object({
   name: z.string().min(1, { message: "Tên thể loại không được để trống." }),
@@ -117,7 +118,7 @@ export const userSchema = z.object({
   username: z.string().min(3, { message: "Tên đăng nhập phải có ít nhất 3 ký tự." }),
   email: z.string().email({ message: "Email không hợp lệ." }),
   phone: z.string().optional(),
-  role: z.enum(['Admin', 'Staff']),
+  role: z.nativeEnum(UserRole),
   isActive: z.boolean().default(true),
   password: z.string().optional(),
   confirmPassword: z.string().optional(),

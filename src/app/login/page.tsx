@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -31,6 +32,7 @@ import { useLanguage } from '@/store/LanguageContext';
 import { loginSchema } from '@/lib/form-schemas';
 import { API_URLS } from '@/lib/api-config';
 import type { User } from '@/types';
+import { UserRole } from '@/types';
 
 type LoginFormValues = z.infer<typeof loginSchema>;
 
@@ -79,6 +81,7 @@ export default function LoginPage() {
         ...apiUser,
         username: apiUser.username || apiUser.email.split('@')[0],
         phone: apiUser.phone || '',
+        role: apiUser.role as UserRole, // Cast to our enum
         isActive: apiUser.isActive ?? true,
         lastLoginAt: now,
         updatedAt: now,

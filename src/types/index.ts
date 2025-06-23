@@ -39,6 +39,13 @@ export type Store = {
   defaults: Defaults;
 };
 
+export enum UserRole {
+  ADMIN_GLOBAL = 'admin_global',
+  STORE_MANAGER = 'store_manager',
+  STORE_STAFF = 'store_staff',
+  VIEWER = 'viewer',
+}
+
 export type User = {
   userId: string;
   username: string;
@@ -46,7 +53,7 @@ export type User = {
   fullName: string;
   email: string;
   phone: string;
-  role: 'Admin' | 'Staff' | 'viewer';
+  role: UserRole;
   associatedStoreIds: string[] | null;
   isActive: boolean;
   isSuperadmin: boolean;
