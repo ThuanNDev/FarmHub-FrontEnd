@@ -3,3 +3,4 @@ import './flows/generate-product-description';
 import './flows/analyze-return-image';
 import './flows/generate-report-insights';
 import './flows/forecast-sales';
+import './flows/generate-product-specs';

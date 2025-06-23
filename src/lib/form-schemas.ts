@@ -45,6 +45,7 @@ export const productSchema = z.object({
   isActive: z.boolean().default(true),
   images: z.string().optional(),
   specs: z.string().optional(),
+  url: z.string().url({ message: 'Vui lòng nhập URL hợp lệ.' }).optional().or(z.literal('')),
 });
 
 export const purchaseOrderSchema = z.object({

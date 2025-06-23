@@ -109,6 +109,7 @@ export type Product = {
   createdAt: string;
   updatedAt: string;
   hint: string;
+  url: string | null;
 };
 
 export type Customer = {

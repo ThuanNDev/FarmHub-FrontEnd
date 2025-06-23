@@ -2,14 +2,14 @@
 'use client';
 
 import * as React from 'react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { notFound, useParams, useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { ArrowLeft, CheckCircle, XCircle, Package, DollarSign, Warehouse, Tag, Truck, Info, Calendar, Edit, Trash2, Sparkles, Loader2 } from 'lucide-react';
+import { ArrowLeft, CheckCircle, XCircle, Package, DollarSign, Warehouse, Tag, Truck, Info, Calendar, Edit, Trash2, Sparkles, Loader2, UploadCloud, Camera } from 'lucide-react';
 import { mockProducts, mockCategories, mockSuppliers } from '@/lib/data';
 import { Button } from '@/components/ui/button';
 import {
@@ -57,9 +57,10 @@ import {
 } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
-import { slugify } from '@/lib/utils';
+import { cn, slugify } from '@/lib/utils';
 import { productSchema } from '@/lib/form-schemas';
 import { generateProductDescription } from '@/ai/flows/generate-product-description';
+import { generateProductSpecs } from '@/ai/flows/generate-product-specs';
 
 type Product = (typeof mockProducts)[0];
 type ProductFormValues = z.infer<typeof productSchema>;
@@ -77,7 +78,6 @@ export default function ProductDetailPage() {
   const [isEditDialogOpen, setEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [isClient, setIsClient] = useState(false);
-  const [isGenerating, setIsGenerating] = useState(false);
   
   const form = useForm<ProductFormValues>({
     resolver: zodResolver(productSchema),
@@ -90,18 +90,12 @@ export default function ProductDetailPage() {
   useEffect(() => {
     if (product) {
       const images = JSON.parse(product.images) as string[];
-      setSelectedImage(images[0] || 'https://picsum.photos/600/600');
+      setSelectedImage(images[0] || 'https://placehold.co/600x600.png');
     }
   }, [product]);
   
   useEffect(() => {
     if (isEditDialogOpen && product) {
-        let imageString = '';
-        try {
-            imageString = JSON.parse(product.images).join(', ');
-        } catch (e) {
-            console.error("Failed to parse product images", e);
-        }
         form.reset({
           name: product.name,
           productCode: product.productCode,
@@ -118,8 +112,9 @@ export default function ProductDetailPage() {
           minStockLevel: product.minStockLevel,
           warrantyInfo: product.warrantyInfo,
           isActive: product.isActive,
-          images: imageString,
+          images: product.images, // Now passing the JSON string
           specs: product.specs,
+          url: product.url || ''
         });
     }
   }, [isEditDialogOpen, product, form]);
@@ -162,17 +157,12 @@ export default function ProductDetailPage() {
   const onSubmit = (values: ProductFormValues) => {
     if (!product) return;
 
-    const imagesAsJsonString = values.images
-        ? JSON.stringify(values.images.split(',').map(url => url.trim()).filter(url => url))
-        : '[]';
-    
     const now = new Date().toISOString();
     const newSlug = slugify(values.name);
 
     const updatedProductData = {
         ...product,
         ...values,
-        images: imagesAsJsonString,
         slug: newSlug,
         wholesalePrice: values.wholesalePrice || values.price,
         creditPrice: values.creditPrice || values.price,
@@ -180,6 +170,8 @@ export default function ProductDetailPage() {
         warrantyInfo: values.warrantyInfo || 'Không có',
         updatedAt: now,
         specs: values.specs || '{}',
+        url: values.url || null,
+        images: values.images || '[]'
     };
 
     const productIndex = mockProducts.findIndex(p => p.productId === product.productId);
@@ -196,31 +188,6 @@ export default function ProductDetailPage() {
     }
   };
 
-  const handleGenerateDescription = async () => {
-    const { name, brand, specs } = form.getValues();
-    if (!name || !brand) {
-      toast({
-        variant: 'destructive',
-        title: 'Thiếu thông tin',
-        description: 'Vui lòng nhập Tên sản phẩm và Thương hiệu.',
-      });
-      return;
-    }
-    setIsGenerating(true);
-    try {
-      const result = await generateProductDescription({ name, brand, specs });
-      form.setValue('description', result.description, { shouldValidate: true });
-    } catch (error) {
-      console.error(error);
-      toast({
-        variant: 'destructive',
-        title: 'Lỗi',
-        description: 'Không thể tạo mô tả. Vui lòng thử lại.',
-      });
-    } finally {
-      setIsGenerating(false);
-    }
-  };
 
   if (!selectedImage) {
     return null; 
@@ -511,69 +478,35 @@ export default function ProductDetailPage() {
                <FormField
                 control={form.control}
                 name="description"
-                render={({ field }) => (
-                  <FormItem className="md:col-span-3">
-                    <div className="flex items-center justify-between">
-                      <FormLabel>Mô tả</FormLabel>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={handleGenerateDescription}
-                        disabled={isGenerating}
-                      >
-                        {isGenerating ? (
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        ) : (
-                          <Sparkles className="mr-2 h-4 w-4" />
-                        )}
-                        Tạo bằng AI
-                      </Button>
-                    </div>
-                    <FormControl>
-                      <Textarea
-                        placeholder="Mô tả chi tiết về sản phẩm..."
-                        {...field}
-                        rows={5}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
+                render={({ field }) => <ProductDescriptionForm form={form} field={field} />}
               />
                <FormField
                   control={form.control}
-                  name="specs"
+                  name="url"
                   render={({ field }) => (
                     <FormItem className="md:col-span-3">
-                      <FormLabel>Thông số kỹ thuật</FormLabel>
+                      <FormLabel>URL trang sản phẩm</FormLabel>
                       <FormControl>
-                        <Textarea placeholder='{"Công suất": "1.2 kW", "Trọng lượng": "4.1 kg"}' {...field} rows={4} />
+                        <Input placeholder="https://example.com/product-page" {...field} />
                       </FormControl>
-                      <FormDescription>
-                        Nhập dưới dạng JSON. Mỗi cặp key-value sẽ được hiển thị trên một dòng.
+                       <FormDescription>
+                        Dùng để AI lấy thông tin cho thông số kỹ thuật.
                       </FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}
+                />
+               <FormField
+                  control={form.control}
+                  name="specs"
+                  render={({ field }) => <ProductSpecsForm form={form} field={field} />}
                 />
                 <FormField
                   control={form.control}
                   name="images"
-                  render={({ field }) => (
-                    <FormItem className="md:col-span-3">
-                      <FormLabel>Hình ảnh</FormLabel>
-                      <FormControl>
-                        <Textarea placeholder="Dán các URL hình ảnh, cách nhau bằng dấu phẩy" {...field} />
-                      </FormControl>
-                      <FormDescription>
-                        Cung cấp một hoặc nhiều URL hình ảnh, phân tách bằng dấu phẩy.
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
+                  render={({ field }) => <ProductImageForm field={field} />}
                 />
-
+                
                 <div className="md:col-span-3">
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
                         <FormField
@@ -738,4 +671,202 @@ export default function ProductDetailPage() {
       </Dialog>
     </>
   );
+}
+
+// Helper sub-components for the form to keep it clean
+
+function ProductDescriptionForm({ form, field }: { form: any, field: any }) {
+    const [isGenerating, setIsGenerating] = useState(false);
+    const { toast } = useToast();
+
+    const handleGenerateDescription = async () => {
+        const { name, brand, specs } = form.getValues();
+        if (!name || !brand) {
+        toast({
+            variant: 'destructive',
+            title: 'Thiếu thông tin',
+            description: 'Vui lòng nhập Tên sản phẩm và Thương hiệu.',
+        });
+        return;
+        }
+        setIsGenerating(true);
+        try {
+        const result = await generateProductDescription({ name, brand, specs });
+        form.setValue('description', result.description, { shouldValidate: true });
+        } catch (error) {
+        console.error(error);
+        toast({
+            variant: 'destructive',
+            title: 'Lỗi',
+            description: 'Không thể tạo mô tả. Vui lòng thử lại.',
+        });
+        } finally {
+        setIsGenerating(false);
+        }
+    };
+
+    return (
+        <FormItem className="md:col-span-3">
+            <div className="flex items-center justify-between">
+            <FormLabel>Mô tả</FormLabel>
+            <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={handleGenerateDescription}
+                disabled={isGenerating}
+            >
+                {isGenerating ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                <Sparkles className="mr-2 h-4 w-4" />
+                )}
+                Tạo bằng AI
+            </Button>
+            </div>
+            <FormControl>
+            <Textarea
+                placeholder="Mô tả chi tiết về sản phẩm..."
+                {...field}
+                rows={5}
+            />
+            </FormControl>
+            <FormMessage />
+        </FormItem>
+    )
+}
+
+function ProductSpecsForm({ form, field }: { form: any, field: any }) {
+    const [isGenerating, setIsGenerating] = useState(false);
+    const { toast } = useToast();
+
+    const handleGenerateSpecs = async () => {
+        const { name, brand, url } = form.getValues();
+        if (!name || !brand || !url) {
+        toast({
+            variant: 'destructive',
+            title: 'Thiếu thông tin',
+            description: 'Vui lòng nhập Tên, Thương hiệu và URL sản phẩm.',
+        });
+        return;
+        }
+        setIsGenerating(true);
+        try {
+        const result = await generateProductSpecs({ name, brand, url });
+        form.setValue('specs', result.specs, { shouldValidate: true });
+        } catch (error) {
+        console.error(error);
+        toast({
+            variant: 'destructive',
+            title: 'Lỗi',
+            description: 'Không thể tạo thông số. Vui lòng kiểm tra lại URL và thử lại.',
+        });
+        } finally {
+        setIsGenerating(false);
+        }
+    };
+    
+    return (
+        <FormItem className="md:col-span-3">
+            <div className="flex items-center justify-between">
+                <FormLabel>Thông số kỹ thuật</FormLabel>
+                 <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleGenerateSpecs}
+                    disabled={isGenerating}
+                >
+                    {isGenerating ? (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    ) : (
+                    <Sparkles className="mr-2 h-4 w-4" />
+                    )}
+                    Lấy từ URL
+                </Button>
+            </div>
+            <FormControl>
+                <Textarea placeholder='{"Công suất": "1.2 kW", "Trọng lượng": "4.1 kg"}' {...field} rows={4} />
+            </FormControl>
+            <FormDescription>
+                Nhập dưới dạng JSON. Mỗi cặp key-value sẽ được hiển thị trên một dòng.
+            </FormDescription>
+            <FormMessage />
+        </FormItem>
+    );
+}
+
+function ProductImageForm({ field }: { field: any }) {
+    const [imageUrls, setImageUrls] = useState<string[]>([]);
+    const fileInputRef = useRef<HTMLInputElement>(null);
+
+    useEffect(() => {
+        try {
+            const parsed = JSON.parse(field.value || '[]');
+            if (Array.isArray(parsed)) {
+                setImageUrls(parsed);
+            }
+        } catch (e) {
+            setImageUrls([]);
+        }
+    }, [field.value]);
+    
+    const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                const newUrls = [...imageUrls, reader.result as string];
+                field.onChange(JSON.stringify(newUrls));
+            };
+            reader.readAsDataURL(file);
+        }
+        // Reset file input to allow selecting the same file again
+        if(event.target) {
+            event.target.value = '';
+        }
+    };
+
+    const removeImage = (indexToRemove: number) => {
+        const newUrls = imageUrls.filter((_, index) => index !== indexToRemove);
+        field.onChange(JSON.stringify(newUrls));
+    };
+
+    return (
+        <FormItem className="md:col-span-3">
+          <FormLabel>Hình ảnh sản phẩm</FormLabel>
+          <div className="p-3 border rounded-md min-h-[120px]">
+            {imageUrls.length > 0 ? (
+                <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2 mb-4">
+                    {imageUrls.map((url, index) => (
+                        <div key={index} className="relative group aspect-square">
+                        <Image src={url} alt={`Product image ${index + 1}`} layout="fill" className="object-cover rounded-md border" />
+                        <Button
+                            type="button"
+                            variant="destructive"
+                            size="icon"
+                            className="absolute -top-2 -right-2 h-6 w-6 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                            onClick={() => removeImage(index)}
+                        >
+                            <Trash2 className="h-3 w-3" />
+                        </Button>
+                        </div>
+                    ))}
+                </div>
+            ) : (
+                <div className="text-center text-sm text-muted-foreground p-4">Chưa có hình ảnh nào.</div>
+            )}
+            
+            <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" accept="image/*" />
+            <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()}>
+              <Camera className="mr-2 h-4 w-4" />
+              Tải ảnh lên
+            </Button>
+          </div>
+          <FormDescription>
+            Tải lên hình ảnh từ máy tính. Dữ liệu ảnh sẽ được lưu trực tiếp.
+          </FormDescription>
+          <FormMessage />
+        </FormItem>
+    )
 }

@@ -91,7 +91,7 @@ export const mockCategories: Category[] = [
     slug: 'may-nong-nghiep',
     description: 'Các loại máy móc phục vụ nông nghiệp.',
     parentCategoryId: null,
-    image: 'https://picsum.photos/id/145/100/100',
+    image: 'https://placehold.co/100x100.png',
     order: 1,
     isActive: true,
     createdAt: daysAgo(365),
@@ -104,7 +104,7 @@ export const mockCategories: Category[] = [
     slug: 'may-cong-trinh',
     description: 'Máy móc cho xây dựng và công trình.',
     parentCategoryId: null,
-    image: 'https://picsum.photos/id/1048/100/100',
+    image: 'https://placehold.co/100x100.png',
     order: 2,
     isActive: true,
     createdAt: daysAgo(365),
@@ -117,7 +117,7 @@ export const mockCategories: Category[] = [
     slug: 'phu-tung', 
     description: 'Linh kiện, phụ tùng thay thế cho các loại máy.',
     parentCategoryId: null,
-    image: 'https://picsum.photos/id/160/100/100',
+    image: 'https://placehold.co/100x100.png',
     order: 3,
     isActive: true,
     createdAt: daysAgo(365),
@@ -130,7 +130,7 @@ export const mockCategories: Category[] = [
     slug: 'may-cua-xich', 
     description: 'Lam, xích, bugi, nòng cho máy cưa.',
     parentCategoryId: 'cate-001',
-    image: 'https://picsum.photos/id/1016/100/100',
+    image: 'https://placehold.co/100x100.png',
     order: 1,
     isActive: true,
     createdAt: daysAgo(364),
@@ -143,7 +143,7 @@ export const mockCategories: Category[] = [
     slug: 'may-cat-co', 
     description: 'Đầu bò, lưỡi cắt, dây cước.',
     parentCategoryId: 'cate-001',
-    image: 'https://picsum.photos/id/1025/100/100',
+    image: 'https://placehold.co/100x100.png',
     order: 2,
     isActive: true,
     createdAt: daysAgo(364),
@@ -211,7 +211,7 @@ export const mockProducts: Product[] = [
     creditPrice: 3000000,
     stock: 30,
     minStockLevel: 5,
-    images: "[\"https://picsum.photos/id/212/600/600\"]",
+    images: "[\"https://placehold.co/600x400.png\"]",
     specs: "{\"Dung tích xi lanh\": \"30.1 cm³\", \"Công suất\": \"1.2 kW\", \"Trọng lượng\": \"4.1 kg\", \"Chiều dài lam\": \"12-16 inch\"}",
     warrantyInfo: "Bảo hành 6 tháng",
     supplierId: "supp-001",
@@ -219,7 +219,8 @@ export const mockProducts: Product[] = [
     isDeleted: false,
     createdAt: daysAgo(200),
     updatedAt: daysAgo(10),
-    hint: 'chainsaw'
+    hint: 'chainsaw',
+    url: null
   },
   {
     productId: "prod-002",
@@ -236,7 +237,7 @@ export const mockProducts: Product[] = [
     creditPrice: 4800000,
     stock: 25,
     minStockLevel: 5,
-    images: "[\"https://picsum.photos/id/357/600/600\"]",
+    images: "[\"https://placehold.co/600x400.png\"]",
     specs: "{\"Dung tích xi lanh\": \"28 cm³\", \"Công suất\": \"0.8 kW\", \"Trọng lượng\": \"5.0 kg\"}",
     warrantyInfo: "Bảo hành 12 tháng",
     supplierId: "supp-002",
@@ -244,7 +245,8 @@ export const mockProducts: Product[] = [
     isDeleted: false,
     createdAt: daysAgo(195),
     updatedAt: daysAgo(5),
-    hint: 'brush cutter'
+    hint: 'brush cutter',
+    url: null
   },
   {
     productId: "prod-003",
@@ -261,7 +263,7 @@ export const mockProducts: Product[] = [
     creditPrice: 400000,
     stock: 100,
     minStockLevel: 20,
-    images: "[\"https://picsum.photos/id/431/600/600\"]",
+    images: "[\"https://placehold.co/600x400.png\"]",
     specs: "{\"Loại lam\": \"Lam trượt\", \"Chân xích\": \"3/8p\"}",
     warrantyInfo: "Không bảo hành",
     supplierId: "supp-001",
@@ -269,7 +271,8 @@ export const mockProducts: Product[] = [
     isDeleted: false,
     createdAt: daysAgo(150),
     updatedAt: daysAgo(7),
-    hint: 'chainsaw bar'
+    hint: 'chainsaw bar',
+    url: null
   },
   {
     productId: "prod-004",
@@ -286,7 +289,7 @@ export const mockProducts: Product[] = [
     creditPrice: 280000,
     stock: 80,
     minStockLevel: 15,
-    images: "[\"https://picsum.photos/id/56/600/600\"]",
+    images: "[\"https://placehold.co/600x400.png\"]",
     specs: "{\"Đường kính ống\": \"28mm\", \"Số khía\": \"9\"}",
     warrantyInfo: "Bao test",
     supplierId: "supp-002",
@@ -294,7 +297,8 @@ export const mockProducts: Product[] = [
     isDeleted: false,
     createdAt: daysAgo(120),
     updatedAt: daysAgo(4),
-    hint: 'gear head'
+    hint: 'gear head',
+    url: null
   },
   {
     productId: "prod-005",
@@ -311,7 +315,7 @@ export const mockProducts: Product[] = [
     creditPrice: 1300000,
     stock: 15,
     minStockLevel: 3,
-    images: "[\"https://picsum.photos/id/163/600/600\"]",
+    images: "[\"https://placehold.co/600x400.png\"]",
     specs: "{\"Đường kính piston\": \"52mm\"}",
     warrantyInfo: "Không bảo hành",
     supplierId: "supp-001",
@@ -319,7 +323,8 @@ export const mockProducts: Product[] = [
     isDeleted: false,
     createdAt: daysAgo(90),
     updatedAt: daysAgo(3),
-    hint: 'cylinder piston'
+    hint: 'cylinder piston',
+    url: null
   },
   {
     productId: "prod-006",
@@ -336,7 +341,7 @@ export const mockProducts: Product[] = [
     creditPrice: 3700000,
     stock: 40,
     minStockLevel: 10,
-    images: "[\"https://picsum.photos/id/183/600/600\"]",
+    images: "[\"https://placehold.co/600x400.png\"]",
     specs: "{\"Loại động cơ\": \"4 thì, 1 xi lanh, xupap treo\", \"Công suất\": \"4.8 HP\", \"Dung tích xi lanh\": \"163 cm³\"}",
     warrantyInfo: "Bảo hành 12 tháng",
     supplierId: "supp-003",
@@ -344,7 +349,8 @@ export const mockProducts: Product[] = [
     isDeleted: false,
     createdAt: daysAgo(250),
     updatedAt: daysAgo(15),
-    hint: 'gasoline engine'
+    hint: 'gasoline engine',
+    url: null
   },
   {
     productId: "prod-007",
@@ -361,7 +367,7 @@ export const mockProducts: Product[] = [
     creditPrice: 11000000,
     stock: 12,
     minStockLevel: 2,
-    images: "[\"https://picsum.photos/id/219/600/600\"]",
+    images: "[\"https://placehold.co/600x400.png\"]",
     specs: "{\"Dung tích xi lanh\": \"56.5 cm³\", \"Bình chứa\": \"13 L\", \"Tầm phun\": \"12 m\"}",
     warrantyInfo: "Bảo hành 6 tháng",
     supplierId: "supp-001",
@@ -369,7 +375,8 @@ export const mockProducts: Product[] = [
     isDeleted: false,
     createdAt: daysAgo(80),
     updatedAt: daysAgo(30),
-    hint: 'backpack sprayer'
+    hint: 'backpack sprayer',
+    url: null
   },
   {
     productId: "prod-008",
@@ -386,7 +393,7 @@ export const mockProducts: Product[] = [
     creditPrice: 160000,
     stock: 200,
     minStockLevel: 50,
-    images: "[\"https://picsum.photos/id/292/600/600\"]",
+    images: "[\"https://placehold.co/600x400.png\"]",
     specs: "{\"Dung tích\": \"1 Lít\", \"Tiêu chuẩn\": \"API TC, JASO FD\"}",
     warrantyInfo: "Không bảo hành",
     supplierId: "supp-001",
@@ -394,7 +401,8 @@ export const mockProducts: Product[] = [
     isDeleted: false,
     createdAt: daysAgo(280),
     updatedAt: daysAgo(5),
-    hint: '2-stroke oil'
+    hint: '2-stroke oil',
+    url: null
   },
   {
     productId: "prod-009",
@@ -411,7 +419,7 @@ export const mockProducts: Product[] = [
     creditPrice: 9500000,
     stock: 18,
     minStockLevel: 4,
-    images: "[\"https://picsum.photos/id/375/600/600\"]",
+    images: "[\"https://placehold.co/600x400.png\"]",
     specs: "{\"Dung tích xi lanh\": \"45.7 cm³\", \"Công suất\": \"2.1 kW\", \"Trọng lượng\": \"4.9 kg\"}",
     warrantyInfo: "Bảo hành 12 tháng",
     supplierId: "supp-002",
@@ -419,7 +427,8 @@ export const mockProducts: Product[] = [
     isDeleted: false,
     createdAt: daysAgo(70),
     updatedAt: daysAgo(25),
-    hint: 'professional chainsaw'
+    hint: 'professional chainsaw',
+    url: null
   },
   {
     productId: "prod-010",
@@ -436,7 +445,7 @@ export const mockProducts: Product[] = [
     creditPrice: 6000000,
     stock: 22,
     minStockLevel: 5,
-    images: "[\"https://picsum.photos/id/450/600/600\"]",
+    images: "[\"https://placehold.co/600x400.png\"]",
     specs: "{\"Đường kính họng hút xả\": \"50mm (2 inch)\", \"Lưu lượng tối đa\": \"670 lít/phút\", \"Đẩy cao tối đa\": \"32 m\"}",
     warrantyInfo: "Bảo hành 12 tháng",
     supplierId: "supp-003",
@@ -444,7 +453,8 @@ export const mockProducts: Product[] = [
     isDeleted: false,
     createdAt: daysAgo(60),
     updatedAt: daysAgo(10),
-    hint: 'water pump'
+    hint: 'water pump',
+    url: null
   },
   {
     productId: "prod-011",
@@ -461,7 +471,7 @@ export const mockProducts: Product[] = [
     creditPrice: 80000,
     stock: 500,
     minStockLevel: 100,
-    images: "[\"https://picsum.photos/id/49/600/600\"]",
+    images: "[\"https://placehold.co/600x400.png\"]",
     specs: "{\"Loại bugi\": \"Điện trở\"}",
     warrantyInfo: "Không bảo hành",
     supplierId: "supp-002",
@@ -469,7 +479,8 @@ export const mockProducts: Product[] = [
     isDeleted: false,
     createdAt: daysAgo(270),
     updatedAt: daysAgo(4),
-    hint: 'spark plug'
+    hint: 'spark plug',
+    url: null
   },
   {
     productId: "prod-012",
@@ -486,7 +497,7 @@ export const mockProducts: Product[] = [
     creditPrice: 100000,
     stock: 150,
     minStockLevel: 30,
-    images: "[\"https://picsum.photos/id/453/600/600\"]",
+    images: "[\"https://placehold.co/600x400.png\"]",
     specs: "{\"Kích thước\": \"3.0 mm\", \"Hình dạng\": \"Vuông gai\", \"Chiều dài\": \"~50m\"}",
     warrantyInfo: "Không bảo hành",
     supplierId: "supp-002",
@@ -494,7 +505,8 @@ export const mockProducts: Product[] = [
     isDeleted: false,
     createdAt: daysAgo(140),
     updatedAt: daysAgo(3),
-    hint: 'trimmer line'
+    hint: 'trimmer line',
+    url: null
   },
   {
     productId: "prod-013",
@@ -511,7 +523,7 @@ export const mockProducts: Product[] = [
     creditPrice: 15000000,
     stock: 10,
     minStockLevel: 2,
-    images: "[\"https://picsum.photos/id/658/600/600\"]",
+    images: "[\"https://placehold.co/600x400.png\"]",
     specs: "{\"Dung tích xi lanh\": \"72.2 cm³\", \"Công suất\": \"3.9 kW\", \"Trọng lượng\": \"6.2 kg\"}",
     warrantyInfo: "Bảo hành 12 tháng",
     supplierId: "supp-001",
@@ -519,7 +531,8 @@ export const mockProducts: Product[] = [
     isDeleted: false,
     createdAt: daysAgo(45),
     updatedAt: daysAgo(7),
-    hint: 'heavy-duty chainsaw'
+    hint: 'heavy-duty chainsaw',
+    url: null
   },
   {
     productId: "prod-014",
@@ -536,7 +549,7 @@ export const mockProducts: Product[] = [
     creditPrice: 8800000,
     stock: 15,
     minStockLevel: 3,
-    images: "[\"https://picsum.photos/id/659/600/600\"]",
+    images: "[\"https://placehold.co/600x400.png\"]",
     specs: "{\"Dung tích xi lanh\": \"41.5 cm³\", \"Công suất\": \"1.6 kW\", \"Trọng lượng\": \"7.1 kg\"}",
     warrantyInfo: "Bảo hành 12 tháng",
     supplierId: "supp-002",
@@ -544,7 +557,8 @@ export const mockProducts: Product[] = [
     isDeleted: false,
     createdAt: daysAgo(35),
     updatedAt: daysAgo(6),
-    hint: 'professional brush cutter'
+    hint: 'professional brush cutter',
+    url: null
   },
   {
     productId: "prod-015",
@@ -561,7 +575,7 @@ export const mockProducts: Product[] = [
     creditPrice: 270000,
     stock: 120,
     minStockLevel: 30,
-    images: "[\"https://picsum.photos/id/823/600/600\"]",
+    images: "[\"https://placehold.co/600x400.png\"]",
     specs: "{\"Bước xích\": \"3/8p\", \"Số mắt\": \"34\"}",
     warrantyInfo: "Không bảo hành",
     supplierId: "supp-001",
@@ -569,7 +583,8 @@ export const mockProducts: Product[] = [
     isDeleted: false,
     createdAt: daysAgo(25),
     updatedAt: daysAgo(2),
-    hint: 'chainsaw chain'
+    hint: 'chainsaw chain',
+    url: null
   }
 ];
 
@@ -1199,3 +1214,4 @@ export const mockVouchers: Voucher[] = [
   { voucherId: 'v-004', name: 'Miễn phí vận chuyển', description: 'Hỗ trợ tối đa 50.000đ phí ship.', pointsCost: 4000, value: 50000, type: 'shipping' },
   { voucherId: 'v-005', name: 'Giảm giá 500.000đ', description: 'Cho đơn hàng từ 5.000.000đ.', pointsCost: 48000, value: 500000, type: 'fixed' }
 ];
+

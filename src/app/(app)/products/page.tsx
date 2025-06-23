@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -14,6 +14,8 @@ import {
   MoreHorizontal,
   Sparkles,
   Loader2,
+  Trash2,
+  Camera,
 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -85,9 +87,10 @@ import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { mockProducts, mockCategories, mockSuppliers } from '@/lib/data';
 import { useToast } from '@/hooks/use-toast';
-import { slugify } from '@/lib/utils';
+import { cn, slugify } from '@/lib/utils';
 import { productSchema } from '@/lib/form-schemas';
 import { generateProductDescription } from '@/ai/flows/generate-product-description';
+import { generateProductSpecs } from '@/ai/flows/generate-product-specs';
 
 type Product = (typeof mockProducts)[0];
 type ProductFormValues = z.infer<typeof productSchema>;
@@ -100,8 +103,7 @@ export default function ProductsPage() {
   const [isAddEditDialogOpen, setAddEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
-  const [isGenerating, setIsGenerating] = useState(false);
-
+  
   const [currentPage, setCurrentPage] = useState(1);
   const [productsPerPage] = useState(7);
 
@@ -126,20 +128,15 @@ export default function ProductsPage() {
       minStockLevel: 5,
       warrantyInfo: 'Bảo hành 12 tháng',
       isActive: true,
-      images: '',
+      images: '[]',
       specs: '{}',
+      url: ''
     },
   });
 
   useEffect(() => {
     if (isAddEditDialogOpen) {
       if (selectedProduct) {
-        let imageString = '';
-        try {
-            imageString = JSON.parse(selectedProduct.images).join(', ');
-        } catch (e) {
-            console.error("Failed to parse product images", e);
-        }
         form.reset({
           name: selectedProduct.name,
           productCode: selectedProduct.productCode,
@@ -156,8 +153,9 @@ export default function ProductsPage() {
           minStockLevel: selectedProduct.minStockLevel,
           warrantyInfo: selectedProduct.warrantyInfo,
           isActive: selectedProduct.isActive,
-          images: imageString,
+          images: selectedProduct.images, // Now passing the JSON string
           specs: selectedProduct.specs,
+          url: selectedProduct.url || ''
         });
       } else {
         form.reset({
@@ -176,8 +174,9 @@ export default function ProductsPage() {
           minStockLevel: 5,
           warrantyInfo: 'Bảo hành 12 tháng',
           isActive: true,
-          images: '',
+          images: '[]',
           specs: '{}',
+          url: ''
         });
       }
     }
@@ -212,10 +211,6 @@ export default function ProductsPage() {
   };
 
   const onSubmit = (values: ProductFormValues) => {
-    const imagesAsJsonString = values.images
-        ? JSON.stringify(values.images.split(',').map(url => url.trim()).filter(url => url))
-        : '[]';
-    
     const now = new Date().toISOString();
 
     if (selectedProduct) {
@@ -224,7 +219,6 @@ export default function ProductsPage() {
           ? { 
               ...p, 
               ...values,
-              images: imagesAsJsonString,
               slug: slugify(values.name),
               wholesalePrice: values.wholesalePrice || values.price,
               creditPrice: values.creditPrice || values.price,
@@ -232,6 +226,8 @@ export default function ProductsPage() {
               warrantyInfo: values.warrantyInfo || 'Không có',
               updatedAt: now,
               specs: values.specs || '{}',
+              url: values.url || null,
+              images: values.images || '[]'
             } 
           : p
       );
@@ -244,7 +240,7 @@ export default function ProductsPage() {
         slug: slugify(values.name),
         wholesalePrice: values.wholesalePrice || values.price,
         creditPrice: values.creditPrice || values.price,
-        images: imagesAsJsonString.length > 2 ? imagesAsJsonString : '["https://picsum.photos/600/600"]',
+        images: values.images && values.images.length > 2 ? values.images : '["https://placehold.co/600x400.png"]',
         specs: values.specs || '{}',
         createdAt: now,
         updatedAt: now,
@@ -252,38 +248,13 @@ export default function ProductsPage() {
         hint: 'product',
         description: values.description || '',
         warrantyInfo: values.warrantyInfo || 'Không có',
+        url: values.url || null,
       };
       setProducts([newProduct, ...products]);
       toast({ title: 'Thành công', description: 'Sản phẩm mới đã được thêm.' });
     }
     setAddEditDialogOpen(false);
     setSelectedProduct(null);
-  };
-  
-  const handleGenerateDescription = async () => {
-    const { name, brand, specs } = form.getValues();
-    if (!name || !brand) {
-      toast({
-        variant: 'destructive',
-        title: 'Thiếu thông tin',
-        description: 'Vui lòng nhập Tên sản phẩm và Thương hiệu.',
-      });
-      return;
-    }
-    setIsGenerating(true);
-    try {
-      const result = await generateProductDescription({ name, brand, specs });
-      form.setValue('description', result.description, { shouldValidate: true });
-    } catch (error) {
-      console.error(error);
-      toast({
-        variant: 'destructive',
-        title: 'Lỗi',
-        description: 'Không thể tạo mô tả. Vui lòng thử lại.',
-      });
-    } finally {
-      setIsGenerating(false);
-    }
   };
   
   const filteredProducts = useMemo(() => {
@@ -317,9 +288,9 @@ export default function ProductsPage() {
   const getImageUrl = (imagesJson: string) => {
     try {
       const images = JSON.parse(imagesJson);
-      return images[0] || 'https://picsum.photos/64/64';
+      return images[0] || 'https://placehold.co/64x64.png';
     } catch (e) {
-      return 'https://picsum.photos/64/64';
+      return 'https://placehold.co/64x64.png';
     }
   };
   
@@ -568,34 +539,22 @@ export default function ProductsPage() {
                     )}
                   />
                 <FormField
+                    control={form.control}
+                    name="description"
+                    render={({ field }) => <ProductDescriptionForm form={form} field={field} />}
+                />
+                <FormField
                   control={form.control}
-                  name="description"
+                  name="url"
                   render={({ field }) => (
                     <FormItem className="md:col-span-3">
-                      <div className="flex items-center justify-between">
-                        <FormLabel>Mô tả</FormLabel>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={handleGenerateDescription}
-                          disabled={isGenerating}
-                        >
-                          {isGenerating ? (
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          ) : (
-                            <Sparkles className="mr-2 h-4 w-4" />
-                          )}
-                          Tạo bằng AI
-                        </Button>
-                      </div>
+                      <FormLabel>URL trang sản phẩm</FormLabel>
                       <FormControl>
-                        <Textarea
-                          placeholder="Mô tả chi tiết về sản phẩm..."
-                          {...field}
-                          rows={5}
-                        />
+                        <Input placeholder="https://example.com/product-page" {...field} />
                       </FormControl>
+                       <FormDescription>
+                        Dùng để AI lấy thông tin cho thông số kỹ thuật.
+                      </FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -603,34 +562,12 @@ export default function ProductsPage() {
                 <FormField
                   control={form.control}
                   name="specs"
-                  render={({ field }) => (
-                    <FormItem className="md:col-span-3">
-                      <FormLabel>Thông số kỹ thuật</FormLabel>
-                      <FormControl>
-                        <Textarea placeholder='{"Công suất": "1.2 kW", "Trọng lượng": "4.1 kg"}' {...field} rows={4} />
-                      </FormControl>
-                      <FormDescription>
-                        Nhập dưới dạng JSON. Mỗi cặp key-value sẽ được hiển thị trên một dòng.
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
+                  render={({ field }) => <ProductSpecsForm form={form} field={field} />}
                 />
                 <FormField
                   control={form.control}
                   name="images"
-                  render={({ field }) => (
-                    <FormItem className="md:col-span-3">
-                      <FormLabel>Hình ảnh</FormLabel>
-                      <FormControl>
-                        <Textarea placeholder="Dán các URL hình ảnh, cách nhau bằng dấu phẩy" {...field} />
-                      </FormControl>
-                      <FormDescription>
-                        Cung cấp một hoặc nhiều URL hình ảnh, phân tách bằng dấu phẩy.
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
+                  render={({ field }) => <ProductImageForm field={field} />}
                 />
 
                 <div className="md:col-span-3">
@@ -815,4 +752,202 @@ export default function ProductsPage() {
       </AlertDialog>
     </>
   );
+}
+
+// Helper sub-components for the form to keep it clean
+
+function ProductDescriptionForm({ form, field }: { form: any, field: any }) {
+    const [isGenerating, setIsGenerating] = useState(false);
+    const { toast } = useToast();
+
+    const handleGenerateDescription = async () => {
+        const { name, brand, specs } = form.getValues();
+        if (!name || !brand) {
+        toast({
+            variant: 'destructive',
+            title: 'Thiếu thông tin',
+            description: 'Vui lòng nhập Tên sản phẩm và Thương hiệu.',
+        });
+        return;
+        }
+        setIsGenerating(true);
+        try {
+        const result = await generateProductDescription({ name, brand, specs });
+        form.setValue('description', result.description, { shouldValidate: true });
+        } catch (error) {
+        console.error(error);
+        toast({
+            variant: 'destructive',
+            title: 'Lỗi',
+            description: 'Không thể tạo mô tả. Vui lòng thử lại.',
+        });
+        } finally {
+        setIsGenerating(false);
+        }
+    };
+
+    return (
+        <FormItem className="md:col-span-3">
+            <div className="flex items-center justify-between">
+            <FormLabel>Mô tả</FormLabel>
+            <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={handleGenerateDescription}
+                disabled={isGenerating}
+            >
+                {isGenerating ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                <Sparkles className="mr-2 h-4 w-4" />
+                )}
+                Tạo bằng AI
+            </Button>
+            </div>
+            <FormControl>
+            <Textarea
+                placeholder="Mô tả chi tiết về sản phẩm..."
+                {...field}
+                rows={5}
+            />
+            </FormControl>
+            <FormMessage />
+        </FormItem>
+    )
+}
+
+function ProductSpecsForm({ form, field }: { form: any, field: any }) {
+    const [isGenerating, setIsGenerating] = useState(false);
+    const { toast } = useToast();
+
+    const handleGenerateSpecs = async () => {
+        const { name, brand, url } = form.getValues();
+        if (!name || !brand || !url) {
+        toast({
+            variant: 'destructive',
+            title: 'Thiếu thông tin',
+            description: 'Vui lòng nhập Tên, Thương hiệu và URL sản phẩm.',
+        });
+        return;
+        }
+        setIsGenerating(true);
+        try {
+        const result = await generateProductSpecs({ name, brand, url });
+        form.setValue('specs', result.specs, { shouldValidate: true });
+        } catch (error) {
+        console.error(error);
+        toast({
+            variant: 'destructive',
+            title: 'Lỗi',
+            description: 'Không thể tạo thông số. Vui lòng kiểm tra lại URL và thử lại.',
+        });
+        } finally {
+        setIsGenerating(false);
+        }
+    };
+    
+    return (
+        <FormItem className="md:col-span-3">
+            <div className="flex items-center justify-between">
+                <FormLabel>Thông số kỹ thuật</FormLabel>
+                 <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleGenerateSpecs}
+                    disabled={isGenerating}
+                >
+                    {isGenerating ? (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    ) : (
+                    <Sparkles className="mr-2 h-4 w-4" />
+                    )}
+                    Lấy từ URL
+                </Button>
+            </div>
+            <FormControl>
+                <Textarea placeholder='{"Công suất": "1.2 kW", "Trọng lượng": "4.1 kg"}' {...field} rows={4} />
+            </FormControl>
+            <FormDescription>
+                Nhập dưới dạng JSON. Mỗi cặp key-value sẽ được hiển thị trên một dòng.
+            </FormDescription>
+            <FormMessage />
+        </FormItem>
+    );
+}
+
+function ProductImageForm({ field }: { field: any }) {
+    const [imageUrls, setImageUrls] = useState<string[]>([]);
+    const fileInputRef = useRef<HTMLInputElement>(null);
+
+    useEffect(() => {
+        try {
+            const parsed = JSON.parse(field.value || '[]');
+            if (Array.isArray(parsed)) {
+                setImageUrls(parsed);
+            }
+        } catch (e) {
+            setImageUrls([]);
+        }
+    }, [field.value]);
+    
+    const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                const newUrls = [...imageUrls, reader.result as string];
+                field.onChange(JSON.stringify(newUrls));
+            };
+            reader.readAsDataURL(file);
+        }
+        // Reset file input to allow selecting the same file again
+        if(event.target) {
+            event.target.value = '';
+        }
+    };
+
+    const removeImage = (indexToRemove: number) => {
+        const newUrls = imageUrls.filter((_, index) => index !== indexToRemove);
+        field.onChange(JSON.stringify(newUrls));
+    };
+
+    return (
+        <FormItem className="md:col-span-3">
+          <FormLabel>Hình ảnh sản phẩm</FormLabel>
+          <div className="p-3 border rounded-md min-h-[120px]">
+            {imageUrls.length > 0 ? (
+                <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2 mb-4">
+                    {imageUrls.map((url, index) => (
+                        <div key={index} className="relative group aspect-square">
+                        <Image src={url} alt={`Product image ${index + 1}`} layout="fill" className="object-cover rounded-md border" />
+                        <Button
+                            type="button"
+                            variant="destructive"
+                            size="icon"
+                            className="absolute -top-2 -right-2 h-6 w-6 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                            onClick={() => removeImage(index)}
+                        >
+                            <Trash2 className="h-3 w-3" />
+                        </Button>
+                        </div>
+                    ))}
+                </div>
+            ) : (
+                <div className="text-center text-sm text-muted-foreground p-4">Chưa có hình ảnh nào.</div>
+            )}
+            
+            <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" accept="image/*" />
+            <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()}>
+              <Camera className="mr-2 h-4 w-4" />
+              Tải ảnh lên
+            </Button>
+          </div>
+          <FormDescription>
+            Tải lên hình ảnh từ máy tính. Dữ liệu ảnh sẽ được lưu trực tiếp.
+          </FormDescription>
+          <FormMessage />
+        </FormItem>
+    )
 }
