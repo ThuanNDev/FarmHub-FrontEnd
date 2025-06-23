@@ -40,7 +40,7 @@ import { cn } from '@/lib/utils';
 import { useStore } from '@/contexts/StoreContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { customerSchema } from '@/lib/form-schemas';
-import type { Product, Customer, Voucher } from '@/lib/types';
+import type { Product, Customer, Voucher, PriceTier } from '@/lib/types';
 
 type CartItem = Product & {
   quantity: number;
@@ -69,7 +69,6 @@ export default function POSPage() {
   const [customerSearch, setCustomerSearch] = useState("");
   const [showQrCode, setShowQrCode] = useState(false);
   const [customerTender, setCustomerTender] = useState(0);
-  const [voucherDiscount, setVoucherDiscount] = useState(0);
   const [selectedVoucher, setSelectedVoucher] = useState<Voucher | null>(null);
   const [isVoucherDialogOpen, setVoucherDialogOpen] = useState(false);
   
@@ -189,7 +188,6 @@ export default function POSPage() {
   const clearCart = () => {
     setCart([]);
     setDiscount(0);
-    setVoucherDiscount(0);
     setSelectedVoucher(null);
   }
 
@@ -224,6 +222,41 @@ export default function POSPage() {
     setAddCustomerDialogOpen(false);
   };
   
+  const subtotal = useMemo(() => {
+    return cart.reduce((total, item) => total + item.appliedPrice * item.quantity, 0);
+  }, [cart]);
+
+  const voucherDiscount = useMemo(() => {
+    if (!selectedVoucher || subtotal === 0) {
+      return 0;
+    }
+    
+    let discountValue = 0;
+    if (selectedVoucher.type === 'fixed') {
+      discountValue = selectedVoucher.value;
+    } else if (selectedVoucher.type === 'percentage') {
+      // The mock voucher has a cap of 200.000đ in its description
+      const maxDiscount = 200000;
+      discountValue = Math.min(subtotal * (selectedVoucher.value / 100), maxDiscount);
+    }
+    
+    return Math.min(discountValue, subtotal);
+  }, [selectedVoucher, subtotal]);
+
+  const total = useMemo(() => {
+    const finalTotal = subtotal - discount - voucherDiscount;
+    return finalTotal > 0 ? finalTotal : 0;
+  }, [subtotal, discount, voucherDiscount]);
+
+  const vatAmount = useMemo(() => {
+    if (!store.isVatEnabled || !store.vatRate) return 0;
+    return total * (store.vatRate / 100);
+  }, [total, store.isVatEnabled, store.vatRate]);
+
+  const totalWithVat = useMemo(() => {
+    return total + vatAmount;
+  }, [total, vatAmount]);
+
   const handleConfirmPayment = () => {
     if (cart.length === 0) {
       toast({ variant: 'destructive', title: t('pos.error_empty_cart') });
@@ -345,38 +378,23 @@ export default function POSPage() {
     setSelectedCustomerId('guest');
   };
 
-  const subtotal = useMemo(() => {
-    return cart.reduce((total, item) => total + item.appliedPrice * item.quantity, 0);
-  }, [cart]);
-
-  const total = useMemo(() => {
-    const finalTotal = subtotal - discount - voucherDiscount;
-    return finalTotal > 0 ? finalTotal : 0;
-  }, [subtotal, discount, voucherDiscount]);
-
-  const vatAmount = useMemo(() => {
-    if (!store.isVatEnabled || !store.vatRate) return 0;
-    return total * (store.vatRate / 100);
-  }, [total, store.isVatEnabled, store.vatRate]);
-
-  const totalWithVat = useMemo(() => {
-    return total + vatAmount;
-  }, [total, vatAmount]);
-
   const handleApplyVoucher = (voucher: Voucher) => {
+    setSelectedVoucher(voucher);
+    setVoucherDialogOpen(false);
+
+    // We calculate the discount value here just for the toast message.
+    // The actual discount applied to the cart is handled by the useMemo.
     let discountValue = 0;
     if (voucher.type === 'fixed') {
         discountValue = voucher.value;
     } else if (voucher.type === 'percentage') {
-        discountValue = Math.min(subtotal * (voucher.value / 100), 200000);
+        const maxDiscount = 200000; // From mock data description
+        discountValue = Math.min(subtotal * (voucher.value / 100), maxDiscount);
     }
-    
-    setVoucherDiscount(discountValue);
-    setSelectedVoucher(voucher);
-    setVoucherDialogOpen(false);
+
     toast({
         title: "Đã áp dụng voucher",
-        description: `Bạn được giảm ${formatCurrency(discountValue)}.`,
+        description: `Bạn được giảm ${formatCurrency(Math.min(discountValue, subtotal))}.`,
     });
   };
 
@@ -893,7 +911,7 @@ export default function POSPage() {
                   {selectedVoucher && (
                     <div className="flex items-center justify-between text-sm text-green-600">
                         <div className="flex items-center gap-1">
-                        <Button variant="ghost" size="icon" className="h-5 w-5 text-muted-foreground hover:text-destructive" onClick={() => { setSelectedVoucher(null); setVoucherDiscount(0); }}>
+                        <Button variant="ghost" size="icon" className="h-5 w-5 text-muted-foreground hover:text-destructive" onClick={() => setSelectedVoucher(null)}>
                             <X className="h-3 w-3" />
                         </Button>
                         <span>Voucher: {selectedVoucher.name}</span>
@@ -1278,3 +1296,4 @@ export default function POSPage() {
     </>
   );
 }
+
