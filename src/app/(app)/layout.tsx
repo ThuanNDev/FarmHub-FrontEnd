@@ -29,6 +29,7 @@ import {
   Plus,
   UserPlus,
   Presentation,
+  Shield,
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { vi as viLocale } from 'date-fns/locale';
@@ -70,7 +71,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { StoreProvider, useStore } from '@/store/StoreContext';
 import { useToast } from '@/hooks/use-toast';
-import { mockUsers, mockNotifications as initialNotifications } from '@/lib/data';
+import { mockUsers, mockNotifications as initialNotifications, type User } from '@/lib/data';
 import { useLanguage } from '@/store/LanguageContext';
 import { RelativeTime } from '@/components/RelativeTime';
 
@@ -91,6 +92,7 @@ const navItems = [
   { href: '/printing', labelKey: 'nav.printing', icon: Printer },
   { href: '/users', labelKey: 'nav.users', icon: UsersRound },
   { href: '/settings', labelKey: 'nav.settings', icon: Settings },
+  { href: '/super-admin', labelKey: 'nav.super_admin', icon: Shield, superAdminOnly: true },
 ];
 
 function NavLink({
@@ -178,18 +180,33 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const { toast } = useToast();
   const { locale, setLocale, t } = useLanguage();
-
-  const appCreator = mockUsers.find(u => u.isSuperadmin);
   
+  const [currentUser, setCurrentUser] = React.useState<User | null>(null);
   const [notifications, setNotifications] = React.useState(initialNotifications);
   const [notifActiveTab, setNotifActiveTab] = React.useState('all');
+  
+  React.useEffect(() => {
+    const userId = localStorage.getItem('loggedInUserId');
+    if (userId) {
+      const user = mockUsers.find(u => u.userId === userId);
+      setCurrentUser(user || null);
+    } else {
+      // Fallback for when no user is logged in (e.g. dev), redirect to login
+      router.push('/login');
+    }
+  }, [router]);
 
+  const appCreator = mockUsers.find(u => u.isSuperadmin);
   const unreadCount = React.useMemo(() => notifications.filter(n => !n.isRead).length, [notifications]);
+  
+  const visibleNavItems = React.useMemo(() => {
+    if (!currentUser) return navItems.filter(item => !(item as any).superAdminOnly);
+    return navItems.filter(item => !(item as any).superAdminOnly || currentUser.isSuperadmin);
+  }, [currentUser]);
   
   React.useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
         const target = event.target as HTMLElement;
-        // Ignore shortcuts if user is in an input field
         if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable) {
             return;
         }
@@ -242,7 +259,7 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
     router.push('/login');
   };
 
-  if (pathname === '/pos') {
+  if (pathname === '/pos' || !currentUser) {
     return <>{children}</>;
   }
   
@@ -258,7 +275,7 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
           </div>
           <div className="flex-1 overflow-y-auto">
             <nav className="grid items-start px-2 text-sm font-medium lg:px-4">
-              {navItems.map((item) => (
+              {visibleNavItems.map((item) => (
                 <NavLink key={item.href} href={item.href} icon={item.icon} label={t(item.labelKey)} />
               ))}
             </nav>
@@ -287,7 +304,7 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
                   <Leaf className="h-6 w-6 text-primary" />
                   <span className="font-headline text-xl">{store.name}</span>
                 </Link>
-                {navItems.map((item) => (
+                {visibleNavItems.map((item) => (
                    <NavLink key={item.href} href={item.href} icon={item.icon} label={t(item.labelKey)} />
                 ))}
               </nav>
@@ -364,7 +381,7 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
                 <Button variant={locale === 'vi' ? 'secondary' : 'ghost'} size="sm" className="rounded-r-none border-r h-full px-3" onClick={() => setLocale('vi')}>VI</Button>
                 <Button variant={locale === 'en' ? 'secondary' : 'ghost'} size="sm" className="rounded-l-none h-full px-3" onClick={() => setLocale('en')}>EN</Button>
             </div>
-            <Button asChild size="lg" className="font-semibold">
+            <Button asChild size="lg" className="font-semibold" variant="default">
                 <Link href="/pos">
                     <span className="text-lg">{t('nav.pos')}</span>
                 </Link>
@@ -374,8 +391,8 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
             <DropdownMenuTrigger asChild>
               <Button variant="secondary" size="icon" className="rounded-full ml-2">
                 <Avatar>
-                  <AvatarImage src={`https://placehold.co/40x40.png`} alt="@admin" />
-                  <AvatarFallback>A</AvatarFallback>
+                  <AvatarImage src={`https://placehold.co/40x40.png`} alt={currentUser?.username} />
+                  <AvatarFallback>{currentUser?.fullName.charAt(0)}</AvatarFallback>
                 </Avatar>
                 <span className="sr-only">Mở menu người dùng</span>
               </Button>

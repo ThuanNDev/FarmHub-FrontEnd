@@ -16,7 +16,8 @@
     "printing": "Printing",
     "users": "Staff",
     "settings": "Settings",
-    "pos": "POS"
+    "pos": "POS",
+    "super_admin": "Super Admin"
   },
   "common": {
     "save": "Save",
