@@ -7,6 +7,7 @@ import { mockProducts, mockStores } from '@/lib/data';
 import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { cn } from '@/lib/utils';
+import './landing-page.css';
 
 
 const store = mockStores[0];
