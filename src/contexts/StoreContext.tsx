@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
@@ -19,10 +20,10 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     try {
       const loggedInUserId = localStorage.getItem('loggedInUserId');
       if (loggedInUserId) {
-        const user = mockUsers.find(u => u.id === loggedInUserId);
-        if (user && user.associated_store_ids.length > 0) {
-          const userStoreId = user.associated_store_ids[0];
-          const userStore = mockStores.find(s => s.id === userStoreId);
+        const user = mockUsers.find(u => u.UserId === loggedInUserId);
+        if (user && user.AssociatedStoreIds.length > 0) {
+          const userStoreId = user.AssociatedStoreIds[0];
+          const userStore = mockStores.find(s => s.StoreId === userStoreId);
           if (userStore) {
             setStore(userStore);
           }
@@ -37,7 +38,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     setStore(newStore);
     // This updates the mock data as well, simulating a persistent change across reloads (during dev).
     // In a real app, this would be an API call.
-    const storeIndex = mockStores.findIndex(s => s.id === newStore.id);
+    const storeIndex = mockStores.findIndex(s => s.StoreId === newStore.StoreId);
     if (storeIndex !== -1) {
         mockStores[storeIndex] = newStore;
     }

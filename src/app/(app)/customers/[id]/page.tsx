@@ -42,7 +42,7 @@ export default function CustomerDetailPage() {
   const { t } = useLanguage();
   const { toast } = useToast();
 
-  const [customer, setCustomer] = React.useState(mockCustomers.find((c) => c.id === params.id && !c.is_deleted));
+  const [customer, setCustomer] = React.useState(mockCustomers.find((c) => c.CustomerId === params.id && !c.is_deleted));
   const [isRedeemDialogOpen, setRedeemDialogOpen] = React.useState(false);
 
 
@@ -50,7 +50,7 @@ export default function CustomerDetailPage() {
     notFound();
   }
   
-  const customerOrders = mockOrders.filter(o => o.customer_id === customer.id);
+  const customerOrders = mockOrders.filter(o => o.CustomerId === customer.CustomerId);
   
   const formatCurrency = (amount: number | null) => {
     if (amount === null || amount === undefined) return '-';
@@ -80,7 +80,7 @@ export default function CustomerDetailPage() {
 
     const newPoints = customer.loyalty_points - voucher.points_cost;
 
-    const customerInDb = mockCustomers.find(c => c.id === customer.id);
+    const customerInDb = mockCustomers.find(c => c.CustomerId === customer.CustomerId);
     if (customerInDb) {
       customerInDb.loyalty_points = newPoints;
     }
@@ -198,7 +198,7 @@ export default function CustomerDetailPage() {
                  </TableHeader>
                  <TableBody>
                    {customerOrders.map((order) => (
-                     <TableRow key={order.id} onClick={() => router.push(`/orders/${order.id}`)} className="cursor-pointer">
+                     <TableRow key={order.OrderId} onClick={() => router.push(`/orders/${order.OrderId}`)} className="cursor-pointer">
                        <TableCell className="font-medium">{order.order_code}</TableCell>
                        <TableCell>{formatDate(order.created_at)}</TableCell>
                        <TableCell>
@@ -231,7 +231,7 @@ export default function CustomerDetailPage() {
         <div className="py-4 max-h-[60vh] overflow-y-auto">
           <div className="space-y-4">
             {mockVouchers.map((voucher) => (
-              <Card key={voucher.id} className={cn(customer.loyalty_points < voucher.points_cost && "bg-muted/50 opacity-60")}>
+              <Card key={voucher.VoucherId} className={cn(customer.loyalty_points < voucher.points_cost && "bg-muted/50 opacity-60")}>
                 <CardContent className="p-4 flex items-center justify-between">
                   <div>
                     <h4 className="font-semibold">{voucher.name}</h4>

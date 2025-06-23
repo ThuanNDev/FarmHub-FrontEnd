@@ -56,14 +56,14 @@ export default function InstallmentsPage() {
   }, []);
 
   const getCustomerName = (customerId: string) => {
-    return mockCustomers.find(c => c.id === customerId)?.name || 'Khách lẻ';
+    return mockCustomers.find(c => c.CustomerId === customerId)?.name || 'Khách lẻ';
   };
 
   const filteredInstallmentOrders = useMemo(() => {
     if (!searchTerm) return installmentOrders;
     return installmentOrders.filter(order =>
       order.order_code.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      getCustomerName(order.customer_id).toLowerCase().includes(searchTerm.toLowerCase())
+      getCustomerName(order.CustomerId).toLowerCase().includes(searchTerm.toLowerCase())
     );
   }, [searchTerm, installmentOrders]);
   
@@ -73,8 +73,8 @@ export default function InstallmentsPage() {
   };
 
   const handlePrintInstallmentReceipt = (order: InstallmentOrder, paymentValues: PaymentFormValues) => {
-    const customer = mockCustomers.find(c => c.id === order.customer_id);
-    const updatedOrderInDb = mockOrders.find(o => o.id === order.id);
+    const customer = mockCustomers.find(c => c.CustomerId === order.CustomerId);
+    const updatedOrderInDb = mockOrders.find(o => o.OrderId === order.OrderId);
 
     if (!customer || !updatedOrderInDb) {
       toast({ variant: 'destructive', title: 'Lỗi', description: 'Không tìm thấy thông tin để in.' });
@@ -91,7 +91,7 @@ export default function InstallmentsPage() {
       return;
     }
 
-    const terms = mockInstallmentTerms.filter(t => t.order_id === order.id);
+    const terms = mockInstallmentTerms.filter(t => t.OrderId === order.OrderId);
     const paidTerms = terms.filter(t => t.paid_at !== null).length;
     const totalTerms = terms.length;
     const remainingAmount = updatedOrderInDb.total_amount - updatedOrderInDb.total_paid;
@@ -192,17 +192,17 @@ export default function InstallmentsPage() {
   const handleConfirmPayment = (values: PaymentFormValues) => {
     if (!selectedOrder) return;
     
-    const orderInDb = mockOrders.find(o => o.id === selectedOrder.id);
+    const orderInDb = mockOrders.find(o => o.OrderId === selectedOrder.OrderId);
     if(orderInDb) {
         orderInDb.total_paid += values.amount;
     }
     
     const nextUnpaidTerm = mockInstallmentTerms
-        .filter(t => t.order_id === selectedOrder.id && t.paid_at === null)
+        .filter(t => t.OrderId === selectedOrder.OrderId && t.paid_at === null)
         .sort((a,b) => a.installment_number - b.installment_number)[0];
 
     if (nextUnpaidTerm) {
-        const termInDb = mockInstallmentTerms.find(t => t.id === nextUnpaidTerm.id);
+        const termInDb = mockInstallmentTerms.find(t => t.InstallmentTermId === nextUnpaidTerm.InstallmentTermId);
         if (termInDb) {
             termInDb.paid_at = new Date().toISOString();
             termInDb.payment_method = values.paymentMethod;
@@ -237,7 +237,7 @@ export default function InstallmentsPage() {
   };
 
   const getInstallmentDetails = (orderId: string) => {
-    const terms = mockInstallmentTerms.filter(t => t.order_id === orderId);
+    const terms = mockInstallmentTerms.filter(t => t.OrderId === orderId);
     if (terms.length === 0) {
       return { paidTerms: 0, totalTerms: 0, amountPerTerm: 0 };
     }
@@ -295,11 +295,11 @@ export default function InstallmentsPage() {
                 filteredInstallmentOrders.map((order) => {
                   const status = getInstallmentStatus(order);
                   const remaining = order.total_amount - order.total_paid;
-                  const { paidTerms, totalTerms, amountPerTerm } = getInstallmentDetails(order.id);
+                  const { paidTerms, totalTerms, amountPerTerm } = getInstallmentDetails(order.OrderId);
                   return (
-                    <TableRow key={order.id}>
+                    <TableRow key={order.OrderId}>
                       <TableCell className="font-medium">{order.order_code}</TableCell>
-                      <TableCell>{getCustomerName(order.customer_id)}</TableCell>
+                      <TableCell>{getCustomerName(order.CustomerId)}</TableCell>
                       <TableCell className="text-right">{formatCurrency(order.total_amount)}</TableCell>
                       <TableCell className="text-center font-medium">
                         {totalTerms > 0 ? `${paidTerms}/${totalTerms}` : 'N/A'}
@@ -319,7 +319,7 @@ export default function InstallmentsPage() {
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => router.push(`/orders/${order.id}`)}>Xem chi tiết đơn hàng</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => router.push(`/orders/${order.OrderId}`)}>Xem chi tiết đơn hàng</DropdownMenuItem>
                             <DropdownMenuItem onClick={() => handleOpenPaymentDialog(order)}>Ghi nhận thanh toán</DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
@@ -352,7 +352,7 @@ export default function InstallmentsPage() {
           description={`Tổng tiền còn lại: ${formatCurrency(selectedOrder.total_amount - selectedOrder.total_paid)}. Vui lòng xác nhận số tiền thanh toán.`}
           dueAmount={
             mockInstallmentTerms
-                .filter(t => t.order_id === selectedOrder.id && t.paid_at === null)
+                .filter(t => t.OrderId === selectedOrder.OrderId && t.paid_at === null)
                 .sort((a,b) => a.installment_number - b.installment_number)[0]?.amount 
             || (selectedOrder.total_amount - selectedOrder.total_paid)
           }

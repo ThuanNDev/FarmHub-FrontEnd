@@ -3,7 +3,7 @@
 // Timestamps are in ISO 8601 format.
 
 export type BankInfo = {
-  bank_id: string;
+  BankId: string;
   account_no: string;
   account_name: string;
 };
@@ -19,13 +19,13 @@ export type Defaults = {
 };
 
 export type Store = {
-  id: string;
+  StoreId: string;
   name: string;
   address: string;
   phone: string;
   email: string;
   database_name: string;
-  manager_id: string;
+  UserId: string; // manager_id
   opening_hours: string;
   is_active: boolean;
   created_at: string;
@@ -40,14 +40,14 @@ export type Store = {
 };
 
 export type User = {
-  id: string;
+  UserId: string;
   username: string;
   password_hash: string;
   full_name: string;
   email: string;
   phone: string;
   role: 'Admin' | 'Staff';
-  associated_store_ids: string[];
+  AssociatedStoreIds: string[];
   is_active: boolean;
   is_superadmin: boolean;
   last_login_at: string | null;
@@ -58,11 +58,11 @@ export type User = {
 };
 
 export type Category = {
-  id: string;
+  CategoryId: string;
   name: string;
   slug: string;
   description: string;
-  parent_id: string | null;
+  ParentCategoryId: string | null;
   image: string;
   order: number;
   is_active: boolean;
@@ -72,7 +72,7 @@ export type Category = {
 };
 
 export type Supplier = {
-  id: string;
+  SupplierId: string;
   name: string;
   phone: string;
   email: string;
@@ -86,12 +86,12 @@ export type Supplier = {
 };
 
 export type Product = {
-  id: string;
+  ProductId: string;
   product_code: string;
   name: string;
   slug: string;
   description: string;
-  category_id: string;
+  CategoryId: string;
   brand: string;
   unit: string;
   import_price: number;
@@ -103,7 +103,7 @@ export type Product = {
   images: string; // JSON string of URLs
   specs: string; // JSON string of specs
   warranty_info: string;
-  supplier_id: string;
+  SupplierId: string;
   is_active: boolean;
   is_deleted: boolean;
   created_at: string;
@@ -112,7 +112,7 @@ export type Product = {
 };
 
 export type Customer = {
-  id: string;
+  CustomerId: string;
   name: string;
   phone: string;
   email: string;
@@ -133,9 +133,9 @@ export type Customer = {
 };
 
 export type Order = {
-  id: string;
+  OrderId: string;
   order_code: string;
-  customer_id: string;
+  CustomerId: string;
   total_amount: number;
   discount_amount: number;
   shipping_fee: number;
@@ -147,15 +147,15 @@ export type Order = {
   delivery_address: string | null;
   delivery_status: 'Processing' | 'Shipped' | 'Completed' | 'Cancelled' | 'N/A';
   note: string | null;
-  processed_by_user_id: string;
+  ProcessedByUserId: string;
   created_at: string;
   updated_at: string;
 };
 
 export type OrderItem = {
-  id: string;
-  order_id: string;
-  product_id: string;
+  OrderItemId: string;
+  OrderId: string;
+  ProductId: string;
   product_name: string;
   product_unit: string;
   quantity: number;
@@ -164,8 +164,8 @@ export type OrderItem = {
 };
 
 export type InstallmentTerm = {
-  id: string;
-  order_id: string;
+  InstallmentTermId: string;
+  OrderId: string;
   installment_number: number;
   due_date: string;
   amount: number;
@@ -173,34 +173,34 @@ export type InstallmentTerm = {
   payment_method: string | null;
   is_late: boolean;
   note: string | null;
-  collected_by_user_id: string | null;
+  CollectedByUserId: string | null;
   created_at: string;
   updatedAt: string;
 };
 
 export type Bank = {
-    id: string;
+    BankId: string;
     name: string;
 }
 
 export type PurchaseOrder = {
-    id: string;
+    PurchaseOrderId: string;
     order_code: string;
-    supplier_id: string;
+    SupplierId: string;
     total_amount: number;
     status: 'pending' | 'ordered' | 'received' | 'cancelled';
     expected_delivery_date: string | null;
     received_date: string | null;
     note: string | null;
-    created_by_user_id: string;
+    CreatedByUserId: string;
     created_at: string;
     updated_at: string;
 }
 
 export type PurchaseOrderItem = {
-    id: string;
-    purchase_order_id: string;
-    product_id: string;
+    PurchaseOrderItemId: string;
+    PurchaseOrderId: string;
+    ProductId: string;
     quantity: number;
     unit_price: number;
     total_price: number;
@@ -208,32 +208,32 @@ export type PurchaseOrderItem = {
 }
 
 export type StockAdjustment = {
-    id: string;
-    product_id: string;
+    StockAdjustmentId: string;
+    ProductId: string;
     adjustment_type: 'increase' | 'decrease';
     quantity_change: number;
     reason: string;
-    adjusted_by_user_id: string;
+    AdjustedByUserId: string;
     created_at: string;
 }
 
 export type ReturnOrder = {
-    id: string;
-    order_id: string;
-    customer_id: string;
+    ReturnOrderId: string;
+    OrderId: string;
+    CustomerId: string;
     return_date: string;
     total_refund_amount: number;
     reason: string | null;
     status: 'pending' | 'approved' | 'rejected' | 'refunded' | 'restocked';
-    processed_by_user_id: string;
+    ProcessedByUserId: string;
     created_at: string;
     updated_at: string;
 }
 
 export type ReturnOrderItem = {
-    id: string;
-    return_order_id: string;
-    product_id: string;
+    ReturnOrderItemId: string;
+    ReturnOrderId: string;
+    ProductId: string;
     quantity: number;
     unit_price: number;
     condition: 'new' | 'used' | 'damaged';
@@ -241,7 +241,7 @@ export type ReturnOrderItem = {
 }
 
 export type Notification = {
-    id: string;
+    NotificationId: string;
     type: 'order' | 'inventory' | 'system';
     title: string;
     description: string;
@@ -251,7 +251,7 @@ export type Notification = {
 }
 
 export type Voucher = {
-    id: string;
+    VoucherId: string;
     name: string;
     description: string;
     points_cost: number;

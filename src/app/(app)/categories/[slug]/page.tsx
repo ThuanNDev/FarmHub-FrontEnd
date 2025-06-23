@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -35,7 +36,7 @@ export default function CategoryDetailPage() {
     notFound();
   }
   
-  const productsInCategory = mockProducts.filter(p => p.category_id === category.id && !p.is_deleted);
+  const productsInCategory = mockProducts.filter(p => p.CategoryId === category.CategoryId && !p.is_deleted);
   
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
@@ -97,7 +98,7 @@ export default function CategoryDetailPage() {
                  </TableHeader>
                  <TableBody>
                    {productsInCategory.map((product) => (
-                     <TableRow key={product.id} onClick={() => router.push(`/products/${product.slug}`)} className="cursor-pointer">
+                     <TableRow key={product.ProductId} onClick={() => router.push(`/products/${product.slug}`)} className="cursor-pointer">
                        <TableCell className="hidden sm:table-cell">
                          <Image
                            alt={product.name}

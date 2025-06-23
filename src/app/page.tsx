@@ -1,4 +1,5 @@
 
+
 import Link from 'next/link';
 import Image from 'next/image';
 import { Leaf, Truck, Wrench, Package, Star, MoveRight } from 'lucide-react';
@@ -127,7 +128,7 @@ export default function LandingPage() {
             </div>
             <div className="mx-auto grid grid-cols-1 gap-8 sm:grid-cols-2 md:grid-cols-3 lg:gap-12 mt-12">
               {featuredProducts.map((product) => (
-                <Card key={product.id} className="group overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-2">
+                <Card key={product.ProductId} className="group overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-2">
                     <div className="overflow-hidden">
                         <Image
                             src={getImageUrl(product.images)}
@@ -246,7 +247,7 @@ export default function LandingPage() {
                 <div className="flex gap-4 mt-4 sm:mt-0">
                     <Link href="#" aria-label="Facebook"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5 hover:text-primary"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path></svg></Link>
                     <Link href="#" aria-label="Youtube"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5 hover:text-primary"><path d="M2.5 17a24.12 24.12 0 0 1 0-10C2.5 6 7.5 4 12 4s9.5 2 9.5 3-9.5 4-9.5 4-9.5-2-9.5-3Z"></path><path d="M2.5 17V7c0-1 4-3 9.5-3s9.5 2 9.5 3v10c0 1-4 3-9.5 3s-9.5-2-9.5-3Z"></path></svg></Link>
-                    <Link href="#" aria-label="Zalo"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5 hover:text-primary"><path d="M12 2C6.5 2 2 6.5 2 12c0 2.2 0.7 4.2 2 6l-1.4 4.8c-0.2 0.8 0.6 1.4 1.4 1.2L8.8 22c1.8 0.8 3.8 1.2 5.2 1.2 5.5 0 10-4.5 10-10S17.5 2 12 2zM7.5 10.5c0-0.8 0.7-1.5 1.5-1.5h1c0.8 0 1.5 0.7 1.5 1.5v3c0 0.8-0.7 1.5-1.5 1.5h-1c-0.8 0-1.5-0.7-1.5-1.5v-3zM14.5 10.5c0-0.8 0.7-1.5 1.5-1.5h1c0.8 0 1.5 0.7 1.5 1.5v3c0 0.8-0.7 1.5-1.5 1.5h-1c-0.8 0-1.5-0.7-1.5-1.5v-3z"></path></svg></Link>
+                    <Link href="#" aria-label="Zalo"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5 hover:text-primary"><path d="M12 2C6.5 2 2 6.5 2 12c0 2.2 0.7 4.2 2 6l-1.4 4.8c-0.2 0.8 0.6 1.4 1.4 1.2L8.8 22c1.8 0.8 3.8 1.2 5.2 1.2 5.5 0 10-4.5 10-10S17.5 2 12 2zM7.5 10.5c0-0.8 0.7-1.5 1.5-1.5h1c0.8 0 1.5 0.7 1.5 1.5v3c0 0.8-0.7 1.5-1.5-1.5h-1c-0.8 0-1.5-0.7-1.5-1.5v-3zM14.5 10.5c0-0.8 0.7-1.5 1.5-1.5h1c0.8 0 1.5 0.7 1.5 1.5v3c0 0.8-0.7 1.5-1.5-1.5h-1c-0.8 0-1.5-0.7-1.5-1.5v-3z"></path></svg></Link>
                 </div>
             </div>
         </div>

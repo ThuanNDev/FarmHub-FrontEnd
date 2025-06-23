@@ -219,7 +219,7 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
   }, [router]);
 
   const handleMarkAsRead = (notificationId: string) => {
-    setNotifications(prev => prev.map(n => n.id === notificationId ? { ...n, is_read: true } : n));
+    setNotifications(prev => prev.map(n => n.NotificationId === notificationId ? { ...n, is_read: true } : n));
   };
   
   const handleMarkAllAsRead = () => {
@@ -330,8 +330,8 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
                       filteredNotifications.map((notification) => (
                         <Link
                           href={notification.link || '#'}
-                          key={notification.id}
-                          onClick={() => handleMarkAsRead(notification.id)}
+                          key={notification.NotificationId}
+                          onClick={() => handleMarkAsRead(notification.NotificationId)}
                           className="block"
                         >
                            <div className={cn(

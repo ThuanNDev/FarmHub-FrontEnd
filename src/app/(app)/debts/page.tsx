@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
@@ -61,13 +62,13 @@ export default function DebtsPage() {
     const newStatuses: Record<string, DebtStatus> = {};
     debtors.forEach(debtor => {
         if (!debtor.debt_due_date) {
-            newStatuses[debtor.id] = { textKey: 'status.unknown', variant: 'outline' };
+            newStatuses[debtor.CustomerId] = { textKey: 'status.unknown', variant: 'outline' };
             return;
         }
         const dueDate = new Date(debtor.debt_due_date);
         
         if (dueDate < today) {
-            newStatuses[debtor.id] = { textKey: 'status.overdue', variant: 'destructive' };
+            newStatuses[debtor.CustomerId] = { textKey: 'status.overdue', variant: 'destructive' };
             return;
         }
         
@@ -75,9 +76,9 @@ export default function DebtsPage() {
         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
         if (diffDays <= 7) {
-            newStatuses[debtor.id] = { textKey: 'status.due_soon', variant: 'default' };
+            newStatuses[debtor.CustomerId] = { textKey: 'status.due_soon', variant: 'default' };
         } else {
-            newStatuses[debtor.id] = { textKey: 'status.within_due_date', variant: 'secondary' };
+            newStatuses[debtor.CustomerId] = { textKey: 'status.within_due_date', variant: 'secondary' };
         }
     });
     setDebtStatuses(newStatuses);
@@ -109,7 +110,7 @@ export default function DebtsPage() {
   const handleConfirmPayment = (values: PaymentFormValues) => {
     if (!selectedDebtor) return;
 
-    const customerInDb = mockCustomers.find(c => c.id === selectedDebtor.id);
+    const customerInDb = mockCustomers.find(c => c.CustomerId === selectedDebtor.CustomerId);
     if(customerInDb) {
       const newDebt = customerInDb.total_debt - values.amount;
       customerInDb.total_debt = newDebt < 0 ? 0 : newDebt;
@@ -166,9 +167,9 @@ export default function DebtsPage() {
             <TableBody>
               {filteredDebtors.length > 0 ? (
                 filteredDebtors.map((debtor) => {
-                  const status = debtStatuses[debtor.id] || { textKey: 'status.unknown', variant: 'outline' };
+                  const status = debtStatuses[debtor.CustomerId] || { textKey: 'status.unknown', variant: 'outline' };
                   return (
-                    <TableRow key={debtor.id}>
+                    <TableRow key={debtor.CustomerId}>
                       <TableCell className="font-medium">{debtor.name}</TableCell>
                       <TableCell>{debtor.phone}</TableCell>
                       <TableCell className="text-right">{formatCurrency(debtor.total_debt)}</TableCell>
@@ -185,7 +186,7 @@ export default function DebtsPage() {
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => router.push(`/customers/${debtor.id}`)}>Xem chi tiết</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => router.push(`/customers/${debtor.CustomerId}`)}>Xem chi tiết</DropdownMenuItem>
                             <DropdownMenuItem onClick={() => handleOpenPaymentDialog(debtor)}>Ghi nhận thanh toán</DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>

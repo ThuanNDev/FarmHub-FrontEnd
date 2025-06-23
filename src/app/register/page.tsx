@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -76,14 +77,14 @@ export default function RegisterPage() {
 
         const now = new Date().toISOString();
         const newUser: (typeof mockUsers)[0] = {
-            id: `user-${Math.floor(1000 + Math.random() * 9000)}`,
+            UserId: `user-${Math.floor(1000 + Math.random() * 9000)}`,
             username: values.username,
             password_hash: `hashed_${values.password}`, // Mock hashing
             full_name: values.full_name,
             email: values.email,
             phone: '',
             role: 'Staff' as const,
-            associated_store_ids: ['store-001'],
+            AssociatedStoreIds: ['store-001'],
             is_active: true,
             is_superadmin: false,
             last_login_at: null,

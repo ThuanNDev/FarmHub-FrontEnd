@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -69,7 +70,7 @@ export default function LoginPage() {
 
         // In a real app, you would compare a hashed password.
         if (user && user.is_active) {
-            localStorage.setItem('loggedInUserId', user.id); // Save user ID
+            localStorage.setItem('loggedInUserId', user.UserId); // Save user ID
 
             if (user.last_login_at === null) {
                 // First time login, redirect to OTP verification
@@ -110,7 +111,7 @@ export default function LoginPage() {
     // Mock Google authentication
     setTimeout(() => {
         const googleUser = mockUsers[0]; // Let's pretend Google sign-in always logs in the admin
-        localStorage.setItem('loggedInUserId', googleUser.id);
+        localStorage.setItem('loggedInUserId', googleUser.UserId);
         
         toast({
             title: t('login.success'),

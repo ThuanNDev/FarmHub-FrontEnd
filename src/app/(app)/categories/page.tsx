@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
@@ -83,7 +84,7 @@ type Category = typeof mockCategories[0];
 const categorySchema = z.object({
   name: z.string().min(1, { message: "Tên thể loại không được để trống." }),
   description: z.string().optional(),
-  parent_id: z.string().optional(), // Will treat special value as null in submission
+  ParentCategoryId: z.string().optional(), // Will treat special value as null in submission
   image: z.string().url({ message: "Vui lòng nhập URL hình ảnh hợp lệ." }).or(z.literal('')).optional(),
   order: z.coerce.number().int().optional(),
   is_active: z.boolean().default(true),
@@ -107,7 +108,7 @@ export default function CategoriesPage() {
     defaultValues: {
       name: '',
       description: '',
-      parent_id: '',
+      ParentCategoryId: '',
       image: '',
       order: 0,
       is_active: true,
@@ -128,7 +129,7 @@ export default function CategoriesPage() {
             form.reset({
                 name: selectedCategory.name,
                 description: selectedCategory.description,
-                parent_id: selectedCategory.parent_id || '',
+                ParentCategoryId: selectedCategory.ParentCategoryId || '',
                 image: selectedCategory.image,
                 order: selectedCategory.order,
                 is_active: selectedCategory.is_active,
@@ -137,7 +138,7 @@ export default function CategoriesPage() {
             form.reset({
                 name: '',
                 description: '',
-                parent_id: '',
+                ParentCategoryId: '',
                 image: '',
                 order: categories.length + 1,
                 is_active: true,
@@ -163,7 +164,7 @@ export default function CategoriesPage() {
 
   const confirmDelete = () => {
     if (selectedCategory) {
-      setCategories(categories.map(c => c.id === selectedCategory.id ? { ...c, is_deleted: true } : c).filter(c => !c.is_deleted));
+      setCategories(categories.map(c => c.CategoryId === selectedCategory.CategoryId ? { ...c, is_deleted: true } : c).filter(c => !c.is_deleted));
       toast({ title: "Thành công", description: "Thể loại đã được xóa." });
     }
     setDeleteDialogOpen(false);
@@ -174,11 +175,11 @@ export default function CategoriesPage() {
     const slug = slugify(values.name);
     if (selectedCategory) {
       const updatedCategories = categories.map(c => 
-        c.id === selectedCategory.id ? { 
+        c.CategoryId === selectedCategory.CategoryId ? { 
             ...c, 
             ...values,
             slug,
-            parent_id: values.parent_id || null,
+            ParentCategoryId: values.ParentCategoryId || null,
             image: values.image || 'https://picsum.photos/100/100',
             order: values.order ?? c.order,
             description: values.description || '',
@@ -189,11 +190,11 @@ export default function CategoriesPage() {
       toast({ title: "Thành công", description: "Thể loại đã được cập nhật." });
     } else {
       const newCategory: Category = {
-        id: `cate-${Math.floor(1000 + Math.random() * 9000)}`,
+        CategoryId: `cate-${Math.floor(1000 + Math.random() * 9000)}`,
         name: values.name,
         slug,
         description: values.description || '',
-        parent_id: values.parent_id || null,
+        ParentCategoryId: values.ParentCategoryId || null,
         image: values.image || 'https://picsum.photos/100/100',
         order: values.order ?? categories.length + 1,
         is_active: values.is_active,
@@ -210,7 +211,7 @@ export default function CategoriesPage() {
   
   const getParentCategoryName = (parentId: string | null): string => {
     if (!parentId) return '—';
-    const parent = categories.find(c => c.id === parentId);
+    const parent = categories.find(c => c.CategoryId === parentId);
     return parent ? parent.name : 'Không tìm thấy';
   };
 
@@ -263,7 +264,7 @@ export default function CategoriesPage() {
             </TableHeader>
             <TableBody>
               {filteredCategories.map((category) => (
-                <TableRow key={category.id} onClick={() => router.push(`/categories/${category.slug}`)} className="cursor-pointer">
+                <TableRow key={category.CategoryId} onClick={() => router.push(`/categories/${category.slug}`)} className="cursor-pointer">
                   <TableCell className="hidden sm:table-cell">
                     <Image
                         alt={category.name}
@@ -278,7 +279,7 @@ export default function CategoriesPage() {
                   <TableCell className="hidden md:table-cell max-w-[200px] truncate" title={category.description}>
                     {category.description || '—'}
                   </TableCell>
-                  <TableCell className="hidden lg:table-cell">{getParentCategoryName(category.parent_id)}</TableCell>
+                  <TableCell className="hidden lg:table-cell">{getParentCategoryName(category.ParentCategoryId)}</TableCell>
                   <TableCell>
                       <Badge variant={category.is_active ? 'default' : 'secondary'}>
                         {t(category.is_active ? 'status.active' : 'status.inactive')}
@@ -335,7 +336,7 @@ export default function CategoriesPage() {
               />
               <FormField
                 control={form.control}
-                name="parent_id"
+                name="ParentCategoryId"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Danh mục cha</FormLabel>
@@ -351,9 +352,9 @@ export default function CategoriesPage() {
                       <SelectContent>
                         <SelectItem value="_ROOT_">Không có (danh mục gốc)</SelectItem>
                         {categories
-                          .filter(c => c.id !== selectedCategory?.id)
+                          .filter(c => c.CategoryId !== selectedCategory?.CategoryId)
                           .map(category => (
-                            <SelectItem key={category.id} value={category.id}>
+                            <SelectItem key={category.CategoryId} value={category.CategoryId}>
                               {category.name}
                             </SelectItem>
                           ))}

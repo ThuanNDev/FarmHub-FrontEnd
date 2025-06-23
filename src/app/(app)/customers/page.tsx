@@ -159,7 +159,7 @@ export default function CustomersPage() {
 
   const confirmDelete = () => {
     if (selectedCustomer) {
-      setCustomers(customers.map(c => c.id === selectedCustomer.id ? { ...c, is_deleted: true } : c));
+      setCustomers(customers.map(c => c.CustomerId === selectedCustomer.CustomerId ? { ...c, is_deleted: true } : c));
       toast({ title: "Thành công", description: "Khách hàng đã được xóa." });
     }
     setDeleteDialogOpen(false);
@@ -170,7 +170,7 @@ export default function CustomersPage() {
     const now = new Date().toISOString();
     if (selectedCustomer) {
       const updatedCustomers = customers.map(c => 
-        c.id === selectedCustomer.id 
+        c.CustomerId === selectedCustomer.CustomerId 
           ? { 
               ...c, 
               ...values, 
@@ -186,7 +186,7 @@ export default function CustomersPage() {
       toast({ title: "Thành công", description: "Khách hàng đã được cập nhật." });
     } else {
       const newCustomer: Customer = {
-        id: `cust-${Math.floor(1000 + Math.random() * 9000)}`,
+        CustomerId: `cust-${Math.floor(1000 + Math.random() * 9000)}`,
         ...values,
         total_debt: 0,
         debt_due_date: null,
@@ -273,7 +273,7 @@ export default function CustomersPage() {
             </TableHeader>
             <TableBody>
               {filteredCustomers.map((customer) => (
-                <TableRow key={customer.id} onClick={() => router.push(`/customers/${customer.id}`)} className="cursor-pointer">
+                <TableRow key={customer.CustomerId} onClick={() => router.push(`/customers/${customer.CustomerId}`)} className="cursor-pointer">
                   <TableCell className="font-medium">{customer.name}</TableCell>
                   <TableCell>
                     <div className="font-medium">{customer.phone}</div>

@@ -6,19 +6,19 @@ import type { Store, User, Category, Supplier, Product, Customer, Order, OrderIt
 
 export const mockStores: Store[] = [
   {
-    id: 'store-001',
+    StoreId: 'store-001',
     name: 'Nông Cơ Xanh',
     address: '123 Đường Nông Sản, Huyện Cần Giờ, TP.HCM',
     phone: '02839998888',
     email: 'contact.hcm@nongcoxanh.vn',
     database_name: 'nongcoxanh_main_db',
-    manager_id: 'user-001',
+    UserId: 'user-001',
     opening_hours: 'Thứ 2 - Chủ Nhật: 7:00 - 18:00',
     is_active: true,
     created_at: '2023-01-01T00:00:00Z',
     updated_at: '2024-07-25T11:00:00Z',
     bank_info: {
-      bank_id: 'SACOMBANK',
+      BankId: 'SACOMBANK',
       account_no: '050109114755',
       account_name: 'NGUYEN TRAN VAN THUAN'
     },
@@ -39,14 +39,14 @@ export const mockStores: Store[] = [
 
 export const mockUsers: User[] = [
     {
-      id: 'user-001',
+      UserId: 'user-001',
       username: 'admin',
       password_hash: '$2b$12$D.p.a.S.s.W.o.r.d.P.l.a.c.e.h.o.l.d.e.r',
       full_name: 'Tên Của Bạn',
       email: 'email@cuaban.com',
       phone: '0123456789',
       role: 'Admin',
-      associated_store_ids: ['store-001'],
+      AssociatedStoreIds: ['store-001'],
       is_active: true,
       is_superadmin: true,
       last_login_at: '2024-07-25T10:00:00Z',
@@ -56,14 +56,14 @@ export const mockUsers: User[] = [
       token_expiry_at: null,
     },
     {
-      id: 'user-002',
+      UserId: 'user-002',
       username: 'nhanvien1',
       password_hash: '$2b$12$D.p.a.S.s.W.o.r.d.P.l.a.c.e.h.o.l.d.e.r',
       full_name: 'Nguyễn Thị Bích',
       email: 'bich.nguyen@nongcoxanh.com',
       phone: '0912345678',
       role: 'Staff',
-      associated_store_ids: ['store-001'],
+      AssociatedStoreIds: ['store-001'],
       is_active: true,
       is_superadmin: false,
       last_login_at: '2024-07-24T15:00:00Z',
@@ -76,11 +76,11 @@ export const mockUsers: User[] = [
 
 export const mockCategories: Category[] = [
   { 
-    id: 'cate-001', 
+    CategoryId: 'cate-001', 
     name: 'Máy Nông Nghiệp', 
     slug: 'may-nong-nghiep',
     description: 'Các loại máy móc phục vụ nông nghiệp.',
-    parent_id: null,
+    ParentCategoryId: null,
     image: 'https://picsum.photos/id/145/100/100',
     order: 1,
     is_active: true,
@@ -89,11 +89,11 @@ export const mockCategories: Category[] = [
     is_deleted: false
   },
   { 
-    id: 'cate-002', 
+    CategoryId: 'cate-002', 
     name: 'Máy công trình', 
     slug: 'may-cong-trinh',
     description: 'Máy móc cho xây dựng và công trình.',
-    parent_id: null,
+    ParentCategoryId: null,
     image: 'https://picsum.photos/id/1048/100/100',
     order: 2,
     is_active: true,
@@ -102,11 +102,11 @@ export const mockCategories: Category[] = [
     is_deleted: false
   },
   { 
-    id: 'cate-003', 
+    CategoryId: 'cate-003', 
     name: 'Phụ tùng',
     slug: 'phu-tung', 
     description: 'Linh kiện, phụ tùng thay thế cho các loại máy.',
-    parent_id: null,
+    ParentCategoryId: null,
     image: 'https://picsum.photos/id/160/100/100',
     order: 3,
     is_active: true,
@@ -115,11 +115,11 @@ export const mockCategories: Category[] = [
     is_deleted: false
   },
   { 
-    id: 'cate-004', 
+    CategoryId: 'cate-004', 
     name: 'Máy cưa xích',
     slug: 'may-cua-xich', 
     description: 'Lam, xích, bugi, nòng cho máy cưa.',
-    parent_id: 'cate-001',
+    ParentCategoryId: 'cate-001',
     image: 'https://picsum.photos/id/1016/100/100',
     order: 1,
     is_active: true,
@@ -128,11 +128,11 @@ export const mockCategories: Category[] = [
     is_deleted: false
   },
   { 
-    id: 'cate-005', 
+    CategoryId: 'cate-005', 
     name: 'Máy cắt cỏ',
     slug: 'may-cat-co', 
     description: 'Đầu bò, lưỡi cắt, dây cước.',
-    parent_id: 'cate-001',
+    ParentCategoryId: 'cate-001',
     image: 'https://picsum.photos/id/1025/100/100',
     order: 2,
     is_active: true,
@@ -144,7 +144,7 @@ export const mockCategories: Category[] = [
 
 export const mockSuppliers: Supplier[] = [
   {
-    id: "supp-001",
+    SupplierId: "supp-001",
     name: "Công ty TNHH STIHL Việt Nam",
     phone: "02838123456",
     email: "contact@stihl.vn",
@@ -157,7 +157,7 @@ export const mockSuppliers: Supplier[] = [
     is_deleted: false
   },
   {
-    id: "supp-002",
+    SupplierId: "supp-002",
     name: "Nhà phân phối Husqvarna Toàn Quốc",
     phone: "02435556789",
     email: "info@husqvarna-vn.com",
@@ -170,7 +170,7 @@ export const mockSuppliers: Supplier[] = [
     is_deleted: false
   },
   {
-    id: "supp-003",
+    SupplierId: "supp-003",
     name: "Công ty Honda Việt Nam",
     phone: "02438889999",
     email: "support@honda.com.vn",
@@ -187,12 +187,12 @@ export const mockSuppliers: Supplier[] = [
 
 export const mockProducts: Product[] = [
   {
-    id: "prod-001",
+    ProductId: "prod-001",
     product_code: "ST-MS170",
     name: "Máy cưa xích STIHL MS 170",
     slug: "may-cua-xich-stihl-ms-170",
     description: "Dòng máy cưa nhỏ gọn, lý tưởng cho công việc cắt tỉa cành cây, cưa củi và các công việc nhẹ trong vườn nhà.",
-    category_id: "cate-004",
+    CategoryId: "cate-004",
     brand: "STIHL",
     unit: "bộ",
     import_price: 2100000,
@@ -204,7 +204,7 @@ export const mockProducts: Product[] = [
     images: "[\"https://picsum.photos/id/212/600/600\"]",
     specs: "{\"Dung tích xi lanh\": \"30.1 cm³\", \"Công suất\": \"1.2 kW\", \"Trọng lượng\": \"4.1 kg\", \"Chiều dài lam\": \"12-16 inch\"}",
     warranty_info: "Bảo hành 6 tháng",
-    supplier_id: "supp-001",
+    SupplierId: "supp-001",
     is_active: true,
     is_deleted: false,
     created_at: "2023-03-01T12:00:00Z",
@@ -212,12 +212,12 @@ export const mockProducts: Product[] = [
     hint: 'chainsaw'
   },
   {
-    id: "prod-002",
+    ProductId: "prod-002",
     product_code: "HUS-125R",
     name: "Máy cắt cỏ Husqvarna 125R",
     slug: "may-cat-co-husqvarna-125r",
     description: "Máy cắt cỏ đeo vai, động cơ mạnh mẽ, tiết kiệm nhiên liệu. Dễ khởi động, tay cầm chống rung, phù hợp cho việc phát quang diện tích nhỏ và vừa.",
-    category_id: "cate-005",
+    CategoryId: "cate-005",
     brand: "Husqvarna",
     unit: "bộ",
     import_price: 3500000,
@@ -229,7 +229,7 @@ export const mockProducts: Product[] = [
     images: "[\"https://picsum.photos/id/357/600/600\"]",
     specs: "{\"Dung tích xi lanh\": \"28 cm³\", \"Công suất\": \"0.8 kW\", \"Trọng lượng\": \"5.0 kg\"}",
     warranty_info: "Bảo hành 12 tháng",
-    supplier_id: "supp-002",
+    SupplierId: "supp-002",
     is_active: true,
     is_deleted: false,
     created_at: "2023-03-05T14:00:00Z",
@@ -237,12 +237,12 @@ export const mockProducts: Product[] = [
     hint: 'brush cutter'
   },
   {
-    id: "prod-003",
+    ProductId: "prod-003",
     product_code: "PT-LAM-16",
     name: "Lam máy cưa 16 inch",
     slug: "lam-may-cua-16-inch",
     description: "Lam 16 inch (40cm) phù hợp cho các dòng máy cưa STIHL và Husqvarna cỡ nhỏ và vừa.",
-    category_id: "cate-003",
+    CategoryId: "cate-003",
     brand: "Oregon",
     unit: "cái",
     import_price: 250000,
@@ -254,7 +254,7 @@ export const mockProducts: Product[] = [
     images: "[\"https://picsum.photos/id/431/600/600\"]",
     specs: "{\"Loại lam\": \"Lam trượt\", \"Chân xích\": \"3/8p\"}",
     warranty_info: "Không bảo hành",
-    supplier_id: "supp-001",
+    SupplierId: "supp-001",
     is_active: true,
     is_deleted: false,
     created_at: "2023-04-10T09:00:00Z",
@@ -262,12 +262,12 @@ export const mockProducts: Product[] = [
     hint: 'chainsaw bar'
   },
   {
-    id: "prod-004",
+    ProductId: "prod-004",
     product_code: "PT-DAUBO",
     name: "Đầu bò máy cắt cỏ",
     slug: "dau-bo-may-cat-co",
     description: "Bộ nhông truyền động (đầu bò) cho máy cắt cỏ, loại 28mm, 9 khía.",
-    category_id: "cate-003",
+    CategoryId: "cate-003",
     brand: "VN-OEM",
     unit: "cái",
     import_price: 150000,
@@ -279,7 +279,7 @@ export const mockProducts: Product[] = [
     images: "[\"https://picsum.photos/id/56/600/600\"]",
     specs: "{\"Đường kính ống\": \"28mm\", \"Số khía\": \"9\"}",
     warranty_info: "Bao test",
-    supplier_id: "supp-002",
+    SupplierId: "supp-002",
     is_active: true,
     is_deleted: false,
     created_at: "2023-05-15T11:00:00Z",
@@ -287,12 +287,12 @@ export const mockProducts: Product[] = [
     hint: 'gear head'
   },
   {
-    id: "prod-005",
+    ProductId: "prod-005",
     product_code: "PT-NONG-381",
     name: "Nòng máy cưa STIHL 381",
     slug: "nong-may-cua-stihl-381",
     description: "Bộ nòng xi lanh completo cho máy cưa STIHL MS 381.",
-    category_id: "cate-003",
+    CategoryId: "cate-003",
     brand: "STIHL",
     unit: "bộ",
     import_price: 800000,
@@ -304,7 +304,7 @@ export const mockProducts: Product[] = [
     images: "[\"https://picsum.photos/id/163/600/600\"]",
     specs: "{\"Đường kính piston\": \"52mm\"}",
     warranty_info: "Không bảo hành",
-    supplier_id: "supp-001",
+    SupplierId: "supp-001",
     is_active: true,
     is_deleted: false,
     created_at: "2023-06-20T16:00:00Z",
@@ -312,12 +312,12 @@ export const mockProducts: Product[] = [
     hint: 'cylinder piston'
   },
   {
-    id: "prod-006",
+    ProductId: "prod-006",
     product_code: "HD-GX160",
     name: "Động cơ xăng Honda GX160",
     slug: "dong-co-xang-honda-gx160",
     description: "Động cơ xăng 4 thì, dung tích 163cc, cốt thẳng, thường dùng cho máy bơm nước, máy phát điện, máy nén khí.",
-    category_id: "cate-001",
+    CategoryId: "cate-001",
     brand: "Honda",
     unit: "cái",
     import_price: 2800000,
@@ -329,7 +329,7 @@ export const mockProducts: Product[] = [
     images: "[\"https://picsum.photos/id/183/600/600\"]",
     specs: "{\"Loại động cơ\": \"4 thì, 1 xi lanh, xupap treo\", \"Công suất\": \"4.8 HP\", \"Dung tích xi lanh\": \"163 cm³\"}",
     warranty_info: "Bảo hành 12 tháng",
-    supplier_id: "supp-003",
+    SupplierId: "supp-003",
     is_active: true,
     is_deleted: false,
     created_at: "2023-02-01T09:00:00Z",
@@ -337,12 +337,12 @@ export const mockProducts: Product[] = [
     hint: 'gasoline engine'
   },
   {
-    id: "prod-007",
+    ProductId: "prod-007",
     product_code: "ST-SR420",
     name: "Máy phun thuốc STIHL SR 420",
     slug: "may-phun-thuoc-stihl-sr-420",
     description: "Máy phun thuốc trừ sâu dạng đeo lưng, công suất mạnh mẽ, dùng cho phun thuốc dạng lỏng và dạng bột. Rất hiệu quả cho cây ăn trái và hoa màu.",
-    category_id: "cate-001",
+    CategoryId: "cate-001",
     brand: "STIHL",
     unit: "cái",
     import_price: 8500000,
@@ -354,7 +354,7 @@ export const mockProducts: Product[] = [
     images: "[\"https://picsum.photos/id/219/600/600\"]",
     specs: "{\"Dung tích xi lanh\": \"56.5 cm³\", \"Bình chứa\": \"13 L\", \"Tầm phun\": \"12 m\"}",
     warranty_info: "Bảo hành 6 tháng",
-    supplier_id: "supp-001",
+    SupplierId: "supp-001",
     is_active: true,
     is_deleted: false,
     created_at: "2023-08-15T10:00:00Z",
@@ -362,12 +362,12 @@ export const mockProducts: Product[] = [
     hint: 'backpack sprayer'
   },
   {
-    id: "prod-008",
+    ProductId: "prod-008",
     product_code: "PT-NHOT-2T",
     name: "Nhớt 2 thì STIHL",
     slug: "nhot-2-thi-stihl",
     description: "Nhớt pha xăng chuyên dụng cho động cơ 2 thì, tỷ lệ pha 1:50, giúp bảo vệ động cơ, giảm khói.",
-    category_id: "cate-003",
+    CategoryId: "cate-003",
     brand: "STIHL",
     unit: "lít",
     import_price: 120000,
@@ -379,7 +379,7 @@ export const mockProducts: Product[] = [
     images: "[\"https://picsum.photos/id/292/600/600\"]",
     specs: "{\"Dung tích\": \"1 Lít\", \"Tiêu chuẩn\": \"API TC, JASO FD\"}",
     warranty_info: "Không bảo hành",
-    supplier_id: "supp-001",
+    SupplierId: "supp-001",
     is_active: true,
     is_deleted: false,
     created_at: "2023-01-20T11:00:00Z",
@@ -387,12 +387,12 @@ export const mockProducts: Product[] = [
     hint: '2-stroke oil'
   },
   {
-    id: "prod-009",
+    ProductId: "prod-009",
     product_code: "HUS-445",
     name: "Máy cưa xích Husqvarna 445",
     slug: "may-cua-xich-husqvarna-445",
     description: "Dòng máy cưa bán chuyên nghiệp, mạnh mẽ, phù hợp cho việc đốn hạ cây vừa và nhỏ, công nghệ X-Torq tiết kiệm nhiên liệu.",
-    category_id: "cate-004",
+    CategoryId: "cate-004",
     brand: "Husqvarna",
     unit: "bộ",
     import_price: 7500000,
@@ -404,7 +404,7 @@ export const mockProducts: Product[] = [
     images: "[\"https://picsum.photos/id/375/600/600\"]",
     specs: "{\"Dung tích xi lanh\": \"45.7 cm³\", \"Công suất\": \"2.1 kW\", \"Trọng lượng\": \"4.9 kg\"}",
     warranty_info: "Bảo hành 12 tháng",
-    supplier_id: "supp-002",
+    SupplierId: "supp-002",
     is_active: true,
     is_deleted: false,
     created_at: "2023-09-01T09:00:00Z",
@@ -412,12 +412,12 @@ export const mockProducts: Product[] = [
     hint: 'professional chainsaw'
   },
   {
-    id: "prod-010",
+    ProductId: "prod-010",
     product_code: "HD-WB20XT",
     name: "Máy bơm nước Honda WB20XT",
     slug: "may-bom-nuoc-honda-wb20xt",
     description: "Máy bơm nước lưu lượng lớn, sử dụng động cơ Honda GX120, chuyên dùng cho tưới tiêu, bơm ao hồ, công trình xây dựng.",
-    category_id: "cate-001",
+    CategoryId: "cate-001",
     brand: "Honda",
     unit: "bộ",
     import_price: 4500000,
@@ -429,7 +429,7 @@ export const mockProducts: Product[] = [
     images: "[\"https://picsum.photos/id/450/600/600\"]",
     specs: "{\"Đường kính họng hút xả\": \"50mm (2 inch)\", \"Lưu lượng tối đa\": \"670 lít/phút\", \"Đẩy cao tối đa\": \"32 m\"}",
     warranty_info: "Bảo hành 12 tháng",
-    supplier_id: "supp-003",
+    SupplierId: "supp-003",
     is_active: true,
     is_deleted: false,
     created_at: "2023-10-10T14:00:00Z",
@@ -437,12 +437,12 @@ export const mockProducts: Product[] = [
     hint: 'water pump'
   },
   {
-    id: "prod-011",
+    ProductId: "prod-011",
     product_code: "PT-BUGINGK",
     name: "Bugi NGK BPMR7A",
     slug: "bugi-ngk-bpmr7a",
     description: "Bugi NGK chính hãng, phù hợp cho hầu hết các loại máy cưa, máy cắt cỏ.",
-    category_id: "cate-003",
+    CategoryId: "cate-003",
     brand: "NGK",
     unit: "cái",
     import_price: 45000,
@@ -454,7 +454,7 @@ export const mockProducts: Product[] = [
     images: "[\"https://picsum.photos/id/49/600/600\"]",
     specs: "{\"Loại bugi\": \"Điện trở\"}",
     warranty_info: "Không bảo hành",
-    supplier_id: "supp-002",
+    SupplierId: "supp-002",
     is_active: true,
     is_deleted: false,
     created_at: "2023-01-25T15:00:00Z",
@@ -462,12 +462,12 @@ export const mockProducts: Product[] = [
     hint: 'spark plug'
   },
   {
-    id: "prod-012",
+    ProductId: "prod-012",
     product_code: "PT-DAYCUOC",
     name: "Dây cước cắt cỏ vuông",
     slug: "day-cuoc-cat-co-vuong",
     description: "Dây cước vuông 3.0mm, gai, siêu bền, chuyên dùng để cắt các loại cỏ dày, cỏ già.",
-    category_id: "cate-003",
+    CategoryId: "cate-003",
     brand: "VN-OEM",
     unit: "cuộn",
     import_price: 60000,
@@ -479,7 +479,7 @@ export const mockProducts: Product[] = [
     images: "[\"https://picsum.photos/id/453/600/600\"]",
     specs: "{\"Kích thước\": \"3.0 mm\", \"Hình dạng\": \"Vuông gai\", \"Chiều dài\": \"~50m\"}",
     warranty_info: "Không bảo hành",
-    supplier_id: "supp-002",
+    SupplierId: "supp-002",
     is_active: true,
     is_deleted: false,
     created_at: "2023-04-15T16:00:00Z",
@@ -487,12 +487,12 @@ export const mockProducts: Product[] = [
     hint: 'trimmer line'
   },
   {
-    id: "prod-013",
+    ProductId: "prod-013",
     product_code: "ST-MS382",
     name: "Máy cưa xích STIHL MS 382",
     slug: "may-cua-xich-stihl-ms-382",
     description: "Dòng máy cưa chuyên nghiệp, công suất lớn, bền bỉ, dành cho khai thác gỗ chuyên nghiệp.",
-    category_id: "cate-004",
+    CategoryId: "cate-004",
     brand: "STIHL",
     unit: "bộ",
     import_price: 11000000,
@@ -504,7 +504,7 @@ export const mockProducts: Product[] = [
     images: "[\"https://picsum.photos/id/658/600/600\"]",
     specs: "{\"Dung tích xi lanh\": \"72.2 cm³\", \"Công suất\": \"3.9 kW\", \"Trọng lượng\": \"6.2 kg\"}",
     warranty_info: "Bảo hành 12 tháng",
-    supplier_id: "supp-001",
+    SupplierId: "supp-001",
     is_active: true,
     is_deleted: false,
     created_at: "2024-01-10T11:00:00Z",
@@ -512,12 +512,12 @@ export const mockProducts: Product[] = [
     hint: 'heavy-duty chainsaw'
   },
   {
-    id: "prod-014",
+    ProductId: "prod-014",
     product_code: "HUS-541",
     name: "Máy cắt cỏ Husqvarna 541RS",
     slug: "may-cat-co-husqvarna-541rs",
     description: "Máy cắt cỏ chuyên nghiệp, hiệu suất cao, thiết kế tối ưu cho công việc nặng và thời gian dài.",
-    category_id: "cate-005",
+    CategoryId: "cate-005",
     brand: "Husqvarna",
     unit: "bộ",
     import_price: 6800000,
@@ -529,7 +529,7 @@ export const mockProducts: Product[] = [
     images: "[\"https://picsum.photos/id/659/600/600\"]",
     specs: "{\"Dung tích xi lanh\": \"41.5 cm³\", \"Công suất\": \"1.6 kW\", \"Trọng lượng\": \"7.1 kg\"}",
     warranty_info: "Bảo hành 12 tháng",
-    supplier_id: "supp-002",
+    SupplierId: "supp-002",
     is_active: true,
     is_deleted: false,
     created_at: "2024-02-20T10:00:00Z",
@@ -537,12 +537,12 @@ export const mockProducts: Product[] = [
     hint: 'professional brush cutter'
   },
   {
-    id: "prod-015",
+    ProductId: "prod-015",
     product_code: "PT-XICH-3/8",
     name: "Xích cưa 3/8 34 mắt",
     slug: "xich-cua-3-8-34-mat",
     description: "Xích cưa chân 3/8, 34 mắt, phù hợp cho lam 16 inch.",
-    category_id: "cate-003",
+    CategoryId: "cate-003",
     brand: "Oregon",
     unit: "sợi",
     import_price: 180000,
@@ -554,7 +554,7 @@ export const mockProducts: Product[] = [
     images: "[\"https://picsum.photos/id/823/600/600\"]",
     specs: "{\"Bước xích\": \"3/8p\", \"Số mắt\": \"34\"}",
     warranty_info: "Không bảo hành",
-    supplier_id: "supp-001",
+    SupplierId: "supp-001",
     is_active: true,
     is_deleted: false,
     created_at: "2024-03-01T13:00:00Z",
@@ -566,7 +566,7 @@ export const mockProducts: Product[] = [
 
 export const mockCustomers: Customer[] = [
   { 
-    id: 'cust-001', 
+    CustomerId: 'cust-001', 
     name: 'Anh Ba Phi', 
     phone: '0901112222', 
     email: 'baphi@email.com',
@@ -586,7 +586,7 @@ export const mockCustomers: Customer[] = [
     is_deleted: false
   },
   { 
-    id: 'cust-002', 
+    CustomerId: 'cust-002', 
     name: 'Chú Tư Cảnh', 
     phone: '0987654321', 
     email: 'tucanh@email.com',
@@ -606,7 +606,7 @@ export const mockCustomers: Customer[] = [
     is_deleted: false
   },
   { 
-    id: 'cust-003', 
+    CustomerId: 'cust-003', 
     name: 'Trang trại Hoa Lan Đà Lạt', 
     phone: '0918000111', 
     email: 'trangtraihoalan@dalat.com',
@@ -626,7 +626,7 @@ export const mockCustomers: Customer[] = [
     is_deleted: false
   },
   { 
-    id: 'cust-004', 
+    CustomerId: 'cust-004', 
     name: 'Ông Sáu Miệt Vườn', 
     phone: '0903888777', 
     email: 'sauvuon@gmail.com',
@@ -646,7 +646,7 @@ export const mockCustomers: Customer[] = [
     is_deleted: false
   },
   { 
-    id: 'cust-005', 
+    CustomerId: 'cust-005', 
     name: 'Công ty Cảnh Quan Sài Gòn', 
     phone: '02837779999', 
     email: 'info@canhquansaigon.vn',
@@ -666,7 +666,7 @@ export const mockCustomers: Customer[] = [
     is_deleted: false
   },
   { 
-    id: 'cust-006', 
+    CustomerId: 'cust-006', 
     name: 'Bà Hai Bến Tre', 
     phone: '0939123123', 
     email: '',
@@ -686,7 +686,7 @@ export const mockCustomers: Customer[] = [
     is_deleted: false
   },
   { 
-    id: 'cust-007', 
+    CustomerId: 'cust-007', 
     name: 'Anh Tùng - Thầu xây dựng', 
     phone: '0945678999', 
     email: 'tungxd@yahoo.com',
@@ -710,9 +710,9 @@ export const mockCustomers: Customer[] = [
 
 export const mockOrders: Order[] = [
   { 
-    id: 'ord-001', 
+    OrderId: 'ord-001', 
     order_code: 'DH20240725001',
-    customer_id: 'cust-001',
+    CustomerId: 'cust-001',
     total_amount: 2800000,
     discount_amount: 0,
     shipping_fee: 0,
@@ -724,14 +724,14 @@ export const mockOrders: Order[] = [
     delivery_address: null,
     delivery_status: 'Completed',
     note: 'Khách lấy tại cửa hàng',
-    processed_by_user_id: 'user-001',
+    ProcessedByUserId: 'user-001',
     created_at: '2024-07-25T10:30:00Z',
     updated_at: '2024-07-26T14:00:00Z'
   },
   { 
-    id: 'ord-002', 
+    OrderId: 'ord-002', 
     order_code: 'DH20240724005',
-    customer_id: 'cust-002',
+    CustomerId: 'cust-002',
     total_amount: 4500000,
     discount_amount: 0,
     shipping_fee: 0,
@@ -743,14 +743,14 @@ export const mockOrders: Order[] = [
     delivery_address: null,
     delivery_status: 'N/A',
     note: null,
-    processed_by_user_id: 'user-002',
+    ProcessedByUserId: 'user-002',
     created_at: '2024-07-24T15:00:00Z',
     updated_at: '2024-07-24T15:05:00Z'
   },
   { 
-    id: 'ord-003', 
+    OrderId: 'ord-003', 
     order_code: 'DH20240723002',
-    customer_id: 'cust-001',
+    CustomerId: 'cust-001',
     total_amount: 9000000,
     discount_amount: 500000,
     shipping_fee: 0,
@@ -762,14 +762,14 @@ export const mockOrders: Order[] = [
     delivery_address: 'Thôn 1, Xã E-Kmat, TP. Buôn Ma Thuột, Đắk Lắk',
     delivery_status: 'Processing',
     note: 'Hẹn lịch giao hàng trước 1 ngày',
-    processed_by_user_id: 'user-001',
+    ProcessedByUserId: 'user-001',
     created_at: '2024-07-23T09:00:00Z',
     updated_at: '2024-07-23T09:00:00Z'
   },
   { 
-    id: 'ord-004', 
+    OrderId: 'ord-004', 
     order_code: 'DH20240722010',
-    customer_id: 'cust-005',
+    CustomerId: 'cust-005',
     total_amount: 250000,
     discount_amount: 0,
     shipping_fee: 0,
@@ -781,14 +781,14 @@ export const mockOrders: Order[] = [
     delivery_address: '258 Nguyễn Thị Minh Khai, Quận 3, TP.HCM',
     delivery_status: 'Cancelled',
     note: 'Khách hàng báo hủy do đổi ý.',
-    processed_by_user_id: 'user-002',
+    ProcessedByUserId: 'user-002',
     created_at: '2024-07-22T11:45:00Z',
     updated_at: '2024-07-22T16:00:00Z'
   },
   { 
-    id: 'ord-005', 
+    OrderId: 'ord-005', 
     order_code: 'DH20241215001',
-    customer_id: 'cust-005',
+    CustomerId: 'cust-005',
     total_amount: 58500000,
     discount_amount: 1000000,
     shipping_fee: 50000,
@@ -800,14 +800,14 @@ export const mockOrders: Order[] = [
     delivery_address: '123 Đường Lê Lợi, Quận 1, TP.HCM',
     delivery_status: 'Processing',
     note: 'Giao hàng trong giờ hành chính',
-    processed_by_user_id: 'user-002',
+    ProcessedByUserId: 'user-002',
     created_at: '2024-12-15T09:00:00Z',
     updated_at: '2024-12-15T09:00:00Z'
   },
   { 
-    id: 'ord-006', 
+    OrderId: 'ord-006', 
     order_code: 'DH20240610003',
-    customer_id: 'cust-003',
+    CustomerId: 'cust-003',
     total_amount: 10500000,
     discount_amount: 0,
     shipping_fee: 0,
@@ -819,7 +819,7 @@ export const mockOrders: Order[] = [
     delivery_address: 'Vạn Thành, Phường 5, TP. Đà Lạt, Lâm Đồng',
     delivery_status: 'Completed',
     note: 'Khách quen',
-    processed_by_user_id: 'user-001',
+    ProcessedByUserId: 'user-001',
     created_at: '2024-06-10T11:20:00Z',
     updated_at: '2024-06-11T16:00:00Z'
   },
@@ -827,32 +827,32 @@ export const mockOrders: Order[] = [
 
 export const mockOrderItems: OrderItem[] = [
   {
-    id: 'item-001', order_id: 'ord-001', product_id: 'prod-001',
+    OrderItemId: 'item-001', OrderId: 'ord-001', ProductId: 'prod-001',
     product_name: 'Máy cưa xích STIHL MS 170', product_unit: 'bộ',
     quantity: 1, unit_price: 2800000, total_price: 2800000,
   },
   {
-    id: 'item-002', order_id: 'ord-002', product_id: 'prod-002',
+    OrderItemId: 'item-002', OrderId: 'ord-002', ProductId: 'prod-002',
     product_name: 'Máy cắt cỏ Husqvarna 125R', product_unit: 'bộ',
     quantity: 1, unit_price: 4500000, total_price: 4500000,
   },
   {
-    id: 'item-003', order_id: 'ord-003', product_id: 'prod-002',
+    OrderItemId: 'item-003', OrderId: 'ord-003', ProductId: 'prod-002',
     product_name: 'Máy cắt cỏ Husqvarna 125R', product_unit: 'bộ',
     quantity: 2, unit_price: 4500000, total_price: 9000000,
   },
   {
-    id: 'item-004', order_id: 'ord-004', product_id: 'prod-004',
+    OrderItemId: 'item-004', OrderId: 'ord-004', ProductId: 'prod-004',
     product_name: 'Đầu bò máy cắt cỏ', product_unit: 'cái',
     quantity: 1, unit_price: 250000, total_price: 250000,
   },
   {
-    id: 'item-006', order_id: 'ord-005', product_id: 'prod-002',
+    OrderItemId: 'item-006', OrderId: 'ord-005', ProductId: 'prod-002',
     product_name: 'Máy cắt cỏ Husqvarna 125R', product_unit: 'bộ',
     quantity: 13, unit_price: 4500000, total_price: 58500000
   },
   {
-    id: 'item-007', order_id: 'ord-006', product_id: 'prod-007',
+    OrderItemId: 'item-007', OrderId: 'ord-006', ProductId: 'prod-007',
     product_name: 'Máy phun thuốc STIHL SR 420', product_unit: 'cái',
     quantity: 1, unit_price: 10500000, total_price: 10500000,
   },
@@ -860,22 +860,22 @@ export const mockOrderItems: OrderItem[] = [
 
 export const mockInstallmentTerms: InstallmentTerm[] = [
   {
-    id: 'inst-001', order_id: 'ord-003', installment_number: 1,
+    InstallmentTermId: 'inst-001', OrderId: 'ord-003', installment_number: 1,
     due_date: '2024-08-23T00:00:00Z', amount: 2000000,
     paid_at: null, payment_method: null, is_late: false, note: 'Kỳ đầu tiên',
-    collected_by_user_id: null, created_at: '2024-07-23T09:00:00Z', updatedAt: '2024-07-23T09:00:00Z',
+    CollectedByUserId: null, created_at: '2024-07-23T09:00:00Z', updatedAt: '2024-07-23T09:00:00Z',
   },
   {
-    id: 'inst-002', order_id: 'ord-003', installment_number: 2,
+    InstallmentTermId: 'inst-002', OrderId: 'ord-003', installment_number: 2,
     due_date: '2024-09-23T00:00:00Z', amount: 2000000,
     paid_at: null, payment_method: null, is_late: false, note: null,
-    collected_by_user_id: null, created_at: '2024-07-23T09:00:00Z', updatedAt: '2024-07-23T09:00:00Z',
+    CollectedByUserId: null, created_at: '2024-07-23T09:00:00Z', updatedAt: '2024-07-23T09:00:00Z',
   },
   {
-    id: 'inst-003', order_id: 'ord-003', installment_number: 3,
+    InstallmentTermId: 'inst-003', OrderId: 'ord-003', installment_number: 3,
     due_date: '2024-10-23T00:00:00Z', amount: 2000000,
     paid_at: null, payment_method: null, is_late: false, note: null,
-    collected_by_user_id: null, created_at: '2024-07-23T09:00:00Z', updatedAt: '2024-07-23T09:00:00Z',
+    CollectedByUserId: null, created_at: '2024-07-23T09:00:00Z', updatedAt: '2024-07-23T09:00:00Z',
   },
 ];
 
@@ -895,81 +895,81 @@ export const mockChartData = [
 ];
 
 export const mockBanks: Bank[] = [
-    { id: 'VIETCOMBANK', name: 'Vietcombank (VCB)' },
-    { id: 'TPBANK', name: 'TPBank' },
-    { id: 'MBBANK', name: 'MB Bank' },
-    { id: 'ACBBANK', name: 'ACB' },
-    { id: 'TECHCOMBANK', name: 'Techcombank' },
-    { id: 'BIDV', name: 'BIDV' },
-    { id: 'VIETINBANK', name: 'VietinBank' },
-    { id: 'AGRIBANK', name: 'Agribank' },
-    { id: 'VPBANK', name: 'VPBank' },
-    { id: 'SACOMBANK', name: 'Sacombank' },
+    { BankId: 'VIETCOMBANK', name: 'Vietcombank (VCB)' },
+    { BankId: 'TPBANK', name: 'TPBank' },
+    { BankId: 'MBBANK', name: 'MB Bank' },
+    { BankId: 'ACBBANK', name: 'ACB' },
+    { BankId: 'TECHCOMBANK', name: 'Techcombank' },
+    { BankId: 'BIDV', name: 'BIDV' },
+    { BankId: 'VIETINBANK', name: 'VietinBank' },
+    { BankId: 'AGRIBANK', name: 'Agribank' },
+    { BankId: 'VPBANK', name: 'VPBank' },
+    { BankId: 'SACOMBANK', name: 'Sacombank' },
 ];
 
 export const mockPurchaseOrders: PurchaseOrder[] = [
     {
-      id: 'po-001',
+      PurchaseOrderId: 'po-001',
       order_code: 'PN20240726001',
-      supplier_id: 'supp-001',
+      SupplierId: 'supp-001',
       total_amount: 21000000,
       status: 'received',
       expected_delivery_date: '2024-07-30T00:00:00Z',
       received_date: '2024-07-29T00:00:00Z',
       note: 'Nhập máy cưa STIHL.',
-      created_by_user_id: 'user-001',
+      CreatedByUserId: 'user-001',
       created_at: '2024-07-26T09:00:00Z',
       updated_at: '2024-07-29T10:00:00Z',
     },
     {
-      id: 'po-002',
+      PurchaseOrderId: 'po-002',
       order_code: 'PN20240728001',
-      supplier_id: 'supp-002',
+      SupplierId: 'supp-002',
       total_amount: 35000000,
       status: 'ordered',
       expected_delivery_date: '2024-08-05T00:00:00Z',
       received_date: null,
       note: 'Nhập máy cắt cỏ Husqvarna.',
-      created_by_user_id: 'user-001',
+      CreatedByUserId: 'user-001',
       created_at: '2024-07-28T14:00:00Z',
       updated_at: '2024-07-28T14:00:00Z',
     },
     {
-      id: 'po-003',
+      PurchaseOrderId: 'po-003',
       order_code: 'PN20240729001',
-      supplier_id: 'supp-001',
+      SupplierId: 'supp-001',
       total_amount: 4000000,
       status: 'pending',
       expected_delivery_date: '2024-08-10T00:00:00Z',
       received_date: null,
       note: 'Nhập phụ tùng STIHL.',
-      created_by_user_id: 'user-002',
+      CreatedByUserId: 'user-002',
       created_at: '2024-07-29T11:00:00Z',
       updated_at: '2024-07-29T11:00:00Z',
     },
      {
-      id: 'po-004',
+      PurchaseOrderId: 'po-004',
       order_code: 'PN20240720001',
-      supplier_id: 'supp-002',
+      SupplierId: 'supp-002',
       total_amount: 15000000,
       status: 'cancelled',
       expected_delivery_date: '2024-07-25T00:00:00Z',
       received_date: null,
       note: 'Hủy do thay đổi kế hoạch.',
-      created_by_user_id: 'user-002',
+      CreatedByUserId: 'user-002',
       created_at: '2024-07-20T11:00:00Z',
       updated_at: '2024-07-21T11:00:00Z',
     },
     {
-        id: 'po-005',
+        PurchaseOrderId: 'po-005',
         order_code: 'PN20240615001',
-        supplier_id: 'supp-003',
+        SupplierId: 'supp-003',
         total_amount: 84000000,
         status: 'received',
         expected_delivery_date: '2024-06-20T00:00:00Z',
         received_date: '2024-06-20T00:00:00Z',
         note: 'Nhập 30 động cơ Honda GX160',
-        created_by_user_id: 'user-001',
+        CreatedByUserId: 'user-001',
         created_at: '2024-06-15T08:00:00Z',
         updated_at: '2024-06-20T10:00:00Z',
     }
@@ -978,9 +978,9 @@ export const mockPurchaseOrders: PurchaseOrder[] = [
   export const mockPurchaseOrderItems: PurchaseOrderItem[] = [
     // PO-001
     {
-      id: 'poi-001',
-      purchase_order_id: 'po-001',
-      product_id: 'prod-001',
+      PurchaseOrderItemId: 'poi-001',
+      PurchaseOrderId: 'po-001',
+      ProductId: 'prod-001',
       quantity: 10,
       unit_price: 2100000,
       total_price: 21000000,
@@ -988,9 +988,9 @@ export const mockPurchaseOrders: PurchaseOrder[] = [
     },
     // PO-002
     {
-      id: 'poi-002',
-      purchase_order_id: 'po-002',
-      product_id: 'prod-002',
+      PurchaseOrderItemId: 'poi-002',
+      PurchaseOrderId: 'po-002',
+      ProductId: 'prod-002',
       quantity: 10,
       unit_price: 3500000,
       total_price: 35000000,
@@ -998,9 +998,9 @@ export const mockPurchaseOrders: PurchaseOrder[] = [
     },
     // PO-003
     {
-      id: 'poi-004',
-      purchase_order_id: 'po-003',
-      product_id: 'prod-005',
+      PurchaseOrderItemId: 'poi-004',
+      PurchaseOrderId: 'po-003',
+      ProductId: 'prod-005',
       quantity: 5,
       unit_price: 800000,
       total_price: 4000000,
@@ -1008,9 +1008,9 @@ export const mockPurchaseOrders: PurchaseOrder[] = [
     },
      // PO-004
     {
-      id: 'poi-005',
-      purchase_order_id: 'po-004',
-      product_id: 'prod-004',
+      PurchaseOrderItemId: 'poi-005',
+      PurchaseOrderId: 'po-004',
+      ProductId: 'prod-004',
       quantity: 100,
       unit_price: 150000,
       total_price: 15000000,
@@ -1018,9 +1018,9 @@ export const mockPurchaseOrders: PurchaseOrder[] = [
     },
     // PO-005
     {
-        id: 'poi-006',
-        purchase_order_id: 'po-005',
-        product_id: 'prod-006',
+        PurchaseOrderItemId: 'poi-006',
+        PurchaseOrderId: 'po-005',
+        ProductId: 'prod-006',
         quantity: 30,
         unit_price: 2800000,
         total_price: 84000000,
@@ -1030,56 +1030,56 @@ export const mockPurchaseOrders: PurchaseOrder[] = [
 
 export const mockStockAdjustments: StockAdjustment[] = [
   {
-    id: 'adj-001',
-    product_id: 'prod-001',
+    StockAdjustmentId: 'adj-001',
+    ProductId: 'prod-001',
     adjustment_type: 'decrease',
     quantity_change: -1,
     reason: 'Hàng mẫu bị hư hỏng khi trưng bày',
-    adjusted_by_user_id: 'user-001',
+    AdjustedByUserId: 'user-001',
     created_at: '2024-07-30T10:00:00Z',
   },
   {
-    id: 'adj-002',
-    product_id: 'prod-008',
+    StockAdjustmentId: 'adj-002',
+    ProductId: 'prod-008',
     adjustment_type: 'decrease',
     quantity_change: -2,
     reason: 'Thất thoát do đổ vỡ',
-    adjusted_by_user_id: 'user-002',
+    AdjustedByUserId: 'user-002',
     created_at: '2024-06-05T15:00:00Z',
   },
   {
-    id: 'adj-003',
-    product_id: 'prod-004',
+    StockAdjustmentId: 'adj-003',
+    ProductId: 'prod-004',
     adjustment_type: 'increase',
     quantity_change: 5,
     reason: 'Kiểm kho cuối tháng, tìm thấy hàng thất lạc',
-    adjusted_by_user_id: 'user-001',
+    AdjustedByUserId: 'user-001',
     created_at: '2024-05-31T17:00:00Z',
   }
 ];
 
 export const mockReturnOrders: ReturnOrder[] = [
     {
-        id: 'ret-001',
-        order_id: 'ord-001',
-        customer_id: 'cust-001',
+        ReturnOrderId: 'ret-001',
+        OrderId: 'ord-001',
+        CustomerId: 'cust-001',
         return_date: '2024-07-28T11:00:00Z',
         total_refund_amount: 2800000,
         reason: 'Khách đổi ý, muốn mua sản phẩm khác.',
         status: 'refunded',
-        processed_by_user_id: 'user-002',
+        ProcessedByUserId: 'user-002',
         created_at: '2024-07-28T10:45:00Z',
         updated_at: '2024-07-28T11:30:00Z',
     },
     {
-        id: 'ret-002',
-        order_id: 'ord-002',
-        customer_id: 'cust-002',
+        ReturnOrderId: 'ret-002',
+        OrderId: 'ord-002',
+        CustomerId: 'cust-002',
         return_date: '2024-07-26T10:00:00Z',
         total_refund_amount: 4500000,
         reason: 'Sản phẩm lỗi kỹ thuật, không khởi động được.',
         status: 'pending',
-        processed_by_user_id: 'user-001',
+        ProcessedByUserId: 'user-001',
         created_at: '2024-07-26T09:30:00Z',
         updated_at: '2024-07-26T09:30:00Z',
     }
@@ -1087,18 +1087,18 @@ export const mockReturnOrders: ReturnOrder[] = [
 
 export const mockReturnOrderItems: ReturnOrderItem[] = [
     {
-        id: 'item-ret-001',
-        return_order_id: 'ret-001',
-        product_id: 'prod-001',
+        ReturnOrderItemId: 'item-ret-001',
+        ReturnOrderId: 'ret-001',
+        ProductId: 'prod-001',
         quantity: 1,
         unit_price: 2800000,
         condition: 'new',
         restocked: true,
     },
     {
-        id: 'item-ret-002',
-        return_order_id: 'ret-002',
-        product_id: 'prod-002',
+        ReturnOrderItemId: 'item-ret-002',
+        ReturnOrderId: 'ret-002',
+        ProductId: 'prod-002',
         quantity: 1,
         unit_price: 4500000,
         condition: 'damaged',
@@ -1118,7 +1118,7 @@ const staticGeneration = () => {
     const lowStockProducts = mockProducts.filter(p => p.stock > 0 && p.stock <= p.min_stock_level);
     if (lowStockProducts.length > 0) {
         mockNotifications.push({
-            id: `notif-inv-${lowStockProducts[0].id}`,
+            NotificationId: `notif-inv-${lowStockProducts[0].ProductId}`,
             type: 'inventory',
             title: 'Sản phẩm sắp hết hàng',
             description: `${lowStockProducts[0].name} chỉ còn ${lowStockProducts[0].stock} sản phẩm.`,
@@ -1129,7 +1129,7 @@ const staticGeneration = () => {
     }
     if (lowStockProducts.length > 1) {
         mockNotifications.push({
-            id: `notif-inv-${lowStockProducts[1].id}`,
+            NotificationId: `notif-inv-${lowStockProducts[1].ProductId}`,
             type: 'inventory',
             title: 'Sản phẩm sắp hết hàng',
             description: `${lowStockProducts[1].name} chỉ còn ${lowStockProducts[1].stock} sản phẩm.`,
@@ -1143,7 +1143,7 @@ const staticGeneration = () => {
     const pendingOrders = mockOrders.filter(o => o.status === 'Pending');
     if (pendingOrders.length > 0) {
         mockNotifications.push({
-            id: `notif-ord-pending`,
+            NotificationId: `notif-ord-pending`,
             type: 'order',
             title: 'Đơn hàng chờ xử lý',
             description: `Bạn có ${pendingOrders.length} đơn hàng đang chờ xử lý.`,
@@ -1155,7 +1155,7 @@ const staticGeneration = () => {
 
     // System notifications
     mockNotifications.push({
-        id: `notif-sys-update`,
+        NotificationId: `notif-sys-update`,
         type: 'system',
         title: 'Cập nhật hệ thống',
         description: 'Phiên bản mới v1.2.0 đã được cài đặt thành công.',
@@ -1168,11 +1168,11 @@ const staticGeneration = () => {
     const paidOrder = mockOrders.find(o => o.status === 'Delivered');
     if (paidOrder) {
         mockNotifications.push({
-            id: `notif-ord-paid-${paidOrder.id}`,
+            NotificationId: `notif-ord-paid-${paidOrder.OrderId}`,
             type: 'order',
             title: 'Thanh toán thành công',
             description: `Đơn hàng ${paidOrder.order_code} đã được thanh toán.`,
-            link: `/orders/${paidOrder.id}`,
+            link: `/orders/${paidOrder.OrderId}`,
             is_read: true,
             created_at: new Date(baseDate.getTime() - 86400000 * 3).toISOString() // 3 days ago
         });
@@ -1185,12 +1185,13 @@ const staticGeneration = () => {
 staticGeneration();
     
 export const mockVouchers: Voucher[] = [
-  { id: 'v-001', name: 'Giảm giá 50.000đ', description: 'Áp dụng cho đơn hàng bất kỳ.', points_cost: 5000, value: 50000, type: 'fixed' },
-  { id: 'v-002', name: 'Giảm giá 100.000đ', description: 'Cho đơn hàng từ 1.000.000đ.', points_cost: 9500, value: 100000, type: 'fixed' },
-  { id: 'v-003', name: 'Giảm giá 10%', description: 'Giảm tối đa 200.000đ.', points_cost: 15000, value: 10, type: 'percentage' },
-  { id: 'v-004', name: 'Miễn phí vận chuyển', description: 'Hỗ trợ tối đa 50.000đ phí ship.', points_cost: 4000, value: 50000, type: 'shipping' },
-  { id: 'v-005', name: 'Giảm giá 500.000đ', description: 'Cho đơn hàng từ 5.000.000đ.', points_cost: 48000, value: 500000, type: 'fixed' }
+  { VoucherId: 'v-001', name: 'Giảm giá 50.000đ', description: 'Áp dụng cho đơn hàng bất kỳ.', points_cost: 5000, value: 50000, type: 'fixed' },
+  { VoucherId: 'v-002', name: 'Giảm giá 100.000đ', description: 'Cho đơn hàng từ 1.000.000đ.', points_cost: 9500, value: 100000, type: 'fixed' },
+  { VoucherId: 'v-003', name: 'Giảm giá 10%', description: 'Giảm tối đa 200.000đ.', points_cost: 15000, value: 10, type: 'percentage' },
+  { VoucherId: 'v-004', name: 'Miễn phí vận chuyển', description: 'Hỗ trợ tối đa 50.000đ phí ship.', points_cost: 4000, value: 50000, type: 'shipping' },
+  { VoucherId: 'v-005', name: 'Giảm giá 500.000đ', description: 'Cho đơn hàng từ 5.000.000đ.', points_cost: 48000, value: 500000, type: 'fixed' }
 ];
+
 
 
 
