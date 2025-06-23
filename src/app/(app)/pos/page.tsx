@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { Plus, Minus, X, Search, ArrowLeft, UserPlus, Printer, Leaf, User, ChevronsUpDown } from 'lucide-react';
+import { Plus, Minus, X, Search, ArrowLeft, UserPlus, Printer, Leaf, User, ChevronsUpDown, Gift } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -34,20 +34,18 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { mockProducts, mockCustomers, mockCategories, mockStores, mockUsers, mockOrders, mockOrderItems, mockInstallmentTerms } from '@/lib/data';
+import { mockProducts, mockCustomers, mockCategories, mockStores, mockUsers, mockOrders, mockOrderItems, mockInstallmentTerms, mockVouchers } from '@/lib/data';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { useStore } from '@/contexts/StoreContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { customerSchema } from '@/lib/form-schemas';
+import type { Product, Customer, Voucher } from '@/lib/types';
 
-type Product = typeof mockProducts[0];
-type PriceTier = 'retail' | 'wholesale' | 'credit';
 type CartItem = Product & {
   quantity: number;
   appliedPrice: number;
 };
-type Customer = typeof mockCustomers[0];
 type CustomerFormValues = z.infer<typeof customerSchema>;
 
 const formatCurrency = (amount: number) => {
@@ -71,6 +69,9 @@ export default function POSPage() {
   const [customerSearch, setCustomerSearch] = useState("");
   const [showQrCode, setShowQrCode] = useState(false);
   const [customerTender, setCustomerTender] = useState(0);
+  const [voucherDiscount, setVoucherDiscount] = useState(0);
+  const [selectedVoucher, setSelectedVoucher] = useState<Voucher | null>(null);
+  const [isVoucherDialogOpen, setVoucherDialogOpen] = useState(false);
   
   const { toast } = useToast();
   const { store } = useStore();
@@ -188,6 +189,8 @@ export default function POSPage() {
   const clearCart = () => {
     setCart([]);
     setDiscount(0);
+    setVoucherDiscount(0);
+    setSelectedVoucher(null);
   }
 
   const handleAddNewCustomer = () => {
@@ -254,7 +257,7 @@ export default function POSPage() {
       orderCode: newOrderCode,
       customerId: selectedCustomerId,
       totalAmount: totalWithVat,
-      discountAmount: discount,
+      discountAmount: discount + voucherDiscount,
       shippingFee: 0, 
       totalPaid: finalAmountPaid,
       paymentType: paymentMethod as any,
@@ -289,6 +292,14 @@ export default function POSPage() {
         productInDb.stock -= item.quantity;
       }
     });
+
+    if (selectedVoucher && selectedCustomer) {
+      const customerInDb = mockCustomers.find(c => c.customerId === selectedCustomer.customerId);
+      if (customerInDb) {
+          const newPoints = customerInDb.loyaltyPoints - selectedVoucher.pointsCost;
+          customerInDb.loyaltyPoints = newPoints < 0 ? 0 : newPoints;
+      }
+    }
 
     if (remaining > 0 && selectedCustomer) {
       const customerInDb = mockCustomers.find(c => c.customerId === selectedCustomer.customerId);
@@ -339,9 +350,9 @@ export default function POSPage() {
   }, [cart]);
 
   const total = useMemo(() => {
-    const finalTotal = subtotal - discount;
+    const finalTotal = subtotal - discount - voucherDiscount;
     return finalTotal > 0 ? finalTotal : 0;
-  }, [subtotal, discount]);
+  }, [subtotal, discount, voucherDiscount]);
 
   const vatAmount = useMemo(() => {
     if (!store.isVatEnabled || !store.vatRate) return 0;
@@ -351,6 +362,23 @@ export default function POSPage() {
   const totalWithVat = useMemo(() => {
     return total + vatAmount;
   }, [total, vatAmount]);
+
+  const handleApplyVoucher = (voucher: Voucher) => {
+    let discountValue = 0;
+    if (voucher.type === 'fixed') {
+        discountValue = voucher.value;
+    } else if (voucher.type === 'percentage') {
+        discountValue = Math.min(subtotal * (voucher.value / 100), 200000);
+    }
+    
+    setVoucherDiscount(discountValue);
+    setSelectedVoucher(voucher);
+    setVoucherDialogOpen(false);
+    toast({
+        title: "Đã áp dụng voucher",
+        description: `Bạn được giảm ${formatCurrency(discountValue)}.`,
+    });
+  };
 
   const handleQuickPrint = useCallback(() => {
     if (cart.length === 0) {
@@ -752,8 +780,8 @@ export default function POSPage() {
         <div className="col-span-4">
           <Card className="flex h-full flex-col shadow-sm">
             <CardHeader className="p-4 border-b">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="flex items-center gap-2">
+              <div className="grid grid-cols-5 gap-2">
+                <div className="col-span-3 flex items-center gap-2">
                     <Popover open={isCustomerPopoverOpen} onOpenChange={setCustomerPopoverOpen}>
                         <PopoverTrigger asChild>
                             <Button variant="outline" role="combobox" className="w-full justify-between font-normal">
@@ -785,7 +813,7 @@ export default function POSPage() {
                         <UserPlus className="h-4 w-4" />
                     </Button>
                 </div>
-                <div>
+                <div className="col-span-2">
                   <Select value={globalPriceTier} onValueChange={(value) => setGlobalPriceTier(value as PriceTier)}>
                       <SelectTrigger>
                           <SelectValue placeholder={t('pos.select_price_tier')} />
@@ -798,9 +826,15 @@ export default function POSPage() {
                   </Select>
                 </div>
               </div>
+              <div className="mt-2">
+                <Button variant="outline" className="w-full" onClick={() => setVoucherDialogOpen(true)} disabled={!selectedCustomer}>
+                    <Gift className="mr-2 h-4 w-4" />
+                    {selectedCustomer ? `Dùng điểm (${selectedCustomer.loyaltyPoints.toLocaleString()})` : 'Chọn khách hàng để dùng điểm'}
+                </Button>
+              </div>
             </CardHeader>
             <CardContent className="flex-1 p-0">
-              <ScrollArea className="h-[calc(100vh-320px)]">
+              <ScrollArea className="h-[calc(100vh-360px)]">
                   {cart.length === 0 ? (
                       <div className="flex h-full items-center justify-center">
                           <p className="text-center text-muted-foreground">{t('pos.empty_cart')}</p>
@@ -856,6 +890,17 @@ export default function POSPage() {
                           placeholder="0"
                       />
                   </div>
+                  {selectedVoucher && (
+                    <div className="flex items-center justify-between text-sm text-green-600">
+                        <div className="flex items-center gap-1">
+                        <Button variant="ghost" size="icon" className="h-5 w-5 text-muted-foreground hover:text-destructive" onClick={() => { setSelectedVoucher(null); setVoucherDiscount(0); }}>
+                            <X className="h-3 w-3" />
+                        </Button>
+                        <span>Voucher: {selectedVoucher.name}</span>
+                        </div>
+                        <span className="font-medium">-{formatCurrency(voucherDiscount)}</span>
+                    </div>
+                  )}
                   {store.isVatEnabled && store.vatRate > 0 && (
                     <div className="flex justify-between">
                         <span>{t('pos.vat_rate', { rate: store.vatRate })}</span>
@@ -1193,6 +1238,43 @@ export default function POSPage() {
             </DialogFooter>
         </DialogContent>
       </Dialog>
+      <Dialog open={isVoucherDialogOpen} onOpenChange={setVoucherDialogOpen}>
+        <DialogContent>
+            <DialogHeader>
+            <DialogTitle>Áp dụng Voucher</DialogTitle>
+            <DialogDescription>
+                Điểm của bạn: {selectedCustomer?.loyaltyPoints.toLocaleString() || 0}. Chọn voucher để áp dụng vào đơn hàng.
+            </DialogDescription>
+            </DialogHeader>
+            <div className="py-4 max-h-[60vh] overflow-y-auto">
+            <div className="space-y-4">
+                {mockVouchers.map((voucher) => {
+                    const canAfford = selectedCustomer && selectedCustomer.loyaltyPoints >= voucher.pointsCost;
+                    const isApplicable = voucher.type !== 'shipping';
+                    return (
+                    <Card key={voucher.voucherId} className={cn((!canAfford || !isApplicable) && "bg-muted/50 opacity-60")}>
+                        <CardContent className="p-4 flex items-center justify-between">
+                        <div>
+                            <h4 className="font-semibold">{voucher.name}</h4>
+                            <p className="text-sm text-muted-foreground">{voucher.description}</p>
+
+                            <p className="text-sm font-bold text-primary mt-1">{voucher.pointsCost.toLocaleString()} điểm</p>
+                        </div>
+                        <Button
+                            size="sm"
+                            onClick={() => handleApplyVoucher(voucher)}
+                            disabled={!canAfford || !isApplicable}
+                        >
+                            Áp dụng
+                        </Button>
+                        </CardContent>
+                    </Card>
+                    )
+                })}
+            </div>
+            </div>
+        </DialogContent>
+    </Dialog>
     </>
   );
 }
