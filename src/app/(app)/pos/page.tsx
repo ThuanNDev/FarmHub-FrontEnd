@@ -41,7 +41,7 @@ import { cn } from '@/lib/utils';
 import { useStore } from '@/store/StoreContext';
 import { useLanguage } from '@/store/LanguageContext';
 import { customerSchema } from '@/lib/form-schemas';
-import type { Product, Customer, Voucher, PriceTier } from '@/lib/types';
+import type { Product, Customer, Voucher, PriceTier } from '@/types';
 
 type CartItem = Product & {
   quantity: number;
@@ -920,7 +920,7 @@ export default function POSPage() {
                       <span>{formatCurrency(totalWithVat)}</span>
                   </div>
               </div>
-              <Button className="w-full bg-accent hover:bg-accent/90" size="lg" disabled={cart.length === 0} onClick={() => setPaymentDialogOpen(true)}>
+              <Button className="w-full bg-accent hover:bg-accent/90 text-accent-foreground" size="lg" disabled={cart.length === 0} onClick={() => setPaymentDialogOpen(true)}>
                 {editingOrderId ? 'Cập nhật đơn hàng' : t('pos.create_order')}
               </Button>
             </CardFooter>

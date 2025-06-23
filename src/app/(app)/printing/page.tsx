@@ -18,7 +18,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
-import { useStore } from '@/contexts/StoreContext';
+import { useStore } from '@/store/StoreContext';
 
 type Order = typeof mockOrders[0];
 type Product = typeof mockProducts[0];
@@ -141,7 +141,7 @@ export default function PrintingPage() {
                      </div>
                   </CardContent>
                 </Card>
-                <Button onClick={handlePrint} disabled={!foundOrder} className="w-full bg-accent hover:bg-accent/90">
+                <Button onClick={handlePrint} disabled={!foundOrder} className="w-full bg-accent hover:bg-accent/90 text-accent-foreground">
                   <Printer className="mr-2 h-4 w-4"/> In Hóa Đơn
                 </Button>
               </div>
@@ -188,7 +188,7 @@ export default function PrintingPage() {
                             </ScrollArea>
                         </CardContent>
                     </Card>
-                     <Button onClick={handlePrint} disabled={productsToPrint.length === 0} className="w-full bg-accent hover:bg-accent/90">
+                     <Button onClick={handlePrint} disabled={productsToPrint.length === 0} className="w-full bg-accent hover:bg-accent/90 text-accent-foreground">
                       <Printer className="mr-2 h-4 w-4"/> In Tem Mã Vạch
                     </Button>
                  </div>

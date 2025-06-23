@@ -205,7 +205,7 @@ export default function Dashboard() {
                     {t('pages.dashboard.recent_orders_description', { count: mockOrders.filter(o => o.status === 'Pending').length })}
                 </CardDescription>
             </div>
-            <Button asChild size="sm" className="ml-auto gap-1 bg-accent hover:bg-accent/90">
+            <Button asChild size="sm" className="ml-auto gap-1 bg-accent hover:bg-accent/90 text-accent-foreground">
                 <Link href="/orders">
                     {t('pages.dashboard.view_all')}
                     <ArrowUpRight className="h-4 w-4" />
