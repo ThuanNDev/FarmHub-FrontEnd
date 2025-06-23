@@ -15,7 +15,7 @@ const tenantUrl = (storeId: string, path: string) => `${API_BASE_URL}/tenant/${s
 export const API_URLS = {
     // Global Endpoints (do not require storeId)
     AUTH: {
-        LOGIN: 'https://farmhub-5huw.onrender.com/login', // Use the provided URL directly
+        LOGIN: `${API_BASE_URL}/auth/login`,
         REGISTER: `${API_BASE_URL}/auth/register`,
         VERIFY_OTP: `${API_BASE_URL}/auth/verify-otp`,
         ME: `${API_BASE_URL}/auth/me`,

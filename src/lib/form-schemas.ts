@@ -24,7 +24,7 @@ export const customerSchema = z.object({
 });
 
 export const loginSchema = z.object({
-  usernameOrEmail: z.string().min(1, { message: 'Tên đăng nhập hoặc email không được để trống.' }),
+  username: z.string().min(1, { message: 'Tên đăng nhập hoặc email không được để trống.' }),
   password: z.string().min(1, { message: 'Mật khẩu không được để trống.' }),
 });
 

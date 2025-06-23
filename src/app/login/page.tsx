@@ -45,8 +45,8 @@ export default function LoginPage() {
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      usernameOrEmail: 'ThuanNguyen',
-      password: 'SecurePass123',
+      username: 'dung.a@farmhub.vn',
+      password: 'Pass1234',
     },
   });
 
@@ -58,7 +58,10 @@ export default function LoginPage() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(values),
+        body: JSON.stringify({
+          username: values.username,
+          password: values.password
+        }),
       });
 
       const data = await response.json();
@@ -132,7 +135,7 @@ export default function LoginPage() {
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <FormField
               control={form.control}
-              name="usernameOrEmail"
+              name="username"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>{t('login.username')}</FormLabel>
