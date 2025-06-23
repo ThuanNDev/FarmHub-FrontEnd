@@ -83,7 +83,7 @@ export default function LandingPage() {
                 <div className="space-y-2">
                     <div className="inline-block rounded-lg bg-primary/10 px-3 py-1 text-sm font-semibold text-primary">Vì Sao Chọn Chúng Tôi</div>
                     <h2 className="text-3xl font-bold font-headline tracking-tighter sm:text-5xl">Đối Tác Tin Cậy Của Nhà Nông</h2>
-                    <p className="max-w-[900px] text-muted-foreground md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
+                    <p className="max-w-[900px] text-muted-foreground md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed text-justify">
                         Chúng tôi cung cấp sản phẩm chính hãng, dịch vụ chuyên nghiệp và giải pháp tối ưu cho mọi nhu cầu nông nghiệp của bạn.
                     </p>
                 </div>
@@ -120,7 +120,7 @@ export default function LandingPage() {
             <div className="flex flex-col items-center justify-center space-y-4 text-center">
               <div className="space-y-2">
                 <h2 className="text-3xl font-bold font-headline tracking-tighter sm:text-5xl">Sản phẩm nổi bật</h2>
-                <p className="max-w-[900px] text-muted-foreground md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
+                <p className="max-w-[900px] text-muted-foreground md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed text-justify">
                   Khám phá các sản phẩm máy nông nghiệp và phụ tùng chất lượng cao của chúng tôi.
                 </p>
               </div>
@@ -159,7 +159,7 @@ export default function LandingPage() {
               <h2 className="text-3xl font-bold font-headline tracking-tighter md:text-4xl/tight">
                 Khách hàng của chúng tôi nói gì?
               </h2>
-              <p className="mx-auto max-w-[600px] text-muted-foreground md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
+              <p className="mx-auto max-w-[600px] text-muted-foreground md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed text-justify">
                 Những đánh giá chân thực từ những người nông dân đã tin dùng sản phẩm và dịch vụ của chúng tôi.
               </p>
             </div>
