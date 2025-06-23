@@ -6,7 +6,6 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { notFound, useRouter, useParams } from 'next/navigation';
 import { ArrowLeft } from 'lucide-react';
-import { mockCategories, mockProducts } from '@/lib/data';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -24,19 +23,41 @@ import {
     TableRow,
   } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { useLanguage } from '@/contexts/LanguageContext';
+import { useLanguage } from '@/store/LanguageContext';
+import type { Category, Product } from '@/types';
+import { getCategoryBySlug, getProductsByCategoryId } from '@/services/api';
 
 export default function CategoryDetailPage() {
   const router = useRouter();
   const params = useParams<{ slug: string }>();
-  const category = mockCategories.find((c) => c.slug === params.slug);
   const { t } = useLanguage();
+
+  const [category, setCategory] = React.useState<Category | null>(null);
+  const [productsInCategory, setProductsInCategory] = React.useState<Product[]>([]);
+  const [isLoading, setIsLoading] = React.useState(true);
+
+  React.useEffect(() => {
+    const fetchData = async () => {
+      setIsLoading(true);
+      const fetchedCategory = await getCategoryBySlug(params.slug);
+      if (fetchedCategory) {
+        setCategory(fetchedCategory);
+        const fetchedProducts = await getProductsByCategoryId(fetchedCategory.categoryId);
+        setProductsInCategory(fetchedProducts);
+      }
+      setIsLoading(false);
+    };
+
+    fetchData();
+  }, [params.slug]);
+
+  if (isLoading) {
+    return <div>Đang tải...</div>;
+  }
 
   if (!category) {
     notFound();
   }
-  
-  const productsInCategory = mockProducts.filter(p => p.categoryId === category.categoryId && !p.isDeleted);
   
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
@@ -45,9 +66,9 @@ export default function CategoryDetailPage() {
   const getImageUrl = (imagesJson: string) => {
     try {
       const images = JSON.parse(imagesJson);
-      return images[0] || 'https://picsum.photos/64/64';
+      return images[0] || 'https://placehold.co/64x64.png';
     } catch (e) {
-      return 'https://picsum.photos/64/64';
+      return 'https://placehold.co/64x64.png';
     }
   };
 
@@ -65,7 +86,7 @@ export default function CategoryDetailPage() {
         <CardHeader>
           <div className="flex items-center gap-4">
              <Image
-                src={category.image || 'https://picsum.photos/64/64'}
+                src={category.image || 'https://placehold.co/64x64.png'}
                 alt={category.name}
                 width={64}
                 height={64}
@@ -106,6 +127,7 @@ export default function CategoryDetailPage() {
                            height="64"
                            src={getImageUrl(product.images)}
                            width="64"
+                           data-ai-hint={product.hint}
                          />
                        </TableCell>
                        <TableCell className="font-medium">{product.name}</TableCell>

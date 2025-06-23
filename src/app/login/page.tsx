@@ -28,7 +28,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { mockUsers, mockStores } from '@/lib/data';
-import { useLanguage } from '@/contexts/LanguageContext';
+import { useLanguage } from '@/store/LanguageContext';
 import { loginSchema } from '@/lib/form-schemas';
 
 type LoginFormValues = z.infer<typeof loginSchema>;

@@ -38,9 +38,9 @@ import { Calendar } from '@/components/ui/calendar';
 import { mockCustomers } from '@/lib/data';
 import { useToast } from '@/hooks/use-toast';
 import { RecordPaymentDialog, type PaymentFormValues } from '@/components/RecordPaymentDialog';
-import { useLanguage } from '@/contexts/LanguageContext';
+import { useLanguage } from '@/store/LanguageContext';
 import { cn } from '@/lib/utils';
-import { useStore } from '@/contexts/StoreContext';
+import { useStore } from '@/store/StoreContext';
 
 type Debtor = (typeof mockCustomers)[0];
 type DebtStatus = { textKey: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' };

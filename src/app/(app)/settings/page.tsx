@@ -36,7 +36,7 @@ import {
 } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
-import { useStore } from '@/contexts/StoreContext';
+import { useStore } from '@/store/StoreContext';
 import { mockBanks } from '@/lib/data';
 import { settingsSchema } from '@/lib/form-schemas';
 

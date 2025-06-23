@@ -24,7 +24,7 @@ import {
   } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { useLanguage } from '@/contexts/LanguageContext';
+import { useLanguage } from '@/store/LanguageContext';
 import {
   Dialog,
   DialogContent,

@@ -3,8 +3,7 @@
 
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { mockStores, mockUsers } from '@/lib/data';
-
-type Store = typeof mockStores[0];
+import type { Store } from '@/types';
 
 interface StoreContextType {
   store: Store;

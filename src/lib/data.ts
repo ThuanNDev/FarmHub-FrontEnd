@@ -1,5 +1,5 @@
 
-import type { Store, User, Category, Supplier, Product, Customer, Order, OrderItem, InstallmentTerm, Bank, PurchaseOrder, PurchaseOrderItem, StockAdjustment, ReturnOrder, ReturnOrderItem, Notification, Voucher } from '@/lib/types';
+import type { Store, User, Category, Supplier, Product, Customer, Order, OrderItem, InstallmentTerm, Bank, PurchaseOrder, PurchaseOrderItem, StockAdjustment, ReturnOrder, ReturnOrderItem, Notification, Voucher } from '@/types';
 
 // All IDs are kept simple for mocking purposes. In a real DB, these would be UUIDs or CUIDs.
 // Timestamps are in ISO 8601 format.
@@ -84,7 +84,7 @@ export const mockUsers: User[] = [
     },
 ];
 
-export const mockCategories: Category[] = [
+export let mockCategories: Category[] = [
   { 
     categoryId: 'cate-001', 
     name: 'Máy Nông Nghiệp', 
@@ -152,7 +152,7 @@ export const mockCategories: Category[] = [
   },
 ];
 
-export const mockSuppliers: Supplier[] = [
+export let mockSuppliers: Supplier[] = [
   {
     supplierId: "supp-001",
     name: "Công ty TNHH STIHL Việt Nam",
@@ -195,7 +195,7 @@ export const mockSuppliers: Supplier[] = [
 ];
 
 
-export const mockProducts: Product[] = [
+export let mockProducts: Product[] = [
   {
     productId: "prod-001",
     productCode: "ST-MS170",
@@ -589,7 +589,7 @@ export const mockProducts: Product[] = [
 ];
 
 
-export const mockCustomers: Customer[] = [
+export let mockCustomers: Customer[] = [
   { 
     customerId: 'cust-001', 
     name: 'Anh Ba Phi', 
@@ -733,7 +733,7 @@ export const mockCustomers: Customer[] = [
 ];
 
 
-export const mockOrders: Order[] = [
+export let mockOrders: Order[] = [
   { 
     orderId: 'ord-001', 
     orderCode: `DH${new Date(daysAgo(1)).toISOString().slice(2, 10).replace(/-/g, '')}001`,
@@ -850,7 +850,7 @@ export const mockOrders: Order[] = [
   },
 ];
 
-export const mockOrderItems: OrderItem[] = [
+export let mockOrderItems: OrderItem[] = [
   {
     orderItemId: 'item-001', orderId: 'ord-001', productId: 'prod-001',
     productName: 'Máy cưa xích STIHL MS 170', productUnit: 'bộ',
@@ -883,7 +883,7 @@ export const mockOrderItems: OrderItem[] = [
   },
 ];
 
-export const mockInstallmentTerms: InstallmentTerm[] = [
+export let mockInstallmentTerms: InstallmentTerm[] = [
   {
     installmentTermId: 'inst-001', orderId: 'ord-003', installmentNumber: 1,
     dueDate: monthsFromNow(1), amount: 2000000,
@@ -930,7 +930,7 @@ export const mockBanks: Bank[] = [
     { bankId: 'SACOMBANK', name: 'Sacombank' },
 ];
 
-export const mockPurchaseOrders: PurchaseOrder[] = [
+export let mockPurchaseOrders: PurchaseOrder[] = [
     {
       purchaseOrderId: 'po-001',
       orderCode: `PN${new Date(daysAgo(10)).toISOString().slice(2, 10).replace(/-/g, '')}001`,
@@ -998,7 +998,7 @@ export const mockPurchaseOrders: PurchaseOrder[] = [
     }
   ];
   
-  export const mockPurchaseOrderItems: PurchaseOrderItem[] = [
+  export let mockPurchaseOrderItems: PurchaseOrderItem[] = [
     // PO-001
     {
       purchaseOrderItemId: 'poi-001',
@@ -1051,7 +1051,7 @@ export const mockPurchaseOrders: PurchaseOrder[] = [
     }
   ];
 
-export const mockStockAdjustments: StockAdjustment[] = [
+export let mockStockAdjustments: StockAdjustment[] = [
   {
     stockAdjustmentId: 'adj-001',
     productId: 'prod-001',
@@ -1081,7 +1081,7 @@ export const mockStockAdjustments: StockAdjustment[] = [
   }
 ];
 
-export const mockReturnOrders: ReturnOrder[] = [
+export let mockReturnOrders: ReturnOrder[] = [
     {
         returnOrderId: 'ret-001',
         orderId: 'ord-001',
@@ -1108,7 +1108,7 @@ export const mockReturnOrders: ReturnOrder[] = [
     }
 ];
 
-export const mockReturnOrderItems: ReturnOrderItem[] = [
+export let mockReturnOrderItems: ReturnOrderItem[] = [
     {
         returnOrderItemId: 'item-ret-001',
         returnOrderId: 'ret-001',
@@ -1214,5 +1214,6 @@ export const mockVouchers: Voucher[] = [
   { voucherId: 'v-004', name: 'Miễn phí vận chuyển', description: 'Hỗ trợ tối đa 50.000đ phí ship.', pointsCost: 4000, value: 50000, type: 'shipping' },
   { voucherId: 'v-005', name: 'Giảm giá 500.000đ', description: 'Cho đơn hàng từ 5.000.000đ.', pointsCost: 48000, value: 500000, type: 'fixed' }
 ];
+
 
 

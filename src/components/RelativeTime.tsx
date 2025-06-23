@@ -4,7 +4,7 @@
 import { useState, useEffect } from 'react';
 import { formatDistanceToNow } from 'date-fns';
 import { vi as viLocale, enUS } from 'date-fns/locale';
-import { useLanguage } from '@/contexts/LanguageContext';
+import { useLanguage } from '@/store/LanguageContext';
 
 interface RelativeTimeProps {
   date: string;

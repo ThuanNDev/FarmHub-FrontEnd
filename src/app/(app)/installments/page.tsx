@@ -32,8 +32,8 @@ import { Input } from '@/components/ui/input';
 import { mockOrders, mockCustomers, mockInstallmentTerms } from '@/lib/data';
 import { useToast } from '@/hooks/use-toast';
 import { RecordPaymentDialog, type PaymentFormValues } from '@/components/RecordPaymentDialog';
-import { useStore } from '@/contexts/StoreContext';
-import { useLanguage } from '@/contexts/LanguageContext';
+import { useStore } from '@/store/StoreContext';
+import { useLanguage } from '@/store/LanguageContext';
 
 type InstallmentOrder = (typeof mockOrders)[0];
 

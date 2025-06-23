@@ -259,3 +259,5 @@ export type Voucher = {
     value: number;
     type: 'fixed' | 'percentage' | 'shipping';
 }
+
+export type PriceTier = 'retail' | 'wholesale' | 'credit';

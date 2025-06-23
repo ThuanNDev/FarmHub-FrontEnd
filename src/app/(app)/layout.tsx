@@ -68,10 +68,10 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { StoreProvider, useStore } from '@/contexts/StoreContext';
+import { StoreProvider, useStore } from '@/store/StoreContext';
 import { useToast } from '@/hooks/use-toast';
 import { mockUsers, mockNotifications as initialNotifications } from '@/lib/data';
-import { useLanguage } from '@/contexts/LanguageContext';
+import { useLanguage } from '@/store/LanguageContext';
 import { RelativeTime } from '@/components/RelativeTime';
 
 const navItems = [
@@ -374,7 +374,7 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
             <DropdownMenuTrigger asChild>
               <Button variant="secondary" size="icon" className="rounded-full ml-2">
                 <Avatar>
-                  <AvatarImage src={`https://picsum.photos/id/237/40/40`} alt="@admin" />
+                  <AvatarImage src={`https://placehold.co/40x40.png`} alt="@admin" />
                   <AvatarFallback>A</AvatarFallback>
                 </Avatar>
                 <span className="sr-only">Mở menu người dùng</span>

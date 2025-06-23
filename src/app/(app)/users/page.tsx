@@ -79,7 +79,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
 import { mockUsers } from '@/lib/data';
 import { useToast } from '@/hooks/use-toast';
-import { useLanguage } from '@/contexts/LanguageContext';
+import { useLanguage } from '@/store/LanguageContext';
 import { userSchema, changePasswordSchema } from '@/lib/form-schemas';
 
 type User = typeof mockUsers[0];

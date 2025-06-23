@@ -74,17 +74,17 @@ import {
 } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
-import { mockCategories } from '@/lib/data';
 import { useToast } from '@/hooks/use-toast';
 import { slugify } from '@/lib/utils';
-import { useLanguage } from '@/contexts/LanguageContext';
+import { useLanguage } from '@/store/LanguageContext';
 import { categorySchema } from '@/lib/form-schemas';
+import type { Category } from '@/types';
+import { getCategories, addCategory, updateCategory, deleteCategory } from '@/services/api';
 
-type Category = typeof mockCategories[0];
 type CategoryFormValues = z.infer<typeof categorySchema>;
 
 export default function CategoriesPage() {
-  const [categories, setCategories] = useState<Category[]>(mockCategories.filter(c => !c.isDeleted));
+  const [categories, setCategories] = useState<Category[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [isAddEditDialogOpen, setAddEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -93,6 +93,14 @@ export default function CategoriesPage() {
   const router = useRouter();
   const { toast } = useToast();
   const { t } = useLanguage();
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      const data = await getCategories();
+      setCategories(data);
+    };
+    fetchCategories();
+  }, []);
 
   const form = useForm<CategoryFormValues>({
     resolver: zodResolver(categorySchema),
@@ -153,46 +161,23 @@ export default function CategoriesPage() {
     setDeleteDialogOpen(true);
   };
 
-  const confirmDelete = () => {
+  const confirmDelete = async () => {
     if (selectedCategory) {
-      setCategories(categories.map(c => c.categoryId === selectedCategory.categoryId ? { ...c, isDeleted: true } : c).filter(c => !c.isDeleted));
+      await deleteCategory(selectedCategory.categoryId);
+      setCategories(categories.filter(c => c.categoryId !== selectedCategory.categoryId));
       toast({ title: "Thành công", description: "Thể loại đã được xóa." });
     }
     setDeleteDialogOpen(false);
     setSelectedCategory(null);
   };
 
-  const onSubmit = (values: CategoryFormValues) => {
-    const slug = slugify(values.name);
+  const onSubmit = async (values: CategoryFormValues) => {
     if (selectedCategory) {
-      const updatedCategories = categories.map(c => 
-        c.categoryId === selectedCategory.categoryId ? { 
-            ...c, 
-            ...values,
-            slug,
-            parentCategoryId: values.parentCategoryId || null,
-            image: values.image || 'https://picsum.photos/100/100',
-            order: values.order ?? c.order,
-            description: values.description || '',
-            updatedAt: new Date().toISOString(),
-        } : c
-      );
-      setCategories(updatedCategories);
+      const updatedCategory = await updateCategory(selectedCategory.categoryId, values);
+      setCategories(categories.map(c => c.categoryId === selectedCategory.categoryId ? updatedCategory : c));
       toast({ title: "Thành công", description: "Thể loại đã được cập nhật." });
     } else {
-      const newCategory: Category = {
-        categoryId: `cate-${Math.floor(1000 + Math.random() * 9000)}`,
-        name: values.name,
-        slug,
-        description: values.description || '',
-        parentCategoryId: values.parentCategoryId || null,
-        image: values.image || 'https://picsum.photos/100/100',
-        order: values.order ?? categories.length + 1,
-        isActive: values.isActive,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        isDeleted: false
-      };
+      const newCategory = await addCategory(values);
       setCategories([newCategory, ...categories]);
       toast({ title: "Thành công", description: "Thể loại mới đã được thêm." });
     }
@@ -261,7 +246,7 @@ export default function CategoriesPage() {
                         alt={category.name}
                         className="aspect-square rounded-md object-cover"
                         height="64"
-                        src={category.image || 'https://picsum.photos/64/64'}
+                        src={category.image || 'https://placehold.co/64x64.png'}
                         width="64"
                         data-ai-hint="category icon"
                     />
@@ -375,7 +360,7 @@ export default function CategoriesPage() {
                   <FormItem>
                     <FormLabel>URL Hình ảnh</FormLabel>
                     <FormControl>
-                      <Input placeholder="https://picsum.photos/100/100" {...field} />
+                      <Input placeholder="https://placehold.co/100x100.png" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

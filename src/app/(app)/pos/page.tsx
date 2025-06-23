@@ -38,8 +38,8 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { mockProducts, mockCustomers, mockCategories, mockStores, mockUsers, mockOrders, mockOrderItems, mockInstallmentTerms, mockVouchers } from '@/lib/data';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
-import { useStore } from '@/contexts/StoreContext';
-import { useLanguage } from '@/contexts/LanguageContext';
+import { useStore } from '@/store/StoreContext';
+import { useLanguage } from '@/store/LanguageContext';
 import { customerSchema } from '@/lib/form-schemas';
 import type { Product, Customer, Voucher, PriceTier } from '@/lib/types';
 

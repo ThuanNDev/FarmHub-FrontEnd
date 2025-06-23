@@ -4,7 +4,7 @@ import { Toaster } from "@/components/ui/toaster"
 import './globals.css';
 import { cn } from '@/lib/utils';
 import { mockStores } from '@/lib/data';
-import { LanguageProvider } from '@/contexts/LanguageContext';
+import { LanguageProvider } from '@/store/LanguageContext';
 
 const poppins = Poppins({
   subsets: ['latin'],

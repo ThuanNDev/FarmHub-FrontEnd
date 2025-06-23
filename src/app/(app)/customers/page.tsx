@@ -74,7 +74,7 @@ import {
 import { Switch } from '@/components/ui/switch';
 import { mockCustomers } from '@/lib/data';
 import { useToast } from '@/hooks/use-toast';
-import { useLanguage } from '@/contexts/LanguageContext';
+import { useLanguage } from '@/store/LanguageContext';
 import { customerSchema } from '@/lib/form-schemas';
 
 type Customer = typeof mockCustomers[0];

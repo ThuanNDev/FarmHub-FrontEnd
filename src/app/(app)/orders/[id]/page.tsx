@@ -36,8 +36,8 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
-import { useStore } from '@/contexts/StoreContext';
-import { useLanguage } from '@/contexts/LanguageContext';
+import { useStore } from '@/store/StoreContext';
+import { useLanguage } from '@/store/LanguageContext';
 import { format } from 'date-fns';
 
 type Order = typeof mockOrders[0];

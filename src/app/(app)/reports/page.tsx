@@ -37,7 +37,7 @@ import { Badge } from '@/components/ui/badge';
 import { mockOrders, mockCustomers, mockProducts, mockOrderItems } from '@/lib/data';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
-import { useLanguage } from '@/contexts/LanguageContext';
+import { useLanguage } from '@/store/LanguageContext';
 import { generateReportInsights } from '@/ai/flows/generate-report-insights';
 import { forecastSales } from '@/ai/flows/forecast-sales';
 import { Skeleton } from '@/components/ui/skeleton';
