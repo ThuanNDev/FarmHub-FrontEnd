@@ -1,8 +1,10 @@
 
+import type { Store, User, Category, Supplier, Product, Customer, Order, OrderItem, InstallmentTerm, Bank, PurchaseOrder, PurchaseOrderItem, StockAdjustment, ReturnOrder, ReturnOrderItem, Notification, Voucher } from '@/lib/types';
+
 // All IDs are kept simple for mocking purposes. In a real DB, these would be UUIDs or CUIDs.
 // Timestamps are in ISO 8601 format.
 
-export const mockStores = [
+export const mockStores: Store[] = [
   {
     id: 'store-001',
     name: 'Nông Cơ Xanh',
@@ -35,7 +37,7 @@ export const mockStores = [
   }
 ];
 
-export const mockUsers = [
+export const mockUsers: User[] = [
     {
       id: 'user-001',
       username: 'admin',
@@ -43,7 +45,7 @@ export const mockUsers = [
       full_name: 'Tên Của Bạn',
       email: 'email@cuaban.com',
       phone: '0123456789',
-      role: 'Admin' as const,
+      role: 'Admin',
       associated_store_ids: ['store-001'],
       is_active: true,
       is_superadmin: true,
@@ -60,7 +62,7 @@ export const mockUsers = [
       full_name: 'Nguyễn Thị Bích',
       email: 'bich.nguyen@nongcoxanh.com',
       phone: '0912345678',
-      role: 'Staff' as const,
+      role: 'Staff',
       associated_store_ids: ['store-001'],
       is_active: true,
       is_superadmin: false,
@@ -72,7 +74,7 @@ export const mockUsers = [
     },
 ];
 
-export const mockCategories = [
+export const mockCategories: Category[] = [
   { 
     id: 'cate-001', 
     name: 'Máy Nông Nghiệp', 
@@ -140,7 +142,7 @@ export const mockCategories = [
   },
 ];
 
-export const mockSuppliers = [
+export const mockSuppliers: Supplier[] = [
   {
     id: "supp-001",
     name: "Công ty TNHH STIHL Việt Nam",
@@ -183,7 +185,7 @@ export const mockSuppliers = [
 ];
 
 
-export const mockProducts = [
+export const mockProducts: Product[] = [
   {
     id: "prod-001",
     product_code: "ST-MS170",
@@ -562,7 +564,7 @@ export const mockProducts = [
 ];
 
 
-export const mockCustomers = [
+export const mockCustomers: Customer[] = [
   { 
     id: 'cust-001', 
     name: 'Anh Ba Phi', 
@@ -570,15 +572,15 @@ export const mockCustomers = [
     email: 'baphi@email.com',
     address: 'Thôn 1, Xã E-Kmat, TP. Buôn Ma Thuột, Đắk Lắk',
     tax_code: null,
-    customer_type: 'Wholesale' as const,
+    customer_type: 'Wholesale',
     note: 'Chuyên canh tác cà phê, mua sỉ.',
     credit_limit: 50000000,
     total_debt: 15000000,
     debt_due_date: '2024-08-15T00:00:00Z',
     last_purchase_date: '2024-07-10T00:00:00Z',
     loyalty_points: 15200,
-    loyalty_tier: 'Gold' as const,
-    status: 'Active' as const,
+    loyalty_tier: 'Gold',
+    status: 'Active',
     created_at: '2022-03-15T00:00:00Z',
     updated_at: '2024-07-10T00:00:00Z',
     is_deleted: false
@@ -590,15 +592,15 @@ export const mockCustomers = [
     email: 'tucanh@email.com',
     address: '123 Đường Trần Phú, Phường 4, TP. Đà Lạt, Lâm Đồng',
     tax_code: null,
-    customer_type: 'Retail' as const,
+    customer_type: 'Retail',
     note: 'Khách hàng thân thiết, mua lẻ.',
     credit_limit: 0,
     total_debt: 0,
     debt_due_date: null,
     last_purchase_date: '2024-07-20T00:00:00Z',
     loyalty_points: 5800,
-    loyalty_tier: 'Silver' as const,
-    status: 'Active' as const,
+    loyalty_tier: 'Silver',
+    status: 'Active',
     created_at: '2023-05-20T00:00:00Z',
     updated_at: '2024-07-20T00:00:00Z',
     is_deleted: false
@@ -610,15 +612,15 @@ export const mockCustomers = [
     email: 'trangtraihoalan@dalat.com',
     address: 'Vạn Thành, Phường 5, TP. Đà Lạt, Lâm Đồng',
     tax_code: '0301234567',
-    customer_type: 'Wholesale' as const,
+    customer_type: 'Wholesale',
     note: 'Mua máy phun thuốc và vật tư định kỳ.',
     credit_limit: 20000000,
     total_debt: 5500000,
     debt_due_date: '2024-09-01T00:00:00Z',
     last_purchase_date: '2024-07-15T00:00:00Z',
     loyalty_points: 8900,
-    loyalty_tier: 'Silver' as const,
-    status: 'Active' as const,
+    loyalty_tier: 'Silver',
+    status: 'Active',
     created_at: '2023-08-01T00:00:00Z',
     updated_at: '2024-07-15T00:00:00Z',
     is_deleted: false
@@ -630,15 +632,15 @@ export const mockCustomers = [
     email: 'sauvuon@gmail.com',
     address: 'Xã Phú Hựu, Huyện Châu Thành, Đồng Tháp',
     tax_code: null,
-    customer_type: 'Retail' as const,
+    customer_type: 'Retail',
     note: 'Chuyên sầu riêng, hay mua máy cưa, máy cắt cỏ.',
     credit_limit: 0,
     total_debt: 0,
     debt_due_date: null,
     last_purchase_date: '2024-06-30T00:00:00Z',
     loyalty_points: 2300,
-    loyalty_tier: 'Bronze' as const,
-    status: 'Active' as const,
+    loyalty_tier: 'Bronze',
+    status: 'Active',
     created_at: '2022-10-10T00:00:00Z',
     updated_at: '2024-06-30T00:00:00Z',
     is_deleted: false
@@ -650,15 +652,15 @@ export const mockCustomers = [
     email: 'info@canhquansaigon.vn',
     address: '258 Nguyễn Thị Minh Khai, Quận 3, TP.HCM',
     tax_code: '0300987654',
-    customer_type: 'Wholesale' as const,
+    customer_type: 'Wholesale',
     note: 'Đối tác lớn, yêu cầu xuất hóa đơn VAT.',
     credit_limit: 100000000,
     total_debt: 45800000,
     debt_due_date: '2024-08-20T00:00:00Z',
     last_purchase_date: '2024-07-22T00:00:00Z',
     loyalty_points: 45000,
-    loyalty_tier: 'Diamond' as const,
-    status: 'Active' as const,
+    loyalty_tier: 'Diamond',
+    status: 'Active',
     created_at: '2023-11-05T00:00:00Z',
     updated_at: '2024-07-22T00:00:00Z',
     is_deleted: false
@@ -670,15 +672,15 @@ export const mockCustomers = [
     email: '',
     address: 'Huyện Mỏ Cày Nam, Bến Tre',
     tax_code: null,
-    customer_type: 'Retail' as const,
+    customer_type: 'Retail',
     note: 'Chỉ mua tiền mặt, không ghi nợ.',
     credit_limit: 0,
     total_debt: 0,
     debt_due_date: null,
     last_purchase_date: '2024-05-18T00:00:00Z',
     loyalty_points: 1200,
-    loyalty_tier: 'Bronze' as const,
-    status: 'Active' as const,
+    loyalty_tier: 'Bronze',
+    status: 'Active',
     created_at: '2024-01-15T00:00:00Z',
     updated_at: '2024-05-18T00:00:00Z',
     is_deleted: false
@@ -690,15 +692,15 @@ export const mockCustomers = [
     email: 'tungxd@yahoo.com',
     address: 'TP. Thủ Đức, TP.HCM',
     tax_code: null,
-    customer_type: 'Retail' as const,
+    customer_type: 'Retail',
     note: 'Thường mua máy móc công suất lớn.',
     credit_limit: 10000000,
     total_debt: 0,
     debt_due_date: null,
     last_purchase_date: '2024-07-05T00:00:00Z',
     loyalty_points: 750,
-    loyalty_tier: 'Bronze' as const,
-    status: 'Inactive' as const,
+    loyalty_tier: 'Bronze',
+    status: 'Inactive',
     created_at: '2023-06-25T00:00:00Z',
     updated_at: '2024-07-05T00:00:00Z',
     is_deleted: false
@@ -706,7 +708,7 @@ export const mockCustomers = [
 ];
 
 
-export const mockOrders = [
+export const mockOrders: Order[] = [
   { 
     id: 'ord-001', 
     order_code: 'DH20240725001',
@@ -715,12 +717,12 @@ export const mockOrders = [
     discount_amount: 0,
     shipping_fee: 0,
     total_paid: 2800000,
-    payment_type: 'Cash' as const,
+    payment_type: 'Cash',
     payment_details: 'Tiền mặt',
-    status: 'Delivered' as const,
+    status: 'Delivered',
     expected_delivery_date: null,
     delivery_address: null,
-    delivery_status: 'Completed' as const,
+    delivery_status: 'Completed',
     note: 'Khách lấy tại cửa hàng',
     processed_by_user_id: 'user-001',
     created_at: '2024-07-25T10:30:00Z',
@@ -734,12 +736,12 @@ export const mockOrders = [
     discount_amount: 0,
     shipping_fee: 0,
     total_paid: 4500000,
-    payment_type: 'Cash' as const,
+    payment_type: 'Cash',
     payment_details: 'Thanh toán tại quầy',
-    status: 'Delivered' as const,
+    status: 'Delivered',
     expected_delivery_date: null,
     delivery_address: null,
-    delivery_status: 'N/A' as const,
+    delivery_status: 'N/A',
     note: null,
     processed_by_user_id: 'user-002',
     created_at: '2024-07-24T15:00:00Z',
@@ -753,12 +755,12 @@ export const mockOrders = [
     discount_amount: 500000,
     shipping_fee: 0,
     total_paid: 3000000,
-    payment_type: 'Installment' as const,
+    payment_type: 'Installment',
     payment_details: 'Trả góp 3 tháng',
-    status: 'Pending' as const,
+    status: 'Pending',
     expected_delivery_date: '2024-08-01T00:00:00Z',
     delivery_address: 'Thôn 1, Xã E-Kmat, TP. Buôn Ma Thuột, Đắk Lắk',
-    delivery_status: 'Processing' as const,
+    delivery_status: 'Processing',
     note: 'Hẹn lịch giao hàng trước 1 ngày',
     processed_by_user_id: 'user-001',
     created_at: '2024-07-23T09:00:00Z',
@@ -772,12 +774,12 @@ export const mockOrders = [
     discount_amount: 0,
     shipping_fee: 0,
     total_paid: 0,
-    payment_type: 'Credit' as const,
+    payment_type: 'Credit',
     payment_details: 'Ghi nợ',
-    status: 'Cancelled' as const,
+    status: 'Cancelled',
     expected_delivery_date: '2024-07-23T00:00:00Z',
     delivery_address: '258 Nguyễn Thị Minh Khai, Quận 3, TP.HCM',
-    delivery_status: 'Cancelled' as const,
+    delivery_status: 'Cancelled',
     note: 'Khách hàng báo hủy do đổi ý.',
     processed_by_user_id: 'user-002',
     created_at: '2024-07-22T11:45:00Z',
@@ -791,12 +793,12 @@ export const mockOrders = [
     discount_amount: 1000000,
     shipping_fee: 50000,
     total_paid: 57550000,
-    payment_type: 'Card' as const,
+    payment_type: 'Card',
     payment_details: 'Visa **** 1234 - Đã thanh toán',
-    status: 'Pending' as const,
+    status: 'Pending',
     expected_delivery_date: '2024-12-20T10:00:00Z',
     delivery_address: '123 Đường Lê Lợi, Quận 1, TP.HCM',
-    delivery_status: 'Processing' as const,
+    delivery_status: 'Processing',
     note: 'Giao hàng trong giờ hành chính',
     processed_by_user_id: 'user-002',
     created_at: '2024-12-15T09:00:00Z',
@@ -810,12 +812,12 @@ export const mockOrders = [
     discount_amount: 0,
     shipping_fee: 0,
     total_paid: 5000000,
-    payment_type: 'Credit' as const,
+    payment_type: 'Credit',
     payment_details: 'Thanh toán trước 5tr, còn lại ghi nợ.',
-    status: 'Delivered' as const,
+    status: 'Delivered',
     expected_delivery_date: null,
     delivery_address: 'Vạn Thành, Phường 5, TP. Đà Lạt, Lâm Đồng',
-    delivery_status: 'Completed' as const,
+    delivery_status: 'Completed',
     note: 'Khách quen',
     processed_by_user_id: 'user-001',
     created_at: '2024-06-10T11:20:00Z',
@@ -823,7 +825,7 @@ export const mockOrders = [
   },
 ];
 
-export const mockOrderItems = [
+export const mockOrderItems: OrderItem[] = [
   {
     id: 'item-001', order_id: 'ord-001', product_id: 'prod-001',
     product_name: 'Máy cưa xích STIHL MS 170', product_unit: 'bộ',
@@ -856,20 +858,7 @@ export const mockOrderItems = [
   },
 ];
 
-export const mockInstallmentTerms: {
-    id: string;
-    order_id: string;
-    installment_number: number;
-    due_date: string;
-    amount: number;
-    paid_at: string | null;
-    payment_method: string | null;
-    is_late: boolean;
-    note: string | null;
-    collected_by_user_id: string | null;
-    created_at: string;
-    updatedAt: string;
-}[] = [
+export const mockInstallmentTerms: InstallmentTerm[] = [
   {
     id: 'inst-001', order_id: 'ord-003', installment_number: 1,
     due_date: '2024-08-23T00:00:00Z', amount: 2000000,
@@ -905,7 +894,7 @@ export const mockChartData = [
     { month: 'Thg 12', revenue: 45200000 },
 ];
 
-export const mockBanks = [
+export const mockBanks: Bank[] = [
     { id: 'VIETCOMBANK', name: 'Vietcombank (VCB)' },
     { id: 'TPBANK', name: 'TPBank' },
     { id: 'MBBANK', name: 'MB Bank' },
@@ -918,13 +907,13 @@ export const mockBanks = [
     { id: 'SACOMBANK', name: 'Sacombank' },
 ];
 
-export const mockPurchaseOrders = [
+export const mockPurchaseOrders: PurchaseOrder[] = [
     {
       id: 'po-001',
       order_code: 'PN20240726001',
       supplier_id: 'supp-001',
       total_amount: 21000000,
-      status: 'received' as const,
+      status: 'received',
       expected_delivery_date: '2024-07-30T00:00:00Z',
       received_date: '2024-07-29T00:00:00Z',
       note: 'Nhập máy cưa STIHL.',
@@ -937,7 +926,7 @@ export const mockPurchaseOrders = [
       order_code: 'PN20240728001',
       supplier_id: 'supp-002',
       total_amount: 35000000,
-      status: 'ordered' as const,
+      status: 'ordered',
       expected_delivery_date: '2024-08-05T00:00:00Z',
       received_date: null,
       note: 'Nhập máy cắt cỏ Husqvarna.',
@@ -950,7 +939,7 @@ export const mockPurchaseOrders = [
       order_code: 'PN20240729001',
       supplier_id: 'supp-001',
       total_amount: 4000000,
-      status: 'pending' as const,
+      status: 'pending',
       expected_delivery_date: '2024-08-10T00:00:00Z',
       received_date: null,
       note: 'Nhập phụ tùng STIHL.',
@@ -963,7 +952,7 @@ export const mockPurchaseOrders = [
       order_code: 'PN20240720001',
       supplier_id: 'supp-002',
       total_amount: 15000000,
-      status: 'cancelled' as const,
+      status: 'cancelled',
       expected_delivery_date: '2024-07-25T00:00:00Z',
       received_date: null,
       note: 'Hủy do thay đổi kế hoạch.',
@@ -976,7 +965,7 @@ export const mockPurchaseOrders = [
         order_code: 'PN20240615001',
         supplier_id: 'supp-003',
         total_amount: 84000000,
-        status: 'received' as const,
+        status: 'received',
         expected_delivery_date: '2024-06-20T00:00:00Z',
         received_date: '2024-06-20T00:00:00Z',
         note: 'Nhập 30 động cơ Honda GX160',
@@ -986,7 +975,7 @@ export const mockPurchaseOrders = [
     }
   ];
   
-  export const mockPurchaseOrderItems = [
+  export const mockPurchaseOrderItems: PurchaseOrderItem[] = [
     // PO-001
     {
       id: 'poi-001',
@@ -1039,15 +1028,7 @@ export const mockPurchaseOrders = [
     }
   ];
 
-export const mockStockAdjustments: {
-  id: string;
-  product_id: string;
-  adjustment_type: 'increase' | 'decrease';
-  quantity_change: number;
-  reason: string;
-  adjusted_by_user_id: string;
-  created_at: string;
-}[] = [
+export const mockStockAdjustments: StockAdjustment[] = [
   {
     id: 'adj-001',
     product_id: 'prod-001',
@@ -1077,18 +1058,7 @@ export const mockStockAdjustments: {
   }
 ];
 
-export const mockReturnOrders: {
-    id: string;
-    order_id: string;
-    customer_id: string;
-    return_date: string;
-    total_refund_amount: number;
-    reason: string | null;
-    status: 'pending' | 'approved' | 'rejected' | 'refunded' | 'restocked';
-    processed_by_user_id: string;
-    created_at: string;
-    updated_at: string;
-}[] = [
+export const mockReturnOrders: ReturnOrder[] = [
     {
         id: 'ret-001',
         order_id: 'ord-001',
@@ -1115,15 +1085,7 @@ export const mockReturnOrders: {
     }
 ];
 
-export const mockReturnOrderItems: {
-    id: string;
-    return_order_id: string;
-    product_id: string;
-    quantity: number;
-    unit_price: number;
-    condition: 'new' | 'used' | 'damaged';
-    restocked: boolean;
-}[] = [
+export const mockReturnOrderItems: ReturnOrderItem[] = [
     {
         id: 'item-ret-001',
         return_order_id: 'ret-001',
@@ -1144,15 +1106,7 @@ export const mockReturnOrderItems: {
     }
 ];
 
-export const mockNotifications: {
-    id: string;
-    type: 'order' | 'inventory' | 'system';
-    title: string;
-    description: string;
-    link?: string;
-    is_read: boolean;
-    created_at: string;
-}[] = [];
+export const mockNotifications: Notification[] = [];
 
 // Statically generate notifications to avoid hydration issues
 const staticGeneration = () => {
@@ -1230,13 +1184,14 @@ const staticGeneration = () => {
 
 staticGeneration();
     
-export const mockVouchers = [
+export const mockVouchers: Voucher[] = [
   { id: 'v-001', name: 'Giảm giá 50.000đ', description: 'Áp dụng cho đơn hàng bất kỳ.', points_cost: 5000, value: 50000, type: 'fixed' },
   { id: 'v-002', name: 'Giảm giá 100.000đ', description: 'Cho đơn hàng từ 1.000.000đ.', points_cost: 9500, value: 100000, type: 'fixed' },
   { id: 'v-003', name: 'Giảm giá 10%', description: 'Giảm tối đa 200.000đ.', points_cost: 15000, value: 10, type: 'percentage' },
   { id: 'v-004', name: 'Miễn phí vận chuyển', description: 'Hỗ trợ tối đa 50.000đ phí ship.', points_cost: 4000, value: 50000, type: 'shipping' },
   { id: 'v-005', name: 'Giảm giá 500.000đ', description: 'Cho đơn hàng từ 5.000.000đ.', points_cost: 48000, value: 500000, type: 'fixed' }
 ];
+
 
 
 
