@@ -7,7 +7,7 @@ import { vi } from 'date-fns/locale';
 import { DateRange } from 'react-day-picker';
 import { Calendar as CalendarIcon, BarChart2, Users, Package, FileDown, Sparkles, BrainCircuit, TrendingUp, Loader2 } from 'lucide-react';
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
-import * as XLSX from 'xlsx';
+import ExcelJS from 'exceljs';
 
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -179,7 +179,7 @@ export default function ReportsPage() {
     }
   };
 
-  const handleExport = () => {
+  const handleExport = async () => {
     if (filteredOrders.length === 0) {
       toast({
         variant: "destructive",
@@ -189,50 +189,60 @@ export default function ReportsPage() {
       return;
     }
 
-    const dataForSheet = filteredOrders.map((order) => ({
-      'Mã ĐH': order.orderCode,
-      'Khách hàng': getCustomerName(order.customerId),
-      'Ngày': format(new Date(order.createdAt), 'dd/MM/yyyy HH:mm'),
-      'Trạng thái': t(`status.${order.status.toLowerCase()}`),
-      'Tổng tiền': order.totalAmount,
-      'Đã trả': order.totalPaid,
-      'Còn lại': order.totalAmount - order.totalPaid,
-      'Phương thức TT': order.paymentType,
-    }));
-  
-    const worksheet = XLSX.utils.json_to_sheet(dataForSheet);
-    
-    // Set column widths
-    worksheet['!cols'] = [
-      { wch: 15 }, // Mã ĐH
-      { wch: 30 }, // Khách hàng
-      { wch: 20 }, // Ngày
-      { wch: 15 }, // Trạng thái
-      { wch: 20 }, // Tổng tiền
-      { wch: 20 }, // Đã trả
-      { wch: 20 }, // Còn lại
-      { wch: 15 }, // Phương thức TT
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet('Báo Cáo Đơn Hàng');
+
+    worksheet.columns = [
+        { header: 'Mã ĐH', key: 'orderCode', width: 15 },
+        { header: 'Khách hàng', key: 'customerName', width: 30 },
+        { header: 'Ngày', key: 'createdAt', width: 20 },
+        { header: 'Trạng thái', key: 'status', width: 15 },
+        { header: 'Tổng tiền', key: 'totalAmount', width: 20, style: { numFmt: '#,##0" ₫"' } },
+        { header: 'Đã trả', key: 'totalPaid', width: 20, style: { numFmt: '#,##0" ₫"' } },
+        { header: 'Còn lại', key: 'remaining', width: 20, style: { numFmt: '#,##0" ₫"' } },
+        { header: 'Phương thức TT', key: 'paymentType', width: 15 },
     ];
-
-    // Apply currency format
-    dataForSheet.forEach((_row, index) => {
-        const rowNum = index + 2; // 1-based index for rows, +1 for header
-        const currencyCols = ['E', 'F', 'G']; // Corresponds to Tổng tiền, Đã trả, Còn lại
-        currencyCols.forEach(col => {
-            const cellAddress = `${col}${rowNum}`;
-            if (worksheet[cellAddress]) {
-                worksheet[cellAddress].t = 'n';
-                worksheet[cellAddress].z = '#,##0"₫"';
-            }
-        });
-    });
-
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'BaoCaoDonHang');
-  
-    const fileName = `BaoCaoDonHang_${date?.from ? format(date.from, 'dd-MM-yy') : ''}_${date?.to ? format(date.to, 'dd-MM-yy') : ''}.xlsx`;
-    XLSX.writeFile(workbook, fileName);
     
+    const dataForSheet = filteredOrders.map((order) => ({
+      orderCode: order.orderCode,
+      customerName: getCustomerName(order.customerId),
+      createdAt: format(new Date(order.createdAt), 'dd/MM/yyyy HH:mm'),
+      status: t(`status.${order.status.toLowerCase()}`),
+      totalAmount: order.totalAmount,
+      totalPaid: order.totalPaid,
+      remaining: order.totalAmount - order.totalPaid,
+      paymentType: order.paymentType,
+    }));
+
+    worksheet.addRows(dataForSheet);
+
+    // Style header
+    worksheet.getRow(1).eachCell((cell) => {
+        cell.font = { bold: true };
+        cell.fill = {
+            type: 'pattern',
+            pattern: 'solid',
+            fgColor: { argb: 'FFE8F5E9' } // Soft Green
+        };
+        cell.border = {
+            top: { style:'thin' },
+            left: { style:'thin' },
+            bottom: { style:'thin' },
+            right: { style:'thin' }
+        };
+    });
+    
+    const buffer = await workbook.xlsx.writeBuffer();
+    const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+
+    const fileName = `BaoCaoDonHang_${date?.from ? format(date.from, 'dd-MM-yy') : ''}_${date?.to ? format(date.to, 'dd-MM-yy') : ''}.xlsx`;
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = fileName;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
     toast({
         title: "Xuất file thành công",
         description: `Đã xuất ${filteredOrders.length} đơn hàng ra tệp ${fileName}.`,
