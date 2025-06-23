@@ -100,6 +100,7 @@ const productSchema = z.object({
   unit: z.string().min(1, { message: 'Đơn vị không được để trống.' }),
   import_price: z.coerce.number().positive({ message: 'Giá nhập phải là một số dương.' }),
   price: z.coerce.number().positive({ message: 'Giá lẻ phải là một số dương.' }),
+  wholesale_price: z.coerce.number().positive({ message: 'Giá sỉ phải là số dương.' }).optional(),
   credit_price: z.coerce.number().positive({ message: 'Giá bán nợ phải là số dương.' }).optional(),
   stock: z.coerce.number().int().min(0, { message: 'Tồn kho phải là số nguyên không âm.' }),
   min_stock_level: z.coerce.number().int().min(0, { message: 'Ngưỡng tồn kho phải là số nguyên không âm.' }),
@@ -137,6 +138,7 @@ export default function ProductsPage() {
       unit: 'chiếc',
       import_price: 0,
       price: 0,
+      wholesale_price: 0,
       credit_price: 0,
       stock: 0,
       min_stock_level: 5,
@@ -165,6 +167,7 @@ export default function ProductsPage() {
           unit: selectedProduct.unit,
           import_price: selectedProduct.import_price,
           price: selectedProduct.price,
+          wholesale_price: selectedProduct.wholesale_price || undefined,
           credit_price: selectedProduct.credit_price || undefined,
           stock: selectedProduct.stock,
           min_stock_level: selectedProduct.min_stock_level,
@@ -183,6 +186,7 @@ export default function ProductsPage() {
           unit: 'chiếc',
           import_price: 0,
           price: 0,
+          wholesale_price: undefined,
           credit_price: undefined,
           stock: 0,
           min_stock_level: 5,
@@ -237,6 +241,7 @@ export default function ProductsPage() {
               ...values,
               images: imagesAsJsonString,
               slug: slugify(values.name),
+              wholesale_price: values.wholesale_price || values.price,
               credit_price: values.credit_price || values.price,
               description: values.description || '',
               warranty_info: values.warranty_info || 'Không có',
@@ -251,6 +256,7 @@ export default function ProductsPage() {
         id: `prod-${Math.floor(1000 + Math.random() * 9000)}`,
         ...values,
         slug: slugify(values.name),
+        wholesale_price: values.wholesale_price || values.price,
         credit_price: values.credit_price || values.price,
         images: imagesAsJsonString.length > 2 ? imagesAsJsonString : '["https://picsum.photos/600/600"]',
         specs: '{}',
@@ -364,10 +370,10 @@ export default function ProductsPage() {
                       <span className="sr-only">Ảnh</span>
                     </TableHead>
                     <TableHead>Tên</TableHead>
-                    <TableHead>Giá bán</TableHead>
+                    <TableHead className="text-right">Giá bán lẻ</TableHead>
+                    <TableHead className="hidden lg:table-cell text-right">Giá sỉ</TableHead>
+                    <TableHead className="hidden lg:table-cell text-right">Giá ghi nợ</TableHead>
                     <TableHead className="hidden md:table-cell text-center">Tồn kho</TableHead>
-                    <TableHead className="hidden md:table-cell">Đơn vị</TableHead>
-                    <TableHead className="hidden md:table-cell">Danh mục</TableHead>
                     <TableHead>
                       <span className="sr-only">Hành động</span>
                     </TableHead>
@@ -389,7 +395,9 @@ export default function ProductsPage() {
                       <TableCell className="font-medium">
                         {product.name}
                       </TableCell>
-                      <TableCell>{formatCurrency(product.price)}</TableCell>
+                      <TableCell className="text-right">{formatCurrency(product.price)}</TableCell>
+                      <TableCell className="hidden lg:table-cell text-right">{formatCurrency(product.wholesale_price)}</TableCell>
+                      <TableCell className="hidden lg:table-cell text-right">{formatCurrency(product.credit_price)}</TableCell>
                       <TableCell className="hidden md:table-cell text-center">
                         {product.stock <= 0 ? (
                             <Badge variant="destructive">Hết hàng</Badge>
@@ -399,8 +407,6 @@ export default function ProductsPage() {
                             product.stock
                         )}
                       </TableCell>
-                      <TableCell className="hidden md:table-cell">{product.unit}</TableCell>
-                      <TableCell className="hidden md:table-cell">{getCategoryName(product.category_id)}</TableCell>
                       <TableCell onClick={(e) => e.stopPropagation()}>
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
@@ -575,84 +581,103 @@ export default function ProductsPage() {
                     </FormItem>
                   )}
                 />
-                 <FormField
-                    control={form.control}
-                    name="import_price"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Giá nhập</FormLabel>
-                        <FormControl>
-                          <Input type="number" placeholder="12000000" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                 <FormField
-                    control={form.control}
-                    name="price"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Giá lẻ</FormLabel>
-                        <FormControl>
-                          <Input type="number" placeholder="15000000" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="credit_price"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Giá bán nợ (tùy chọn)</FormLabel>
-                        <FormControl>
-                          <Input type="number" placeholder="16000000" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
+
+                <div className="md:col-span-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+                        <FormField
+                            control={form.control}
+                            name="import_price"
+                            render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Giá nhập</FormLabel>
+                                <FormControl>
+                                <Input type="number" placeholder="12000000" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                            )}
+                        />
+                        <FormField
+                            control={form.control}
+                            name="price"
+                            render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Giá lẻ</FormLabel>
+                                <FormControl>
+                                <Input type="number" placeholder="15000000" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                            )}
+                        />
+                        <FormField
+                            control={form.control}
+                            name="wholesale_price"
+                            render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Giá sỉ</FormLabel>
+                                <FormControl>
+                                <Input type="number" placeholder="14000000" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                            )}
+                        />
+                        <FormField
+                            control={form.control}
+                            name="credit_price"
+                            render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Giá bán nợ</FormLabel>
+                                <FormControl>
+                                <Input type="number" placeholder="16000000" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                            )}
+                        />
+                    </div>
+                </div>
+
+                <FormField
                     control={form.control}
                     name="unit"
                     render={({ field }) => (
-                      <FormItem>
+                    <FormItem>
                         <FormLabel>Đơn vị</FormLabel>
                         <FormControl>
-                          <Input placeholder="chiếc, kg, lít..." {...field} />
+                        <Input placeholder="chiếc, kg, lít..." {...field} />
                         </FormControl>
                         <FormMessage />
-                      </FormItem>
+                    </FormItem>
                     )}
-                  />
-                 <FormField
+                />
+                <FormField
                     control={form.control}
                     name="stock"
                     render={({ field }) => (
-                      <FormItem>
+                    <FormItem>
                         <FormLabel>Tồn kho</FormLabel>
                         <FormControl>
-                          <Input type="number" placeholder="25" {...field} />
+                        <Input type="number" placeholder="25" {...field} />
                         </FormControl>
                         <FormMessage />
-                      </FormItem>
+                    </FormItem>
                     )}
-                  />
-                  <FormField
+                />
+                <FormField
                     control={form.control}
                     name="min_stock_level"
                     render={({ field }) => (
-                      <FormItem>
+                    <FormItem>
                         <FormLabel>Tồn kho tối thiểu</FormLabel>
                         <FormControl>
-                          <Input type="number" placeholder="5" {...field} />
+                        <Input type="number" placeholder="5" {...field} />
                         </FormControl>
                         <FormMessage />
-                      </FormItem>
+                    </FormItem>
                     )}
-                  />
+                />
                <FormField
                   control={form.control}
                   name="warranty_info"
