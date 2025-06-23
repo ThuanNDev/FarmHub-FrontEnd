@@ -5,7 +5,7 @@ import * as React from 'react';
 import { addDays, format } from 'date-fns';
 import { vi } from 'date-fns/locale';
 import { DateRange } from 'react-day-picker';
-import { Calendar as CalendarIcon, BarChart2, Users, Package, FileDown } from 'lucide-react';
+import { Calendar as CalendarIcon, BarChart2, Users, Package, FileDown, Sparkles, BrainCircuit, TrendingUp, Loader2 } from 'lucide-react';
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import * as XLSX from 'xlsx';
 
@@ -38,12 +38,21 @@ import { mockOrders, mockCustomers, mockProducts, mockOrderItems } from '@/lib/d
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { generateReportInsights } from '@/ai/flows/generate-report-insights';
+import { forecastSales } from '@/ai/flows/forecast-sales';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function ReportsPage() {
   const [date, setDate] = React.useState<DateRange | undefined>(undefined);
   const router = useRouter();
   const { toast } = useToast();
   const { t } = useLanguage();
+
+  const [insights, setInsights] = React.useState('');
+  const [isGeneratingInsights, setIsGeneratingInsights] = React.useState(false);
+  const [forecast, setForecast] = React.useState<{ productName: string; predictedSales: number }[]>([]);
+  const [forecastSummary, setForecastSummary] = React.useState('');
+  const [isGeneratingForecast, setIsGeneratingForecast] = React.useState(false);
   
   React.useEffect(() => {
     setDate({
@@ -173,7 +182,7 @@ export default function ReportsPage() {
   const handleExport = () => {
     if (filteredOrders.length === 0) {
       toast({
-        variant: 'destructive',
+        variant: "destructive",
         title: "Không có dữ liệu",
         description: "Không có đơn hàng nào trong khoảng thời gian đã chọn để xuất file.",
       });
@@ -229,6 +238,66 @@ export default function ReportsPage() {
         description: `Đã xuất ${filteredOrders.length} đơn hàng ra tệp ${fileName}.`,
     });
   };
+
+  const handleGenerateInsights = async () => {
+    setIsGeneratingInsights(true);
+    setInsights('');
+    try {
+        const insightsInput = {
+            totalRevenue: totalRevenue,
+            totalOrders: filteredOrders.length,
+            topSellingProducts: topProducts.map(p => ({ name: p.name, quantity: p.quantity })),
+            topCustomers: topCustomers.map(c => ({ name: c.name, total: c.total }))
+        };
+        const result = await generateReportInsights(insightsInput);
+        setInsights(result.insights);
+    } catch (e) {
+        console.error(e);
+        toast({
+            variant: "destructive",
+            title: "Lỗi",
+            description: "Không thể tạo phân tích. Vui lòng thử lại."
+        });
+    } finally {
+        setIsGeneratingInsights(false);
+    }
+  };
+
+  const handleForecastSales = async () => {
+    setIsGeneratingForecast(true);
+    setForecast([]);
+    setForecastSummary('');
+    try {
+        const historicalData = topProducts.map(p => ({
+            productName: p.name,
+            totalQuantity: p.quantity
+        }));
+
+        if (historicalData.length === 0) {
+            toast({
+                variant: "destructive",
+                title: "Thiếu dữ liệu",
+                description: "Không có đủ dữ liệu bán hàng trong khoảng thời gian này để dự báo."
+            });
+            setIsGeneratingForecast(false);
+            return;
+        }
+
+        const timePeriod = `từ ${formatDate(date!.from!)} đến ${formatDate(date!.to!)}`;
+        const result = await forecastSales({ historicalData: JSON.stringify(historicalData), timePeriod });
+        setForecast(result.forecast);
+        setForecastSummary(result.summary);
+    } catch (e) {
+        console.error(e);
+        toast({
+            variant: "destructive",
+            title: "Lỗi",
+            description: "Không thể tạo dự báo. Vui lòng thử lại."
+        });
+    } finally {
+        setIsGeneratingForecast(false);
+    }
+  }
 
 
   return (
@@ -287,6 +356,85 @@ export default function ReportsPage() {
                 </div>
             </CardHeader>
             <CardContent className="grid gap-6">
+                <Card>
+                    <CardHeader>
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                            <div>
+                                <CardTitle className="font-headline flex items-center gap-2">
+                                    <BrainCircuit className="h-5 w-5 text-primary"/>
+                                    Phân tích thông minh
+                                </CardTitle>
+                                <CardDescription>Nhận các đề xuất và nhận định từ AI dựa trên dữ liệu đã chọn.</CardDescription>
+                            </div>
+                             <Button onClick={handleGenerateInsights} disabled={isGeneratingInsights}>
+                                {isGeneratingInsights ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Sparkles className="mr-2 h-4 w-4"/>}
+                                {isGeneratingInsights ? "Đang phân tích..." : "Nhận phân tích"}
+                            </Button>
+                        </div>
+                    </CardHeader>
+                    { (isGeneratingInsights || insights) && (
+                        <CardContent>
+                            {isGeneratingInsights ? (
+                                <div className="space-y-2">
+                                    <Skeleton className="h-4 w-3/4" />
+                                    <Skeleton className="h-4 w-full" />
+                                    <Skeleton className="h-4 w-5/6" />
+                                </div>
+                            ) : (
+                                <div className="p-4 bg-muted rounded-lg markdown-content text-sm" dangerouslySetInnerHTML={{ __html: insights.replace(/\n/g, '<br />') }}/>
+                            )}
+                        </CardContent>
+                    )}
+                </Card>
+
+                <Card>
+                    <CardHeader>
+                         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                            <div>
+                                <CardTitle className="font-headline flex items-center gap-2">
+                                    <TrendingUp className="h-5 w-5 text-primary"/>
+                                    Dự báo bán hàng
+                                </CardTitle>
+                                <CardDescription>Dự báo nhu cầu cho các sản phẩm trong tháng tới.</CardDescription>
+                            </div>
+                             <Button onClick={handleForecastSales} disabled={isGeneratingForecast}>
+                                {isGeneratingForecast ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <BarChart2 className="mr-2 h-4 w-4"/>}
+                                {isGeneratingForecast ? "Đang dự báo..." : "Chạy dự báo"}
+                            </Button>
+                        </div>
+                    </CardHeader>
+                    { (isGeneratingForecast || forecast.length > 0) && (
+                        <CardContent>
+                            {isGeneratingForecast ? (
+                                <div className="space-y-2">
+                                    <Skeleton className="h-4 w-3/4" />
+                                    <Skeleton className="h-4 w-full" />
+                                </div>
+                            ) : (
+                                <>
+                                    <p className="mb-4 p-4 text-sm bg-muted rounded-lg">{forecastSummary}</p>
+                                    <Table>
+                                        <TableHeader>
+                                            <TableRow>
+                                                <TableHead>Sản phẩm</TableHead>
+                                                <TableHead className="text-right">Doanh số dự báo (tháng tới)</TableHead>
+                                            </TableRow>
+                                        </TableHeader>
+                                        <TableBody>
+                                            {forecast.map((item, index) => (
+                                                <TableRow key={index}>
+                                                    <TableCell className="font-medium">{item.productName}</TableCell>
+                                                    <TableCell className="text-right">{item.predictedSales}</TableCell>
+                                                </TableRow>
+                                            ))}
+                                        </TableBody>
+                                    </Table>
+                                </>
+                            )}
+                        </CardContent>
+                    )}
+                </Card>
+
                 <Card>
                     <CardHeader>
                         <div className="flex items-center justify-between">
