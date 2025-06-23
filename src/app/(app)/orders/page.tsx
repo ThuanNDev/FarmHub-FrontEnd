@@ -228,9 +228,22 @@ export default function OrdersPage() {
         <div className="flex items-center">
           <TabsList>
             <TabsTrigger value="all">{t('pages.orders.tab_all')}</TabsTrigger>
-            <TabsTrigger value="pending">{t('pages.orders.tab_pending')}</TabsTrigger>
-            <TabsTrigger value="delivered">{t('pages.orders.tab_delivered')}</TabsTrigger>
-            <TabsTrigger value="cancelled">
+            <TabsTrigger 
+              value="pending"
+              className="data-[state=active]:bg-primary/10 data-[state=active]:text-primary"
+            >
+              {t('pages.orders.tab_pending')}
+            </TabsTrigger>
+            <TabsTrigger 
+              value="delivered"
+              className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+            >
+              {t('pages.orders.tab_delivered')}
+            </TabsTrigger>
+            <TabsTrigger 
+              value="cancelled"
+              className="data-[state=active]:bg-destructive data-[state=active]:text-destructive-foreground"
+            >
               {t('pages.orders.tab_cancelled')}
             </TabsTrigger>
           </TabsList>
