@@ -42,12 +42,12 @@ export type Store = {
 export type User = {
   userId: string;
   username: string;
-  passwordHash: string;
+  passwordHash?: string;
   fullName: string;
   email: string;
   phone: string;
-  role: 'Admin' | 'Staff';
-  associatedStoreIds: string[];
+  role: 'Admin' | 'Staff' | 'viewer';
+  associatedStoreIds: string[] | null;
   isActive: boolean;
   isSuperadmin: boolean;
   lastLoginAt: string | null;
