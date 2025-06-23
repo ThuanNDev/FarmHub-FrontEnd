@@ -51,6 +51,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useStore } from '@/contexts/StoreContext';
 import { format } from 'date-fns';
+import * as XLSX from 'xlsx';
 
 type Order = typeof mockOrders[0];
 
@@ -322,41 +323,47 @@ export default function OrdersPage() {
       return;
     }
 
-    const headers = [
-      t('pages.orders.table_code'),
-      t('pages.orders.table_customer'),
-      t('pages.orders.table_date'),
-      t('pages.orders.table_status'),
-      t('pages.orders.table_total'),
-      t('pages.order_details.paid'),
-      t('pages.order_details.remaining'),
-      t('pages.order_details.payment_method')
-    ];
+    const dataForSheet = filteredOrders.map((order) => ({
+      'Mã ĐH': order.orderCode,
+      'Khách hàng': getCustomerName(order.customerId),
+      'Ngày': formatDate(order.createdAt),
+      'Trạng thái': t(`status.${order.status.toLowerCase()}`),
+      'Tổng tiền': order.totalAmount,
+      'Đã trả': order.totalPaid,
+      'Còn lại': order.totalAmount - order.totalPaid,
+      'Phương thức TT': order.paymentType,
+    }));
+  
+    const worksheet = XLSX.utils.json_to_sheet(dataForSheet);
     
-    const rows = filteredOrders.map(order => [
-      `"${order.orderCode}"`,
-      `"${getCustomerName(order.customerId)}"`,
-      `"${formatDate(order.createdAt)}"`,
-      `"${t(`status.${order.status.toLowerCase()}`)}"`,
-      order.totalAmount,
-      order.totalPaid,
-      order.totalAmount - order.totalPaid,
-      `"${order.paymentType}"`
-    ]);
+    worksheet['!cols'] = [
+      { wch: 15 }, // Mã ĐH
+      { wch: 30 }, // Khách hàng
+      { wch: 15 }, // Ngày
+      { wch: 15 }, // Trạng thái
+      { wch: 20 }, // Tổng tiền
+      { wch: 20 }, // Đã trả
+      { wch: 20 }, // Còn lại
+      { wch: 15 }, // Phương thức TT
+    ];
 
-    let csvContent = "data:text/csv;charset=utf-8,\uFEFF" 
-        + headers.join(",") + "\n" 
-        + rows.map(e => e.join(",")).join("\n");
-        
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    const fileName = `don_hang_${new Date().toISOString().slice(0,10)}.csv`;
-    link.setAttribute("download", fileName);
-    document.body.appendChild(link);
+    dataForSheet.forEach((_row, index) => {
+        const rowNum = index + 2; 
+        const currencyCols = ['E', 'F', 'G']; // Corresponds to Tổng tiền, Đã trả, Còn lại
+        currencyCols.forEach(col => {
+            const cellAddress = `${col}${rowNum}`;
+            if (worksheet[cellAddress]) {
+                worksheet[cellAddress].t = 'n';
+                worksheet[cellAddress].z = '#,##0"₫"';
+            }
+        });
+    });
 
-    link.click();
-    document.body.removeChild(link);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'DanhSachDonHang');
+  
+    const fileName = `DanhSachDonHang_${new Date().toISOString().slice(0,10)}.xlsx`;
+    XLSX.writeFile(workbook, fileName);
     
     toast({
         title: t('common.success'),
