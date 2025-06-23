@@ -65,7 +65,7 @@ export default function LoginPage() {
     setIsLoading(true);
     // Mock authentication with a slight delay
     setTimeout(() => {
-        const user = mockUsers.find((u) => u.username === values.username);
+        const user = mockUsers.find((u) => u.username === values.username || u.email === values.username);
 
         // In a real app, you would compare a hashed password.
         if (user && user.is_active) {
@@ -77,7 +77,7 @@ export default function LoginPage() {
                     title: t('login.first_login_title'),
                     description: t('login.first_login_description'),
                 });
-                router.push(`/verify-otp?username=${values.username}`);
+                router.push(`/verify-otp?username=${user.username}`);
             } else {
                 // Subsequent login
                 user.last_login_at = new Date().toISOString();

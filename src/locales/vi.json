@@ -243,8 +243,8 @@
   "login": {
     "title": "Đăng nhập",
     "description": "Nhập thông tin tài khoản của bạn để tiếp tục.",
-    "username": "Tên đăng nhập",
-    "username_placeholder": "ví dụ: admin",
+    "username": "Tên đăng nhập hoặc Email",
+    "username_placeholder": "Nhập tên đăng nhập hoặc email",
     "password": "Mật khẩu",
     "password_placeholder": "••••••••",
     "submit": "Đăng nhập",

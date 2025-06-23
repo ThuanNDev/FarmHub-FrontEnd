@@ -243,8 +243,8 @@
   "login": {
     "title": "Login",
     "description": "Enter your account information to continue.",
-    "username": "Username",
-    "username_placeholder": "e.g., admin",
+    "username": "Username or Email",
+    "username_placeholder": "Enter your username or email",
     "password": "Password",
     "password_placeholder": "••••••••",
     "submit": "Login",
