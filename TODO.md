@@ -12,15 +12,7 @@
     -   [ ] Quản lý session/token phía client một cách an toàn (ví dụ: sử dụng httpOnly cookies).
     -   [ ] Bảo vệ các trang quản trị, chỉ cho phép người dùng đã đăng nhập truy cập. Chuyển hướng người dùng chưa xác thực về trang đăng nhập.
 
-## II. Chức năng Frontend cần hoàn thiện
-
--   [x] **Trang Đơn hàng (`/orders`):** Hoàn thiện chức năng "Sửa đơn hàng". Nút "Sửa" ở cả trang danh sách và trang chi tiết hiện chỉ hiển thị thông báo. Cần triển khai form sửa đơn hàng (chỉ cho các đơn hàng có trạng thái `Pending`).
--   [x] **Trang Đơn hàng (`/orders`):** Hoàn thiện chức năng "In đơn hàng" từ menu của mỗi đơn hàng trong danh sách.
--   [x] **Trang Nhân viên (`/users`):** Hoàn thiện chức năng "Đổi mật khẩu" trong giao diện dành cho nhân viên (vai trò `Staff`).
--   [x] **Trang Báo cáo (`/reports`):** Hoàn thiện chức năng "Xuất file" để xuất dữ liệu báo cáo ra file CSV/Excel.
--   [x] **Trang Bán hàng (`/pos`):** Cho phép cấu hình số kỳ trả góp (thay vì mặc định là 3 kỳ) khi khách hàng chọn phương thức trả góp.
-
-## III. Cải tiến & Tính năng mới (Tiềm năng)
+## II. Cải tiến & Tính năng mới (Tiềm năng)
 
 -   [ ] **Tối ưu hóa với dữ liệu thật:**
     -   [ ] **Tìm kiếm & Phân trang phía Server:** Hiện tại, các chức năng này đang xử lý ở phía client. Khi có dữ liệu lớn, cần chuyển logic này về phía backend để tối ưu hiệu suất.
@@ -36,5 +28,6 @@
     -   [ ] **Chế độ xem bảng trên di động:** Cải thiện khả năng hiển thị của các bảng dữ liệu phức tạp trên màn hình nhỏ.
 
 -   [ ] **Nâng cấp kỹ thuật:**
+    -   [x] **Rà soát & Dọn dẹp:** Loại bỏ các đoạn mã, thành phần và dữ liệu mẫu không còn được sử dụng để tối ưu hóa mã nguồn.
     -   [ ] **Quản lý trạng thái:** Khi chuyển sang API thật, xem xét sử dụng một thư viện quản lý trạng thái như Redux Toolkit hoặc Zustand để xử lý state từ server, caching và các thao tác bất đồng bộ một cách hiệu quả hơn.
     -   [ ] **Tối ưu hóa hiệu suất:** Rà soát và áp dụng các kỹ thuật tối ưu của Next.js như `React.lazy`, `dynamic imports` cho các thành phần nặng.
