@@ -78,18 +78,9 @@ import { mockCategories } from '@/lib/data';
 import { useToast } from '@/hooks/use-toast';
 import { slugify } from '@/lib/utils';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { categorySchema } from '@/lib/form-schemas';
 
 type Category = typeof mockCategories[0];
-
-const categorySchema = z.object({
-  name: z.string().min(1, { message: "Tên thể loại không được để trống." }),
-  description: z.string().optional(),
-  parentCategoryId: z.string().optional(), // Will treat special value as null in submission
-  image: z.string().url({ message: "Vui lòng nhập URL hình ảnh hợp lệ." }).or(z.literal('')).optional(),
-  order: z.coerce.number().int().optional(),
-  isActive: z.boolean().default(true),
-});
-
 type CategoryFormValues = z.infer<typeof categorySchema>;
 
 export default function CategoriesPage() {

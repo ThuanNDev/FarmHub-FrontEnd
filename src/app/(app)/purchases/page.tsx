@@ -78,6 +78,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { purchaseOrderSchema } from '@/lib/form-schemas';
 
 type PurchaseOrder = (typeof mockPurchaseOrders)[0];
 type PurchaseOrderItem = {
@@ -86,13 +87,6 @@ type PurchaseOrderItem = {
     quantity: number;
     unitPrice: number;
 };
-
-const purchaseOrderSchema = z.object({
-  supplier_id: z.string().min(1, 'Vui lòng chọn nhà cung cấp.'),
-  expected_delivery_date: z.date().optional(),
-  note: z.string().optional(),
-});
-
 type PurchaseOrderFormValues = z.infer<typeof purchaseOrderSchema>;
 
 export default function PurchasesPage() {
@@ -110,18 +104,18 @@ export default function PurchasesPage() {
   const form = useForm<PurchaseOrderFormValues>({
     resolver: zodResolver(purchaseOrderSchema),
     defaultValues: {
-      supplier_id: '',
+      supplierId: '',
       note: '',
     },
   });
 
-  const getSupplierName = (supplierId: string) => mockSuppliers.find(s => s.id === supplierId)?.name || 'N/A';
+  const getSupplierName = (supplierId: string) => mockSuppliers.find(s => s.supplierId === supplierId)?.name || 'N/A';
 
   const filteredPOs = useMemo(() => {
     if (!searchTerm) return purchaseOrders;
     return purchaseOrders.filter(po =>
-      po.order_code.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      getSupplierName(po.supplier_id).toLowerCase().includes(searchTerm.toLowerCase())
+      po.orderCode.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      getSupplierName(po.supplierId).toLowerCase().includes(searchTerm.toLowerCase())
     );
   }, [searchTerm, purchaseOrders]);
   
@@ -140,17 +134,17 @@ export default function PurchasesPage() {
     } else {
         if(selectedPO) {
             form.reset({
-                supplier_id: selectedPO.supplier_id,
-                expected_delivery_date: selectedPO.expected_delivery_date ? new Date(selectedPO.expected_delivery_date) : undefined,
+                supplierId: selectedPO.supplierId,
+                expectedDeliveryDate: selectedPO.expectedDeliveryDate ? new Date(selectedPO.expectedDeliveryDate) : undefined,
                 note: selectedPO.note || ''
             });
             const poItems = mockPurchaseOrderItems
-                .filter(item => item.purchase_order_id === selectedPO.id)
+                .filter(item => item.purchaseOrderId === selectedPO.purchaseOrderId)
                 .map(item => ({
-                    productId: item.product_id,
-                    productName: mockProducts.find(p => p.id === item.product_id)?.name || 'Sản phẩm không xác định',
+                    productId: item.productId,
+                    productName: mockProducts.find(p => p.productId === item.productId)?.name || 'Sản phẩm không xác định',
                     quantity: item.quantity,
-                    unitPrice: item.unit_price,
+                    unitPrice: item.unitPrice,
                 }));
             setItems(poItems);
         }
@@ -174,13 +168,13 @@ export default function PurchasesPage() {
 
   const confirmCancel = () => {
     if (!selectedPO) return;
-    const poInDb = mockPurchaseOrders.find(p => p.id === selectedPO.id);
+    const poInDb = mockPurchaseOrders.find(p => p.purchaseOrderId === selectedPO.purchaseOrderId);
     if (poInDb) {
       poInDb.status = 'cancelled';
-      poInDb.updated_at = new Date().toISOString();
+      poInDb.updatedAt = new Date().toISOString();
     }
     setPurchaseOrders([...mockPurchaseOrders]);
-    toast({ title: 'Thành công', description: `Đơn nhập hàng ${selectedPO.order_code} đã được hủy.` });
+    toast({ title: 'Thành công', description: `Đơn nhập hàng ${selectedPO.orderCode} đã được hủy.` });
     setCancelDialogOpen(false);
     setSelectedPO(null);
   };
@@ -196,27 +190,27 @@ export default function PurchasesPage() {
     const currentUser = mockUsers[0];
 
     if(selectedPO) {
-        const poIndex = mockPurchaseOrders.findIndex(p => p.id === selectedPO.id);
+        const poIndex = mockPurchaseOrders.findIndex(p => p.purchaseOrderId === selectedPO.purchaseOrderId);
         if (poIndex !== -1) {
             mockPurchaseOrders[poIndex] = {
                 ...mockPurchaseOrders[poIndex],
-                supplier_id: values.supplier_id,
-                expected_delivery_date: values.expected_delivery_date?.toISOString() || null,
+                supplierId: values.supplierId,
+                expectedDeliveryDate: values.expectedDeliveryDate?.toISOString() || null,
                 note: values.note || null,
-                total_amount: totalAmount,
-                updated_at: now,
+                totalAmount: totalAmount,
+                updatedAt: now,
             };
             
             // This is a more robust way to update an array of objects in memory without reassigning an imported binding
-            const otherItems = mockPurchaseOrderItems.filter(item => item.purchase_order_id !== selectedPO.id);
+            const otherItems = mockPurchaseOrderItems.filter(item => item.purchaseOrderId !== selectedPO.purchaseOrderId);
             const newItemsForThisPO = items.map((item, index) => ({
-                id: `poi-${selectedPO.id}-${index}`,
-                purchase_order_id: selectedPO.id,
-                product_id: item.productId,
+                purchaseOrderItemId: `poi-${selectedPO.purchaseOrderId}-${index}`,
+                purchaseOrderId: selectedPO.purchaseOrderId,
+                productId: item.productId,
                 quantity: item.quantity,
-                unit_price: item.unitPrice,
-                total_price: item.quantity * item.unitPrice,
-                received_quantity: 0,
+                unitPrice: item.unitPrice,
+                totalPrice: item.quantity * item.unitPrice,
+                receivedQuantity: 0,
             }));
             
             mockPurchaseOrderItems.length = 0; 
@@ -226,28 +220,28 @@ export default function PurchasesPage() {
         }
     } else {
         const newPO: PurchaseOrder = {
-            id: `po-${Date.now()}`,
-            order_code: `PN${new Date().toISOString().slice(2, 10).replace(/-/g, '')}${Math.floor(100 + Math.random() * 900)}`,
-            supplier_id: values.supplier_id,
-            total_amount: totalAmount,
+            purchaseOrderId: `po-${Date.now()}`,
+            orderCode: `PN${new Date().toISOString().slice(2, 10).replace(/-/g, '')}${Math.floor(100 + Math.random() * 900)}`,
+            supplierId: values.supplierId,
+            totalAmount: totalAmount,
             status: 'pending',
-            expected_delivery_date: values.expected_delivery_date?.toISOString() || null,
-            received_date: null,
+            expectedDeliveryDate: values.expectedDeliveryDate?.toISOString() || null,
+            receivedDate: null,
             note: values.note || null,
-            created_by_user_id: currentUser.id,
-            created_at: now,
-            updated_at: now,
+            createdByUserId: currentUser.userId,
+            createdAt: now,
+            updatedAt: now,
         };
         mockPurchaseOrders.unshift(newPO);
         items.forEach((item, index) => {
             mockPurchaseOrderItems.push({
-                id: `poi-${newPO.id}-${index}`,
-                purchase_order_id: newPO.id,
-                product_id: item.productId,
+                purchaseOrderItemId: `poi-${newPO.purchaseOrderId}-${index}`,
+                purchaseOrderId: newPO.purchaseOrderId,
+                productId: item.productId,
                 quantity: item.quantity,
-                unit_price: item.unitPrice,
-                total_price: item.quantity * item.unitPrice,
-                received_quantity: 0
+                unitPrice: item.unitPrice,
+                totalPrice: item.quantity * item.unitPrice,
+                receivedQuantity: 0
             });
         });
         toast({ title: "Thành công", description: "Đơn nhập hàng mới đã được tạo." });
@@ -286,10 +280,10 @@ export default function PurchasesPage() {
   };
 
   const handlePrint = (po: PurchaseOrder) => {
-    const supplier = mockSuppliers.find(s => s.id === po.supplier_id);
-    const createdBy = mockUsers.find(u => u.id === po.created_by_user_id);
-    const poItems = mockPurchaseOrderItems.filter(item => item.purchase_order_id === po.id);
-    const getProduct = (productId: string) => mockProducts.find(p => p.id === productId);
+    const supplier = mockSuppliers.find(s => s.supplierId === po.supplierId);
+    const createdBy = mockUsers.find(u => u.userId === po.createdByUserId);
+    const poItems = mockPurchaseOrderItems.filter(item => item.purchaseOrderId === po.purchaseOrderId);
+    const getProduct = (productId: string) => mockProducts.find(p => p.productId === productId);
 
     if (!po || !supplier || !createdBy) {
         toast({ variant: 'destructive', title: 'Lỗi', description: 'Không đủ dữ liệu để in.' });
@@ -307,15 +301,15 @@ export default function PurchasesPage() {
     }
 
     const itemsHtml = poItems.map((item, index) => {
-        const product = getProduct(item.product_id);
+        const product = getProduct(item.productId);
         return `
             <tr class="item">
                 <td class="text-center">${index + 1}</td>
                 <td>${product?.name || 'Sản phẩm không tìm thấy'}</td>
                 <td class="text-center">${product?.unit || 'cái'}</td>
                 <td class="text-center">${item.quantity}</td>
-                <td class="text-right">${formatCurrency(item.unit_price)}</td>
-                <td class="text-right">${formatCurrency(item.total_price)}</td>
+                <td class="text-right">${formatCurrency(item.unitPrice)}</td>
+                <td class="text-right">${formatCurrency(item.totalPrice)}</td>
                 <td></td>
                 <td class="text-center"><div style="width: 16px; height: 16px; border: 1px solid #000; margin: auto;"></div></td>
             </tr>
@@ -325,7 +319,7 @@ export default function PurchasesPage() {
     const printHtml = `
       <html>
         <head>
-          <title>Đơn Nhập Hàng ${po.order_code}</title>
+          <title>Đơn Nhập Hàng ${po.orderCode}</title>
           <style>
             @media print {
               body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
@@ -354,8 +348,8 @@ export default function PurchasesPage() {
           <div class="container">
             <div class="header">
               <h1>ĐƠN NHẬP HÀNG</h1>
-              <p>Mã đơn: ${po.order_code}</p>
-              <p>Ngày tạo: ${formatDate(po.created_at)}</p>
+              <p>Mã đơn: ${po.orderCode}</p>
+              <p>Ngày tạo: ${formatDate(po.createdAt)}</p>
             </div>
             
             <div class="info-section">
@@ -364,14 +358,14 @@ export default function PurchasesPage() {
                     <p><strong>Tên:</strong> ${mockStores[0].name}</p>
                     <p><strong>Địa chỉ:</strong> ${mockStores[0].address}</p>
                     <p><strong>Điện thoại:</strong> ${mockStores[0].phone}</p>
-                    <p><strong>Người tạo:</strong> ${createdBy.full_name}</p>
+                    <p><strong>Người tạo:</strong> ${createdBy.fullName}</p>
                 </div>
                  <div>
                     <h3>Thông tin nhà cung cấp</h3>
                     <p><strong>Tên:</strong> ${supplier.name}</p>
                     <p><strong>Địa chỉ:</strong> ${supplier.address || 'N/A'}</p>
                     <p><strong>Điện thoại:</strong> ${supplier.phone}</p>
-                    <p><strong>Người liên hệ:</strong> ${supplier.contact_person || 'N/A'}</p>
+                    <p><strong>Người liên hệ:</strong> ${supplier.contactPerson || 'N/A'}</p>
                 </div>
             </div>
 
@@ -395,7 +389,7 @@ export default function PurchasesPage() {
             </table>
 
             <div class="total-section">
-                <h2>Tổng cộng: ${formatCurrency(po.total_amount)}</h2>
+                <h2>Tổng cộng: ${formatCurrency(po.totalAmount)}</h2>
             </div>
             
             <div class="signature-section">
@@ -475,14 +469,14 @@ export default function PurchasesPage() {
             </TableHeader>
             <TableBody>
               {filteredPOs.map((po) => (
-                <TableRow key={po.id} onClick={() => router.push(`/purchases/${po.id}`)} className="cursor-pointer">
-                  <TableCell className="font-medium">{po.order_code}</TableCell>
-                  <TableCell>{getSupplierName(po.supplier_id)}</TableCell>
-                  <TableCell>{formatDate(po.created_at)}</TableCell>
+                <TableRow key={po.purchaseOrderId} onClick={() => router.push(`/purchases/${po.purchaseOrderId}`)} className="cursor-pointer">
+                  <TableCell className="font-medium">{po.orderCode}</TableCell>
+                  <TableCell>{getSupplierName(po.supplierId)}</TableCell>
+                  <TableCell>{formatDate(po.createdAt)}</TableCell>
                   <TableCell>
                     <Badge variant={getStatusVariant(po.status)}>{t(`status.${po.status.toLowerCase()}`)}</Badge>
                   </TableCell>
-                  <TableCell className="text-right">{formatCurrency(po.total_amount)}</TableCell>
+                  <TableCell className="text-right">{formatCurrency(po.totalAmount)}</TableCell>
                   <TableCell onClick={(e) => e.stopPropagation()}>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
@@ -525,7 +519,7 @@ export default function PurchasesPage() {
                     <div className="grid md:grid-cols-2 gap-4">
                         <FormField
                             control={form.control}
-                            name="supplier_id"
+                            name="supplierId"
                             render={({ field }) => (
                                 <FormItem>
                                 <FormLabel>Nhà cung cấp</FormLabel>
@@ -534,8 +528,8 @@ export default function PurchasesPage() {
                                     <SelectTrigger><SelectValue placeholder="Chọn nhà cung cấp" /></SelectTrigger>
                                     </FormControl>
                                     <SelectContent>
-                                    {mockSuppliers.filter(s => !s.is_deleted).map(supplier => (
-                                        <SelectItem key={supplier.id} value={supplier.id}>{supplier.name}</SelectItem>
+                                    {mockSuppliers.filter(s => !s.isDeleted).map(supplier => (
+                                        <SelectItem key={supplier.supplierId} value={supplier.supplierId}>{supplier.name}</SelectItem>
                                     ))}
                                     </SelectContent>
                                 </Select>
@@ -545,7 +539,7 @@ export default function PurchasesPage() {
                         />
                         <FormField
                             control={form.control}
-                            name="expected_delivery_date"
+                            name="expectedDeliveryDate"
                             render={({ field }) => (
                                 <FormItem className="flex flex-col pt-2">
                                 <FormLabel>Ngày dự kiến nhận</FormLabel>
@@ -648,7 +642,7 @@ export default function PurchasesPage() {
           <AlertDialogHeader>
             <AlertDialogTitle>Bạn có chắc chắn muốn hủy?</AlertDialogTitle>
             <AlertDialogDescription>
-              Hành động này sẽ hủy đơn nhập hàng <strong>{selectedPO?.order_code}</strong>. Thao tác này không thể hoàn tác.
+              Hành động này sẽ hủy đơn nhập hàng <strong>{selectedPO?.orderCode}</strong>. Thao tác này không thể hoàn tác.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -671,21 +665,21 @@ function AddProductForm({ onAddItem, currentItems }: { onAddItem: (item: Purchas
     const { toast } = useToast();
 
     const availableProducts = useMemo(() => {
-        return mockProducts.filter(p => p.is_active && !p.is_deleted && !currentItems.some(item => item.productId === p.id));
+        return mockProducts.filter(p => p.isActive && !p.isDeleted && !currentItems.some(item => item.productId === p.productId));
     }, [currentItems]);
 
     const filteredProducts = useMemo(() => {
         if (!search) return availableProducts;
         return availableProducts.filter(p =>
             p.name.toLowerCase().includes(search.toLowerCase()) ||
-            p.product_code.toLowerCase().includes(search.toLowerCase())
+            p.productCode.toLowerCase().includes(search.toLowerCase())
         );
     }, [search, availableProducts]);
 
     useEffect(() => {
-        const product = mockProducts.find(p => p.id === selectedProductId);
+        const product = mockProducts.find(p => p.productId === selectedProductId);
         if (product) {
-            setUnitPrice(String(product.import_price));
+            setUnitPrice(String(product.importPrice));
         } else {
             setUnitPrice('0');
         }
@@ -699,10 +693,10 @@ function AddProductForm({ onAddItem, currentItems }: { onAddItem: (item: Purchas
             toast({ variant: 'destructive', title: 'Lỗi', description: 'Vui lòng điền đầy đủ và chính xác thông tin sản phẩm.' });
             return;
         }
-        const product = mockProducts.find(p => p.id === selectedProductId);
+        const product = mockProducts.find(p => p.productId === selectedProductId);
         if (product) {
             onAddItem({
-                productId: product.id,
+                productId: product.productId,
                 productName: product.name,
                 quantity: numQuantity,
                 unitPrice: numUnitPrice,
@@ -715,7 +709,7 @@ function AddProductForm({ onAddItem, currentItems }: { onAddItem: (item: Purchas
         }
     };
 
-    const selectedProduct = availableProducts.find(p => p.id === selectedProductId);
+    const selectedProduct = availableProducts.find(p => p.productId === selectedProductId);
 
     return (
         <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-end p-4 border rounded-lg bg-muted/40">
@@ -747,18 +741,18 @@ function AddProductForm({ onAddItem, currentItems }: { onAddItem: (item: Purchas
                            <div className="p-2 space-y-1">
                             {filteredProducts.length > 0 ? filteredProducts.map((product) => (
                                 <Button
-                                    key={product.id}
+                                    key={product.productId}
                                     variant="ghost"
                                     className="w-full justify-start font-normal h-auto py-2 text-left"
                                     onClick={() => {
-                                        setSelectedProductId(product.id);
+                                        setSelectedProductId(product.productId);
                                         setSearch('');
                                         setOpen(false);
                                     }}
                                 >
                                     <div>
                                         <div>{product.name}</div>
-                                        <div className="text-xs text-muted-foreground">{product.product_code}</div>
+                                        <div className="text-xs text-muted-foreground">{product.productCode}</div>
                                     </div>
                                 </Button>
                             )) : <p className="p-2 text-center text-sm text-muted-foreground">Không tìm thấy sản phẩm.</p>}

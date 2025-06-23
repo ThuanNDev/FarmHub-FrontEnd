@@ -80,34 +80,9 @@ import { Separator } from '@/components/ui/separator';
 import { mockUsers } from '@/lib/data';
 import { useToast } from '@/hooks/use-toast';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { userSchema } from '@/lib/form-schemas';
 
 type User = typeof mockUsers[0];
-
-const userSchema = z.object({
-  fullName: z.string().min(1, { message: "Họ tên không được để trống." }),
-  username: z.string().min(3, { message: "Tên đăng nhập phải có ít nhất 3 ký tự." }),
-  email: z.string().email({ message: "Email không hợp lệ." }),
-  phone: z.string().optional(),
-  role: z.enum(['Admin', 'Staff']),
-  isActive: z.boolean().default(true),
-  password: z.string().optional(),
-  confirmPassword: z.string().optional(),
-}).refine((data) => {
-    if (data.password && data.password.length > 0) {
-        return data.password.length >= 8;
-    }
-    return true;
-}, {
-    message: "Mật khẩu phải có ít nhất 8 ký tự.",
-    path: ["password"],
-}).refine((data) => {
-    return data.password === data.confirmPassword;
-}, {
-    message: "Mật khẩu không khớp.",
-    path: ["confirmPassword"],
-});
-
-
 type UserFormValues = z.infer<typeof userSchema>;
 
 export default function UsersPage() {

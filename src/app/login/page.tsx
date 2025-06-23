@@ -29,11 +29,7 @@ import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { mockUsers, mockStores } from '@/lib/data';
 import { useLanguage } from '@/contexts/LanguageContext';
-
-const loginSchema = z.object({
-  username: z.string().min(1, { message: 'Tên đăng nhập không được để trống.' }),
-  password: z.string().min(1, { message: 'Mật khẩu không được để trống.' }),
-});
+import { loginSchema } from '@/lib/form-schemas';
 
 type LoginFormValues = z.infer<typeof loginSchema>;
 

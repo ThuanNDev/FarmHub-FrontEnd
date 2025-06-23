@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useForm } from 'react-hook-form';
@@ -30,12 +31,7 @@ import {
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { useEffect } from 'react';
-
-const paymentSchema = z.object({
-  amount: z.coerce.number().positive({ message: "Số tiền phải lớn hơn 0." }),
-  paymentMethod: z.enum(['Cash', 'Card', 'Transfer'], { required_error: "Vui lòng chọn phương thức thanh toán." }),
-  note: z.string().optional(),
-});
+import { paymentSchema } from '@/lib/form-schemas';
 
 export type PaymentFormValues = z.infer<typeof paymentSchema>;
 

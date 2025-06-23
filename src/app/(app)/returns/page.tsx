@@ -61,6 +61,7 @@ import { mockReturnOrders, mockReturnOrderItems, mockOrders, mockOrderItems, moc
 import { useToast } from '@/hooks/use-toast';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { format } from 'date-fns';
+import { returnOrderSchema } from '@/lib/form-schemas';
 
 type ReturnOrder = typeof mockReturnOrders[0];
 type Order = typeof mockOrders[0];
@@ -70,11 +71,6 @@ interface ReturnableItem extends OrderItem {
   return_quantity: number;
   condition: 'new' | 'used' | 'damaged';
 }
-
-const returnOrderSchema = z.object({
-  reason: z.string().optional(),
-});
-
 type ReturnOrderFormValues = z.infer<typeof returnOrderSchema>;
 
 export default function ReturnsPage() {
@@ -94,25 +90,25 @@ export default function ReturnsPage() {
     resolver: zodResolver(returnOrderSchema),
   });
 
-  const getCustomerName = (customerId: string) => mockCustomers.find(c => c.id === customerId)?.name || 'N/A';
+  const getCustomerName = (customerId: string) => mockCustomers.find(c => c.customerId === customerId)?.name || 'N/A';
 
   const filteredROs = useMemo(() => {
     if (!searchTerm) return returnOrders;
     return returnOrders.filter(ro => {
-        const order = mockOrders.find(o => o.id === ro.order_id);
-        return ro.id.slice(-6).toLowerCase().includes(searchTerm.toLowerCase()) ||
-               (order && order.order_code.toLowerCase().includes(searchTerm.toLowerCase())) ||
-               getCustomerName(ro.customer_id).toLowerCase().includes(searchTerm.toLowerCase());
+        const order = mockOrders.find(o => o.orderId === ro.orderId);
+        return ro.returnOrderId.slice(-6).toLowerCase().includes(searchTerm.toLowerCase()) ||
+               (order && order.orderCode.toLowerCase().includes(searchTerm.toLowerCase())) ||
+               getCustomerName(ro.customerId).toLowerCase().includes(searchTerm.toLowerCase());
     });
   }, [searchTerm, returnOrders]);
 
 
   const handleSearchOrder = () => {
-    const order = mockOrders.find(o => o.order_code.toLowerCase() === orderCode.toLowerCase());
+    const order = mockOrders.find(o => o.orderCode.toLowerCase() === orderCode.toLowerCase());
     if (order) {
       setFoundOrder(order);
       const items = mockOrderItems
-        .filter(item => item.order_id === order.id)
+        .filter(item => item.orderId === order.orderId)
         .map(item => ({ ...item, return_quantity: 0, condition: 'new' as const }));
       setReturnableItems(items);
     } else {
@@ -124,8 +120,8 @@ export default function ReturnsPage() {
   
   const handleItemQuantityChange = (itemId: string, quantity: number) => {
     setReturnableItems(prev => prev.map(item => {
-        if(item.id === itemId) {
-            const originalItem = mockOrderItems.find(oi => oi.id === itemId);
+        if(item.orderItemId === itemId) {
+            const originalItem = mockOrderItems.find(oi => oi.orderItemId === itemId);
             const maxQty = originalItem?.quantity || 0;
             const newQty = Math.max(0, Math.min(quantity, maxQty));
             return { ...item, return_quantity: newQty };
@@ -135,7 +131,7 @@ export default function ReturnsPage() {
   };
   
   const handleItemConditionChange = (itemId: string, condition: 'new' | 'used' | 'damaged') => {
-    setReturnableItems(prev => prev.map(item => item.id === itemId ? { ...item, condition } : item));
+    setReturnableItems(prev => prev.map(item => item.orderItemId === itemId ? { ...item, condition } : item));
   }
 
   const onSubmit = (values: ReturnOrderFormValues) => {
@@ -147,31 +143,31 @@ export default function ReturnsPage() {
         return;
     }
 
-    const totalRefundAmount = itemsToReturn.reduce((sum, item) => sum + item.return_quantity * item.unit_price, 0);
+    const totalRefundAmount = itemsToReturn.reduce((sum, item) => sum + item.return_quantity * item.unitPrice, 0);
     const now = new Date().toISOString();
     const currentUser = mockUsers[0];
 
     const newReturnOrder: ReturnOrder = {
-        id: `ret-${Date.now()}`,
-        order_id: foundOrder.id,
-        customer_id: foundOrder.customer_id,
-        return_date: now,
-        total_refund_amount: totalRefundAmount,
+        returnOrderId: `ret-${Date.now()}`,
+        orderId: foundOrder.orderId,
+        customerId: foundOrder.customerId,
+        returnDate: now,
+        totalRefundAmount: totalRefundAmount,
         reason: values.reason || null,
         status: 'pending',
-        processed_by_user_id: currentUser.id,
-        created_at: now,
-        updated_at: now,
+        processedByUserId: currentUser.userId,
+        createdAt: now,
+        updatedAt: now,
     };
     mockReturnOrders.unshift(newReturnOrder);
 
     itemsToReturn.forEach(item => {
         mockReturnOrderItems.push({
-            id: `item-ret-${Date.now()}-${item.id}`,
-            return_order_id: newReturnOrder.id,
-            product_id: item.product_id,
+            returnOrderItemId: `item-ret-${Date.now()}-${item.orderItemId}`,
+            returnOrderId: newReturnOrder.returnOrderId,
+            productId: item.productId,
             quantity: item.return_quantity,
-            unit_price: item.unit_price,
+            unitPrice: item.unitPrice,
             condition: item.condition,
             restocked: false,
         });
@@ -248,15 +244,15 @@ export default function ReturnsPage() {
             </TableHeader>
             <TableBody>
               {filteredROs.map((ro) => (
-                <TableRow key={ro.id} onClick={() => router.push(`/returns/${ro.id}`)} className="cursor-pointer">
-                  <TableCell className="font-medium">#{ro.id.slice(-6)}</TableCell>
-                  <TableCell>{mockOrders.find(o => o.id === ro.order_id)?.order_code || 'N/A'}</TableCell>
-                  <TableCell>{getCustomerName(ro.customer_id)}</TableCell>
-                  <TableCell>{formatDate(ro.return_date)}</TableCell>
+                <TableRow key={ro.returnOrderId} onClick={() => router.push(`/returns/${ro.returnOrderId}`)} className="cursor-pointer">
+                  <TableCell className="font-medium">#{ro.returnOrderId.slice(-6)}</TableCell>
+                  <TableCell>{mockOrders.find(o => o.orderId === ro.orderId)?.orderCode || 'N/A'}</TableCell>
+                  <TableCell>{getCustomerName(ro.customerId)}</TableCell>
+                  <TableCell>{formatDate(ro.returnDate)}</TableCell>
                   <TableCell>
                     <Badge variant={getStatusVariant(ro.status)}>{t(`status.${ro.status.toLowerCase()}`)}</Badge>
                   </TableCell>
-                  <TableCell className="text-right">{formatCurrency(ro.total_refund_amount)}</TableCell>
+                  <TableCell className="text-right">{formatCurrency(ro.totalRefundAmount)}</TableCell>
                   <TableCell onClick={(e) => e.stopPropagation()}>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
@@ -266,7 +262,7 @@ export default function ReturnsPage() {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuItem onSelect={() => router.push(`/returns/${ro.id}`)}>
+                        <DropdownMenuItem onSelect={() => router.push(`/returns/${ro.returnOrderId}`)}>
                           Xem chi tiết & Xử lý
                         </DropdownMenuItem>
                       </DropdownMenuContent>
@@ -305,9 +301,9 @@ export default function ReturnsPage() {
                 {foundOrder && (
                      <Card>
                         <CardHeader>
-                            <CardTitle>Chi tiết đơn hàng {foundOrder.order_code}</CardTitle>
+                            <CardTitle>Chi tiết đơn hàng {foundOrder.orderCode}</CardTitle>
                             <CardDescription>
-                                Khách hàng: {getCustomerName(foundOrder.customer_id)} | Ngày mua: {formatDate(foundOrder.created_at)}
+                                Khách hàng: {getCustomerName(foundOrder.customerId)} | Ngày mua: {formatDate(foundOrder.createdAt)}
                             </CardDescription>
                         </CardHeader>
                         <CardContent>
@@ -324,8 +320,8 @@ export default function ReturnsPage() {
                                         </TableHeader>
                                         <TableBody>
                                             {returnableItems.map(item => (
-                                                <TableRow key={item.id}>
-                                                    <TableCell>{item.product_name}</TableCell>
+                                                <TableRow key={item.orderItemId}>
+                                                    <TableCell>{item.productName}</TableCell>
                                                     <TableCell>{item.quantity}</TableCell>
                                                     <TableCell>
                                                         <Input 
@@ -334,11 +330,11 @@ export default function ReturnsPage() {
                                                             max={item.quantity}
                                                             min={0}
                                                             value={item.return_quantity}
-                                                            onChange={(e) => handleItemQuantityChange(item.id, parseInt(e.target.value) || 0)}
+                                                            onChange={(e) => handleItemQuantityChange(item.orderItemId, parseInt(e.target.value) || 0)}
                                                         />
                                                     </TableCell>
                                                     <TableCell>
-                                                         <Select value={item.condition} onValueChange={(val: 'new' | 'used' | 'damaged') => handleItemConditionChange(item.id, val)}>
+                                                         <Select value={item.condition} onValueChange={(val: 'new' | 'used' | 'damaged') => handleItemConditionChange(item.orderItemId, val)}>
                                                             <SelectTrigger className="w-[120px]">
                                                                 <SelectValue />
                                                             </SelectTrigger>

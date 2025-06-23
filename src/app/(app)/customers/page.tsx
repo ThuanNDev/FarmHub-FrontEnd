@@ -75,21 +75,9 @@ import { Switch } from '@/components/ui/switch';
 import { mockCustomers } from '@/lib/data';
 import { useToast } from '@/hooks/use-toast';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { customerSchema } from '@/lib/form-schemas';
 
 type Customer = typeof mockCustomers[0];
-
-const customerSchema = z.object({
-  name: z.string().min(1, "Tên không được để trống."),
-  phone: z.string().min(1, "Số điện thoại không được để trống."),
-  email: z.string().email("Email không hợp lệ.").optional().or(z.literal('')),
-  address: z.string().optional(),
-  taxCode: z.string().optional(),
-  customerType: z.enum(['Retail', 'Wholesale']),
-  note: z.string().optional(),
-  creditLimit: z.coerce.number().min(0).optional(),
-  status: z.enum(['Active', 'Inactive', 'Blocked']),
-});
-
 type CustomerFormValues = z.infer<typeof customerSchema>;
 
 export default function CustomersPage() {

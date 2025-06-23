@@ -28,17 +28,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { mockUsers, mockStores } from '@/lib/data';
-
-const registerSchema = z.object({
-  fullName: z.string().min(1, { message: 'Họ tên không được để trống.' }),
-  username: z.string().min(3, { message: 'Tên đăng nhập phải có ít nhất 3 ký tự.' }),
-  email: z.string().email({ message: 'Email không hợp lệ.' }),
-  password: z.string().min(8, { message: 'Mật khẩu phải có ít nhất 8 ký tự.' }),
-  confirmPassword: z.string()
-}).refine(data => data.password === data.confirmPassword, {
-  message: "Mật khẩu không khớp.",
-  path: ["confirmPassword"],
-});
+import { registerSchema } from '@/lib/form-schemas';
 
 type RegisterFormValues = z.infer<typeof registerSchema>;
 

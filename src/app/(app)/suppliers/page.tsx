@@ -65,19 +65,9 @@ import {
 } from '@/components/ui/form';
 import { mockSuppliers } from '@/lib/data';
 import { useToast } from '@/hooks/use-toast';
+import { supplierSchema } from '@/lib/form-schemas';
 
 type Supplier = typeof mockSuppliers[0];
-
-const supplierSchema = z.object({
-  name: z.string().min(1, { message: "Tên nhà cung cấp không được để trống." }),
-  phone: z.string().min(1, { message: "Số điện thoại không được để trống." }),
-  email: z.string().email("Email không hợp lệ.").optional().or(z.literal('')),
-  address: z.string().optional(),
-  taxCode: z.string().optional(),
-  contactPerson: z.string().optional(),
-  note: z.string().optional(),
-});
-
 type SupplierFormValues = z.infer<typeof supplierSchema>;
 
 export default function SuppliersPage() {

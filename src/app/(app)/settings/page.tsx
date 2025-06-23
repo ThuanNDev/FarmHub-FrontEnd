@@ -38,32 +38,7 @@ import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
 import { useStore } from '@/contexts/StoreContext';
 import { mockBanks } from '@/lib/data';
-
-const settingsSchema = z.object({
-  name: z.string().min(1, "Tên cửa hàng không được để trống."),
-  address: z.string().min(1, "Địa chỉ không được để trống."),
-  phone: z.string().min(1, "Số điện thoại không được để trống."),
-  email: z.string().email("Email không hợp lệ."),
-  openingHours: z.string().optional(),
-  isActive: z.boolean().default(true),
-  bankInfo: z.object({
-    bankId: z.string().min(1, "Vui lòng chọn ngân hàng."),
-    accountNo: z.string().min(1, "Số tài khoản không được để trống."),
-    accountName: z.string().min(1, "Tên chủ tài khoản không được để trống."),
-  }).optional(),
-  isVatEnabled: z.boolean().default(true),
-  vatRate: z.coerce.number().min(0, "VAT không được âm.").max(100, "VAT không thể lớn hơn 100%").optional(),
-  invoiceFooter: z.string().optional(),
-  printingPreferences: z.object({
-      defaultPaperSize: z.enum(['k80', 'a5', 'k58']),
-  }).optional(),
-  backupSchedule: z.string().optional(),
-  defaults: z.object({
-    unit: z.string().optional(),
-    discount: z.coerce.number().min(0, "Chiết khấu không thể âm.").optional(),
-    shippingFee: z.coerce.number().min(0, "Phí vận chuyển không thể âm.").optional(),
-  }).optional(),
-});
+import { settingsSchema } from '@/lib/form-schemas';
 
 type SettingsFormValues = z.infer<typeof settingsSchema>;
 

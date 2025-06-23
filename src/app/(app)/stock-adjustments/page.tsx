@@ -49,17 +49,10 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { ChevronsUpDown } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
+import { stockAdjustmentSchema } from '@/lib/form-schemas';
 
 type StockAdjustment = typeof mockStockAdjustments[0];
-
-const adjustmentSchema = z.object({
-    productId: z.string().min(1, { message: "Vui lòng chọn một sản phẩm."}),
-    adjustmentType: z.enum(['increase', 'decrease'], { required_error: 'Vui lòng chọn loại điều chỉnh.' }),
-    quantityChange: z.coerce.number().int().positive({ message: "Số lượng phải là số nguyên dương."}),
-    reason: z.string().min(1, { message: "Lý do không được để trống." }),
-});
-
-type AdjustmentFormValues = z.infer<typeof adjustmentSchema>;
+type AdjustmentFormValues = z.infer<typeof stockAdjustmentSchema>;
 
 export default function StockAdjustmentsPage() {
   const [adjustments, setAdjustments] = useState<StockAdjustment[]>(mockStockAdjustments);
@@ -68,7 +61,7 @@ export default function StockAdjustmentsPage() {
   const { toast } = useToast();
   
   const form = useForm<AdjustmentFormValues>({
-    resolver: zodResolver(adjustmentSchema),
+    resolver: zodResolver(stockAdjustmentSchema),
     defaultValues: {
       productId: '',
       adjustmentType: 'decrease',

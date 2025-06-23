@@ -86,28 +86,9 @@ import { Badge } from '@/components/ui/badge';
 import { mockProducts, mockCategories, mockSuppliers } from '@/lib/data';
 import { useToast } from '@/hooks/use-toast';
 import { slugify } from '@/lib/utils';
+import { productSchema } from '@/lib/form-schemas';
 
 type Product = (typeof mockProducts)[0];
-
-const productSchema = z.object({
-  name: z.string().min(1, { message: 'Tên sản phẩm không được để trống.' }),
-  productCode: z.string().min(1, { message: 'Mã sản phẩm không được để trống.' }),
-  description: z.string().optional(),
-  categoryId: z.string().min(1, { message: 'Vui lòng chọn thể loại.' }),
-  supplierId: z.string().min(1, { message: 'Vui lòng chọn nhà cung cấp.' }),
-  brand: z.string().min(1, { message: 'Thương hiệu không được để trống.' }),
-  unit: z.string().min(1, { message: 'Đơn vị không được để trống.' }),
-  importPrice: z.coerce.number().positive({ message: 'Giá nhập phải là một số dương.' }),
-  price: z.coerce.number().positive({ message: 'Giá lẻ phải là một số dương.' }),
-  wholesalePrice: z.coerce.number().positive({ message: 'Giá sỉ phải là số dương.' }).optional(),
-  creditPrice: z.coerce.number().positive({ message: 'Giá bán nợ phải là số dương.' }).optional(),
-  stock: z.coerce.number().int().min(0, { message: 'Tồn kho phải là số nguyên không âm.' }),
-  minStockLevel: z.coerce.number().int().min(0, { message: 'Ngưỡng tồn kho phải là số nguyên không âm.' }),
-  warrantyInfo: z.string().optional(),
-  isActive: z.boolean().default(true),
-  images: z.string().optional(),
-});
-
 type ProductFormValues = z.infer<typeof productSchema>;
 
 export default function ProductsPage() {

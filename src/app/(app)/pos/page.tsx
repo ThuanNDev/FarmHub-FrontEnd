@@ -39,6 +39,7 @@ import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { useStore } from '@/contexts/StoreContext';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { customerSchema } from '@/lib/form-schemas';
 
 type Product = typeof mockProducts[0];
 type PriceTier = 'retail' | 'wholesale' | 'credit';
@@ -47,19 +48,6 @@ type CartItem = Product & {
   appliedPrice: number;
 };
 type Customer = typeof mockCustomers[0];
-
-const customerSchema = z.object({
-  name: z.string().min(1, "Tên không được để trống."),
-  phone: z.string().min(1, "Số điện thoại không được để trống."),
-  email: z.string().email("Email không hợp lệ.").optional().or(z.literal('')),
-  address: z.string().optional(),
-  taxCode: z.string().optional(),
-  customerType: z.enum(['Retail', 'Wholesale']),
-  note: z.string().optional(),
-  creditLimit: z.coerce.number().min(0).optional(),
-  status: z.enum(['Active', 'Inactive', 'Blocked']),
-});
-
 type CustomerFormValues = z.infer<typeof customerSchema>;
 
 const formatCurrency = (amount: number) => {

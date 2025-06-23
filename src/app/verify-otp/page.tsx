@@ -27,10 +27,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { mockUsers, mockStores } from '@/lib/data';
-
-const otpSchema = z.object({
-  otp: z.string().min(6, { message: 'Mã OTP phải có 6 chữ số.' }).max(6, { message: 'Mã OTP phải có 6 chữ số.' }),
-});
+import { otpSchema } from '@/lib/form-schemas';
 
 type OtpFormValues = z.infer<typeof otpSchema>;
 

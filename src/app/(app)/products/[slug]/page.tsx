@@ -58,28 +58,9 @@ import {
 import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
 import { slugify } from '@/lib/utils';
+import { productSchema } from '@/lib/form-schemas';
 
 type Product = (typeof mockProducts)[0];
-
-const productSchema = z.object({
-  name: z.string().min(1, { message: 'Tên sản phẩm không được để trống.' }),
-  product_code: z.string().min(1, { message: 'Mã sản phẩm không được để trống.' }),
-  description: z.string().optional(),
-  category_id: z.string().min(1, { message: 'Vui lòng chọn thể loại.' }),
-  supplier_id: z.string().min(1, { message: 'Vui lòng chọn nhà cung cấp.' }),
-  brand: z.string().min(1, { message: 'Thương hiệu không được để trống.' }),
-  unit: z.string().min(1, { message: 'Đơn vị không được để trống.' }),
-  import_price: z.coerce.number().positive({ message: 'Giá nhập phải là một số dương.' }),
-  price: z.coerce.number().positive({ message: 'Giá lẻ phải là một số dương.' }),
-  wholesale_price: z.coerce.number().positive({ message: 'Giá sỉ phải là số dương.' }).optional(),
-  credit_price: z.coerce.number().positive({ message: 'Giá bán nợ phải là số dương.' }).optional(),
-  stock: z.coerce.number().int().min(0, { message: 'Tồn kho phải là số nguyên không âm.' }),
-  min_stock_level: z.coerce.number().int().min(0, { message: 'Ngưỡng tồn kho phải là số nguyên không âm.' }),
-  warranty_info: z.string().optional(),
-  is_active: z.boolean().default(true),
-  images: z.string().optional(),
-});
-
 type ProductFormValues = z.infer<typeof productSchema>;
 
 
@@ -88,7 +69,7 @@ export default function ProductDetailPage() {
   const router = useRouter();
   const { toast } = useToast();
   
-  const initialProduct = mockProducts.find((p) => p.slug === params.slug && !p.is_deleted);
+  const initialProduct = mockProducts.find((p) => p.slug === params.slug && !p.isDeleted);
   
   const [product, setProduct] = useState<Product | undefined>(initialProduct);
   const [selectedImage, setSelectedImage] = useState<string | undefined>(undefined);
@@ -121,20 +102,20 @@ export default function ProductDetailPage() {
         }
         form.reset({
           name: product.name,
-          product_code: product.product_code,
+          productCode: product.productCode,
           description: product.description,
-          category_id: product.category_id,
-          supplier_id: product.supplier_id,
+          categoryId: product.categoryId,
+          supplierId: product.supplierId,
           brand: product.brand,
           unit: product.unit,
-          import_price: product.import_price,
+          importPrice: product.importPrice,
           price: product.price,
-          wholesale_price: product.wholesale_price || undefined,
-          credit_price: product.credit_price || undefined,
+          wholesalePrice: product.wholesalePrice || undefined,
+          creditPrice: product.creditPrice || undefined,
           stock: product.stock,
-          min_stock_level: product.min_stock_level,
-          warranty_info: product.warranty_info,
-          is_active: product.is_active,
+          minStockLevel: product.minStockLevel,
+          warrantyInfo: product.warrantyInfo,
+          isActive: product.isActive,
           images: imageString,
         });
     }
@@ -147,8 +128,8 @@ export default function ProductDetailPage() {
   const images = JSON.parse(product.images) as string[];
   const specs = JSON.parse(product.specs) as Record<string, string>;
   
-  const category = mockCategories.find(c => c.id === product.category_id);
-  const supplier = mockSuppliers.find(s => s.id === product.supplier_id);
+  const category = mockCategories.find(c => c.categoryId === product.categoryId);
+  const supplier = mockSuppliers.find(s => s.supplierId === product.supplierId);
   
   const formatCurrency = (amount: number) => {
     if (amount === null || amount === undefined) return 'N/A';
@@ -167,9 +148,9 @@ export default function ProductDetailPage() {
   };
 
   const handleDeleteConfirm = () => {
-    const productIndex = mockProducts.findIndex(p => p.id === product.id);
+    const productIndex = mockProducts.findIndex(p => p.productId === product.productId);
     if (productIndex > -1) {
-      mockProducts[productIndex].is_deleted = true;
+      mockProducts[productIndex].isDeleted = true;
     }
     toast({ title: 'Thành công', description: 'Sản phẩm đã được xóa.' });
     router.push('/products');
@@ -190,14 +171,14 @@ export default function ProductDetailPage() {
         ...values,
         images: imagesAsJsonString,
         slug: newSlug,
-        wholesale_price: values.wholesale_price || values.price,
-        credit_price: values.credit_price || values.price,
+        wholesalePrice: values.wholesalePrice || values.price,
+        creditPrice: values.creditPrice || values.price,
         description: values.description || '',
-        warranty_info: values.warranty_info || 'Không có',
-        updated_at: now,
+        warrantyInfo: values.warrantyInfo || 'Không có',
+        updatedAt: now,
     };
 
-    const productIndex = mockProducts.findIndex(p => p.id === product.id);
+    const productIndex = mockProducts.findIndex(p => p.productId === product.productId);
     if (productIndex !== -1) {
         mockProducts[productIndex] = updatedProductData;
     }
@@ -215,8 +196,8 @@ export default function ProductDetailPage() {
     return null; 
   }
   
-  const activeCategories = mockCategories.filter(c => c.is_active && !c.is_deleted);
-  const activeSuppliers = mockSuppliers.filter(s => !s.is_deleted);
+  const activeCategories = mockCategories.filter(c => c.isActive && !c.isDeleted);
+  const activeSuppliers = mockSuppliers.filter(s => !s.isDeleted);
 
   return (
     <>
@@ -295,13 +276,13 @@ export default function ProductDetailPage() {
                         <div>
                             <div className="flex items-center gap-2">
                                 <Badge variant="outline">{product.brand}</Badge>
-                                {product.is_active ?
+                                {product.isActive ?
                                     <Badge variant="default">Đang kinh doanh</Badge>
                                     : <Badge variant="destructive">Ngừng kinh doanh</Badge>
                                 }
                             </div>
                             <h1 className="text-3xl font-bold font-headline mt-2">{product.name}</h1>
-                            <p className="text-muted-foreground mt-1">SKU: {product.product_code}</p>
+                            <p className="text-muted-foreground mt-1">SKU: {product.productCode}</p>
                         </div>
 
                         <Separator />
@@ -313,13 +294,13 @@ export default function ProductDetailPage() {
                                 <div className="font-bold text-lg text-primary">{formatCurrency(product.price)}</div>
                                 
                                 <div className="font-medium text-muted-foreground">Giá bán sỉ</div>
-                                <div>{formatCurrency(product.wholesale_price)}</div>
+                                <div>{formatCurrency(product.wholesalePrice)}</div>
 
                                 <div className="font-medium text-muted-foreground">Giá bán nợ</div>
-                                <div>{formatCurrency(product.credit_price)}</div>
+                                <div>{formatCurrency(product.creditPrice)}</div>
 
                                 <div className="font-medium text-muted-foreground">Giá nhập</div>
-                                <div>{formatCurrency(product.import_price)}</div>
+                                <div>{formatCurrency(product.importPrice)}</div>
                             </div>
                         </div>
 
@@ -341,7 +322,7 @@ export default function ProductDetailPage() {
                                 </div>
 
                                 <div className="font-medium text-muted-foreground">Ngưỡng tồn kho tối thiểu</div>
-                                <div>{product.min_stock_level} {product.unit}</div>
+                                <div>{product.minStockLevel} {product.unit}</div>
                             </div>
                         </div>
                     </div>
@@ -370,7 +351,7 @@ export default function ProductDetailPage() {
                                 <div>{product.unit}</div>
                                 
                                 <div className="font-medium text-muted-foreground flex items-center gap-2"><Calendar className="w-4 h-4"/> Ngày tạo</div>
-                                <div>{isClient ? formatDate(product.created_at) : <>&nbsp;</>}</div>
+                                <div>{isClient ? formatDate(product.createdAt) : <>&nbsp;</>}</div>
                             </div>
                         </div>
 
@@ -392,7 +373,7 @@ export default function ProductDetailPage() {
 
                         <div className="grid gap-2">
                              <h3 className="font-semibold text-xl">Thông tin bảo hành</h3>
-                             <p className="text-sm text-muted-foreground">{product.warranty_info}</p>
+                             <p className="text-sm text-muted-foreground">{product.warrantyInfo}</p>
                         </div>
                     </div>
                 </div>
@@ -425,7 +406,7 @@ export default function ProductDetailPage() {
                 />
                  <FormField
                   control={form.control}
-                  name="product_code"
+                  name="productCode"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Mã sản phẩm (SKU)</FormLabel>
@@ -451,7 +432,7 @@ export default function ProductDetailPage() {
                 />
                 <FormField
                     control={form.control}
-                    name="category_id"
+                    name="categoryId"
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Thể loại</FormLabel>
@@ -463,7 +444,7 @@ export default function ProductDetailPage() {
                           </FormControl>
                           <SelectContent>
                             {activeCategories.map((category) => (
-                              <SelectItem key={category.id} value={category.id}>
+                              <SelectItem key={category.categoryId} value={category.categoryId}>
                                 {category.name}
                               </SelectItem>
                             ))}
@@ -475,7 +456,7 @@ export default function ProductDetailPage() {
                   />
                   <FormField
                     control={form.control}
-                    name="supplier_id"
+                    name="supplierId"
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Nhà cung cấp</FormLabel>
@@ -487,7 +468,7 @@ export default function ProductDetailPage() {
                           </FormControl>
                           <SelectContent>
                             {activeSuppliers.map((supplier) => (
-                              <SelectItem key={supplier.id} value={supplier.id}>
+                              <SelectItem key={supplier.supplierId} value={supplier.supplierId}>
                                 {supplier.name}
                               </SelectItem>
                             ))}
@@ -531,7 +512,7 @@ export default function ProductDetailPage() {
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
                         <FormField
                             control={form.control}
-                            name="import_price"
+                            name="importPrice"
                             render={({ field }) => (
                             <FormItem>
                                 <FormLabel>Giá nhập</FormLabel>
@@ -557,7 +538,7 @@ export default function ProductDetailPage() {
                         />
                         <FormField
                             control={form.control}
-                            name="wholesale_price"
+                            name="wholesalePrice"
                             render={({ field }) => (
                             <FormItem>
                                 <FormLabel>Giá sỉ</FormLabel>
@@ -570,7 +551,7 @@ export default function ProductDetailPage() {
                         />
                         <FormField
                             control={form.control}
-                            name="credit_price"
+                            name="creditPrice"
                             render={({ field }) => (
                             <FormItem>
                                 <FormLabel>Giá bán nợ</FormLabel>
@@ -612,7 +593,7 @@ export default function ProductDetailPage() {
                 />
                 <FormField
                     control={form.control}
-                    name="min_stock_level"
+                    name="minStockLevel"
                     render={({ field }) => (
                     <FormItem>
                         <FormLabel>Tồn kho tối thiểu</FormLabel>
@@ -625,7 +606,7 @@ export default function ProductDetailPage() {
                 />
                <FormField
                   control={form.control}
-                  name="warranty_info"
+                  name="warrantyInfo"
                   render={({ field }) => {
                     const warrantyMonths = field.value?.match(/\d+/)?.[0] || '0';
                     return (
@@ -662,7 +643,7 @@ export default function ProductDetailPage() {
                 />
                 <FormField
                   control={form.control}
-                  name="is_active"
+                  name="isActive"
                   render={({ field }) => (
                     <FormItem className="md:col-span-3 flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
                        <div className="space-y-0.5">
