@@ -4,7 +4,7 @@ import type { Store, User, Category, Supplier, Product, Customer, Order, OrderIt
 // All IDs are kept simple for mocking purposes. In a real DB, these would be UUIDs or CUIDs.
 // Timestamps are in ISO 8601 format.
 
-const now = new Date();
+const now = new Date('2024-07-30T10:00:00Z');
 const daysAgo = (days: number) => new Date(now.getTime() - days * 24 * 60 * 60 * 1000).toISOString();
 const hoursAgo = (hours: number) => new Date(now.getTime() - hours * 60 * 60 * 1000).toISOString();
 const daysFromNow = (days: number) => new Date(now.getTime() + days * 24 * 60 * 60 * 1000).toISOString();
@@ -906,7 +906,7 @@ export const mockInstallmentTerms: InstallmentTerm[] = [
 
 export const mockChartData = (() => {
     const data = [];
-    const today = new Date();
+    const today = new Date('2024-07-30T10:00:00Z');
     for (let i = 11; i >= 0; i--) {
         const d = new Date(today.getFullYear(), today.getMonth() - i, 1);
         const monthName = d.toLocaleString('vi-VN', { month: 'short' });
@@ -1135,7 +1135,7 @@ export const mockNotifications: Notification[] = [];
 const staticGeneration = () => {
     if (mockNotifications.length > 0) return; // Only generate once
 
-    const baseDate = new Date();
+    const baseDate = new Date('2024-07-30T10:00:00Z');
 
     // Inventory warnings
     const lowStockProducts = mockProducts.filter(p => p.stock > 0 && p.stock <= p.minStockLevel);
@@ -1214,4 +1214,5 @@ export const mockVouchers: Voucher[] = [
   { voucherId: 'v-004', name: 'Miễn phí vận chuyển', description: 'Hỗ trợ tối đa 50.000đ phí ship.', pointsCost: 4000, value: 50000, type: 'shipping' },
   { voucherId: 'v-005', name: 'Giảm giá 500.000đ', description: 'Cho đơn hàng từ 5.000.000đ.', pointsCost: 48000, value: 500000, type: 'fixed' }
 ];
+
 
