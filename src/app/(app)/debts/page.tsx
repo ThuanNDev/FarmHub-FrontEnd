@@ -3,7 +3,11 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { MoreHorizontal, Search } from 'lucide-react';
+import { Calendar as CalendarIcon, MoreHorizontal, Printer, Search } from 'lucide-react';
+import { DateRange } from 'react-day-picker';
+import { addDays, format } from 'date-fns';
+import { vi } from 'date-fns/locale';
+
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -29,10 +33,14 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Input } from '@/components/ui/input';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
 import { mockCustomers } from '@/lib/data';
 import { useToast } from '@/hooks/use-toast';
 import { RecordPaymentDialog, type PaymentFormValues } from '@/components/RecordPaymentDialog';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { cn } from '@/lib/utils';
+import { useStore } from '@/contexts/StoreContext';
 
 type Debtor = (typeof mockCustomers)[0];
 type DebtStatus = { textKey: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' };
@@ -43,6 +51,12 @@ export default function DebtsPage() {
   const router = useRouter();
   const { toast } = useToast();
   const { t } = useLanguage();
+  const { store } = useStore();
+
+  const [date, setDate] = useState<DateRange | undefined>({
+    from: addDays(new Date(), -30),
+    to: new Date(),
+  });
 
   const [isPaymentDialogOpen, setPaymentDialogOpen] = useState(false);
   const [selectedDebtor, setSelectedDebtor] = useState<Debtor | null>(null);
@@ -85,21 +99,39 @@ export default function DebtsPage() {
   }, [debtors]);
 
   const filteredDebtors = useMemo(() => {
-    if (!searchTerm) return debtors;
-    return debtors.filter(debtor =>
-      debtor.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      debtor.phone.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-  }, [searchTerm, debtors]);
+    let results = debtors;
+
+    if (date?.from && date?.to) {
+        const from = new Date(date.from);
+        from.setHours(0, 0, 0, 0);
+        const to = new Date(date.to);
+        to.setHours(23, 59, 59, 999);
+
+        results = results.filter(debtor => {
+            if (!debtor.debtDueDate) return false;
+            const dueDate = new Date(debtor.debtDueDate);
+            return dueDate >= from && dueDate <= to;
+        });
+    }
+
+    if (searchTerm) {
+        results = results.filter(debtor =>
+            debtor.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            debtor.phone.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+    }
+    
+    return results;
+  }, [searchTerm, debtors, date]);
 
   const formatCurrency = (amount: number | null) => {
     if (amount === null || amount === undefined) return '-';
     return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
   };
 
-  const formatDate = (dateString: string | null) => {
+  const formatDateOnly = (dateString: string | null) => {
     if (!dateString) return '-';
-    return new Date(dateString).toLocaleDateString('vi-VN');
+    return format(new Date(dateString), 'dd/MM/yyyy');
   };
 
   const handleOpenPaymentDialog = (debtor: Debtor) => {
@@ -127,6 +159,123 @@ export default function DebtsPage() {
     setSelectedDebtor(null);
   };
 
+  const handlePrint = () => {
+    if (filteredDebtors.length === 0) {
+      toast({
+        variant: 'destructive',
+        title: 'Không có dữ liệu',
+        description: 'Không có công nợ nào trong khoảng thời gian đã chọn để in.',
+      });
+      return;
+    }
+
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) {
+      toast({
+        variant: 'destructive',
+        title: 'Lỗi',
+        description: 'Không thể mở cửa sổ in. Vui lòng cho phép pop-up.',
+      });
+      return;
+    }
+
+    const totalDebt = filteredDebtors.reduce((sum, debtor) => sum + debtor.totalDebt, 0);
+
+    const itemsHtml = filteredDebtors.map((debtor, index) => `
+      <tr>
+        <td style="text-align: center;">${index + 1}</td>
+        <td>${debtor.name}</td>
+        <td>${debtor.phone}</td>
+        <td style="text-align: right;">${formatCurrency(debtor.totalDebt)}</td>
+        <td style="text-align: center;">${formatDateOnly(debtor.debtDueDate)}</td>
+      </tr>
+    `).join('');
+
+    const printHtml = `
+      <html>
+        <head>
+          <title>Báo cáo công nợ</title>
+          <style>
+            @media print {
+              body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            }
+            body { font-family: Arial, sans-serif; font-size: 14px; line-height: 1.6; color: #000; }
+            .container { width: 95%; margin: 0 auto; }
+            .header { text-align: center; margin-bottom: 20px; }
+            .header h1 { margin: 0; font-size: 24px; }
+            .store-info { text-align: left; margin-bottom: 20px; }
+            .report-info { text-align: center; margin-bottom: 20px; }
+            table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+            th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+            th { background-color: #f2f2f2 !important; }
+            .total-section { text-align: right; margin-top: 20px; font-size: 16px; font-weight: bold; }
+            .footer { display: flex; justify-content: space-around; text-align: center; margin-top: 50px; }
+            .footer div { width: 30%; }
+            .footer p { margin-top: 60px; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="store-info">
+                <h3>${store.name}</h3>
+                <p>Địa chỉ: ${store.address}</p>
+                <p>SĐT: ${store.phone}</p>
+            </div>
+            <div class="header">
+              <h1>BÁO CÁO CÔNG NỢ PHẢI THU</h1>
+            </div>
+            <div class="report-info">
+              <p>Từ ngày: ${date?.from ? format(date.from, 'dd/MM/yyyy') : '...'} - Đến ngày: ${date?.to ? format(date.to, 'dd/MM/yyyy') : '...'}</p>
+            </div>
+
+            <table>
+              <thead>
+                <tr>
+                  <th style="text-align: center;">STT</th>
+                  <th>Khách hàng</th>
+                  <th>Số điện thoại</th>
+                  <th style="text-align: right;">Số tiền nợ</th>
+                  <th style="text-align: center;">Ngày đến hạn</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${itemsHtml}
+              </tbody>
+            </table>
+
+            <div class="total-section">
+                <span>Tổng cộng: ${formatCurrency(totalDebt)}</span>
+            </div>
+            
+            <div class="footer">
+                <div>
+                    <h4>Người lập báo cáo</h4>
+                    <p>(Ký, họ tên)</p>
+                </div>
+                 <div>
+                    <h4>Kế toán</h4>
+                    <p>(Ký, họ tên)</p>
+                </div>
+                 <div>
+                    <h4>Giám đốc</h4>
+                    <p>(Ký, họ tên)</p>
+                </div>
+            </div>
+          </div>
+        </body>
+      </html>
+    `;
+
+    printWindow.document.write(printHtml);
+    printWindow.document.close();
+    printWindow.focus();
+    setTimeout(() => {
+      printWindow.print();
+      printWindow.close();
+    }, 250);
+  };
+
+
   return (
     <>
       <Card>
@@ -138,15 +287,58 @@ export default function DebtsPage() {
                 Theo dõi và quản lý các khoản công nợ của khách hàng.
               </CardDescription>
             </div>
-             <div className="relative">
-                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                <Input
-                    type="search"
-                    placeholder="Tìm theo tên, SĐT..."
-                    className="pl-8"
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                />
+             <div className="flex items-center gap-2">
+                <Popover>
+                    <PopoverTrigger asChild>
+                        <Button
+                            id="date"
+                            variant={"outline"}
+                            className={cn(
+                                "w-[260px] justify-start text-left font-normal",
+                                !date && "text-muted-foreground"
+                            )}
+                        >
+                            <CalendarIcon className="mr-2 h-4 w-4" />
+                            {date?.from ? (
+                                date.to ? (
+                                    <>
+                                        {format(date.from, "dd/MM/yyyy")} - {format(date.to, "dd/MM/yyyy")}
+                                    </>
+                                ) : (
+                                    format(date.from, "dd/MM/yyyy")
+                                )
+                            ) : (
+                                <span>Chọn ngày đến hạn</span>
+                            )}
+                        </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="end">
+                        <Calendar
+                            initialFocus
+                            mode="range"
+                            defaultMonth={date?.from}
+                            selected={date}
+                            onSelect={setDate}
+                            numberOfMonths={2}
+                            locale={vi}
+                        />
+                    </PopoverContent>
+                </Popover>
+
+                <div className="relative">
+                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                    <Input
+                        type="search"
+                        placeholder="Tìm theo tên, SĐT..."
+                        className="pl-8"
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                    />
+                </div>
+                <Button size="sm" variant="outline" className="h-10 gap-1" onClick={handlePrint}>
+                    <Printer className="h-3.5 w-3.5" />
+                    <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">In danh sách</span>
+                </Button>
             </div>
           </div>
         </CardHeader>
@@ -173,7 +365,7 @@ export default function DebtsPage() {
                       <TableCell className="font-medium">{debtor.name}</TableCell>
                       <TableCell>{debtor.phone}</TableCell>
                       <TableCell className="text-right">{formatCurrency(debtor.totalDebt)}</TableCell>
-                      <TableCell className="hidden sm:table-cell">{formatDate(debtor.debtDueDate)}</TableCell>
+                      <TableCell className="hidden sm:table-cell">{formatDateOnly(debtor.debtDueDate)}</TableCell>
                       <TableCell>
                         <Badge variant={status.variant}>{t(status.textKey)}</Badge>
                       </TableCell>
