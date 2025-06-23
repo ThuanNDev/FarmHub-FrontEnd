@@ -93,10 +93,15 @@ export default function ProductDetailPage() {
   const [selectedImage, setSelectedImage] = useState<string | undefined>(undefined);
   const [isEditDialogOpen, setEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [isClient, setIsClient] = useState(false);
   
   const form = useForm<ProductFormValues>({
     resolver: zodResolver(productSchema),
   });
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   useEffect(() => {
     if (product) {
@@ -364,7 +369,7 @@ export default function ProductDetailPage() {
                                 <div>{product.unit}</div>
                                 
                                 <div className="font-medium text-muted-foreground flex items-center gap-2"><Calendar className="w-4 h-4"/> Ngày tạo</div>
-                                <div>{formatDate(product.created_at)}</div>
+                                <div>{isClient ? formatDate(product.created_at) : <>&nbsp;</>}</div>
                             </div>
                         </div>
 
