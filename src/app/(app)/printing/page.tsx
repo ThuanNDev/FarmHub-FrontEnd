@@ -28,7 +28,7 @@ export default function PrintingPage() {
   const { toast } = useToast();
   const printRef = useRef<HTMLDivElement>(null);
   const { store } = useStore();
-  const paperSize = store.printingPreferences?.defaultPaperSize || 'k80';
+  const paperSize = store.defaultPaperSize || 'k80';
 
   // Invoice State
   const [orderCode, setOrderCode] = useState('');
@@ -297,7 +297,7 @@ const InvoicePreview = ({ order, paperSize }: { order: Order | null, paperSize: 
                 <header className="flex justify-between items-start pb-4 border-b">
                     <div className="text-left">
                         <h1 className="font-bold text-2xl">{storeInfo.name}</h1>
-                        <p className="text-xs">{storeInfo.address}</p>
+                        <p className="text-xs">${storeInfo.address}</p>
                         <p className="text-xs">SĐT: ${storeInfo.phone}</p>
                     </div>
                     <div className="text-right">

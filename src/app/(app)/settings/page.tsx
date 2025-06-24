@@ -50,26 +50,34 @@ export default function SettingsPage() {
     resolver: zodResolver(settingsSchema),
     defaultValues: {
       ...store,
-      bankInfo: store.bankInfo || { bankId: '', accountNo: '', accountName: ''},
+      bankId: store.bankId || '',
+      accountNo: store.accountNo || '',
+      accountName: store.accountName || '',
       isVatEnabled: store.isVatEnabled ?? true,
       vatRate: store.vatRate || 0,
       invoiceFooter: store.invoiceFooter || '',
       backupSchedule: store.backupSchedule || 'daily_2am',
-      printingPreferences: store.printingPreferences || { defaultPaperSize: 'k80' },
-      defaults: store.defaults || { unit: 'cái', discount: 0, shippingFee: 0 },
+      defaultPaperSize: store.defaultPaperSize || 'k80',
+      defaultUnit: store.defaultUnit || 'cái',
+      defaultDiscount: store.defaultDiscount || 0,
+      defaultShippingFee: store.defaultShippingFee || 0,
     },
   });
 
   useEffect(() => {
     form.reset({
         ...store,
-        bankInfo: store.bankInfo || { bankId: '', accountNo: '', accountName: ''},
+        bankId: store.bankId || '',
+        accountNo: store.accountNo || '',
+        accountName: store.accountName || '',
         isVatEnabled: store.isVatEnabled ?? true,
         vatRate: store.vatRate || 0,
         invoiceFooter: store.invoiceFooter || '',
         backupSchedule: store.backupSchedule || 'daily_2am',
-        printingPreferences: store.printingPreferences || { defaultPaperSize: 'k80' },
-        defaults: store.defaults || { unit: 'cái', discount: 0, shippingFee: 0 },
+        defaultPaperSize: store.defaultPaperSize || 'k80',
+        defaultUnit: store.defaultUnit || 'cái',
+        defaultDiscount: store.defaultDiscount || 0,
+        defaultShippingFee: store.defaultShippingFee || 0,
     });
   }, [store, form]);
 
@@ -238,7 +246,7 @@ export default function SettingsPage() {
 
             <FormField
                 control={form.control}
-                name="printingPreferences.defaultPaperSize"
+                name="defaultPaperSize"
                 render={({ field }) => (
                     <FormItem>
                     <FormLabel>Khổ giấy mặc định</FormLabel>
@@ -274,7 +282,7 @@ export default function SettingsPage() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <FormField
                     control={form.control}
-                    name="defaults.unit"
+                    name="defaultUnit"
                     render={({ field }) => (
                         <FormItem>
                         <FormLabel>Đơn vị mặc định</FormLabel>
@@ -287,7 +295,7 @@ export default function SettingsPage() {
                 />
                 <FormField
                     control={form.control}
-                    name="defaults.discount"
+                    name="defaultDiscount"
                     render={({ field }) => (
                         <FormItem>
                         <FormLabel>Chiết khấu mặc định (VND)</FormLabel>
@@ -300,7 +308,7 @@ export default function SettingsPage() {
                 />
                 <FormField
                     control={form.control}
-                    name="defaults.shippingFee"
+                    name="defaultShippingFee"
                     render={({ field }) => (
                         <FormItem>
                         <FormLabel>Phí vận chuyển mặc định (VND)</FormLabel>
@@ -325,7 +333,7 @@ export default function SettingsPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <FormField
                     control={form.control}
-                    name="bankInfo.bankId"
+                    name="bankId"
                     render={({ field }) => (
                         <FormItem>
                         <FormLabel>Ngân hàng</FormLabel>
@@ -349,7 +357,7 @@ export default function SettingsPage() {
                 />
                 <FormField
                     control={form.control}
-                    name="bankInfo.accountNo"
+                    name="accountNo"
                     render={({ field }) => (
                         <FormItem>
                         <FormLabel>Số tài khoản</FormLabel>
@@ -362,7 +370,7 @@ export default function SettingsPage() {
                 />
                  <FormField
                     control={form.control}
-                    name="bankInfo.accountName"
+                    name="accountName"
                     render={({ field }) => (
                         <FormItem className="md:col-span-2">
                         <FormLabel>Tên chủ tài khoản</FormLabel>

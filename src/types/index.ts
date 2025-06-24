@@ -1,32 +1,13 @@
 
-
-
-
 // All IDs are kept simple for mocking purposes. In a real DB, these would be UUIDs or CUIDs.
 // Timestamps are in ISO 8601 format.
-
-export type BankInfo = {
-  bankId: string;
-  accountNo: string;
-  accountName: string;
-};
-
-export type PrintingPreferences = {
-  defaultPaperSize: 'k80' | 'a5' | 'k58';
-};
-
-export type Defaults = {
-  unit: string;
-  discount: number;
-  shippingFee: number;
-};
 
 export type Store = {
   storeId: string;
   name: string;
   address: string;
   phone: string;
-  email: string;
+  email: string | null;
   databaseName: string;
   managerId: string | null;
   openingHours: string | null;
@@ -34,13 +15,17 @@ export type Store = {
   isDeleted: boolean;
   createdAt: string;
   updatedAt: string;
-  bankInfo: BankInfo | null;
+  bankId: string | null;
+  accountNo: string | null;
+  accountName: string | null;
   isVatEnabled: boolean;
   vatRate: number;
   invoiceFooter: string | null;
-  printingPreferences: PrintingPreferences | null;
+  defaultPaperSize: 'k80' | 'a5' | 'k58';
   backupSchedule: string | null;
-  defaults: Defaults | null;
+  defaultUnit: string;
+  defaultDiscount: number;
+  defaultShippingFee: number;
 };
 
 export enum UserRole {

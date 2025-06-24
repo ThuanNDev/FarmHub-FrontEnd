@@ -29,23 +29,17 @@ export const mockStores: Store[] = [
     isDeleted: false,
     createdAt: daysAgo(500),
     updatedAt: daysAgo(1),
-    bankInfo: {
-      bankId: 'SACOMBANK',
-      accountNo: '050109114755',
-      accountName: 'NGUYEN TRAN VAN THUAN'
-    },
+    bankId: 'SACOMBANK',
+    accountNo: '050109114755',
+    accountName: 'NGUYEN TRAN VAN THUAN',
     isVatEnabled: false,
     vatRate: 8,
     invoiceFooter: 'Cảm ơn quý khách và hẹn gặp lại!',
-    printingPreferences: {
-      defaultPaperSize: 'k80' as 'k80' | 'a5' | 'k58'
-    },
+    defaultPaperSize: 'k80',
     backupSchedule: 'daily_2am',
-    defaults: {
-        unit: 'cái',
-        discount: 0,
-        shippingFee: 0,
-    }
+    defaultUnit: 'cái',
+    defaultDiscount: 0,
+    defaultShippingFee: 0,
   }
 ];
 
@@ -1216,8 +1210,3 @@ export const mockVouchers: Voucher[] = [
   { voucherId: 'v-004', name: 'Miễn phí vận chuyển', description: 'Hỗ trợ tối đa 50.000đ phí ship.', pointsCost: 4000, value: 50000, type: 'shipping' },
   { voucherId: 'v-005', name: 'Giảm giá 500.000đ', description: 'Cho đơn hàng từ 5.000.000đ.', pointsCost: 48000, value: 500000, type: 'fixed' }
 ];
-
-
-
-
-
