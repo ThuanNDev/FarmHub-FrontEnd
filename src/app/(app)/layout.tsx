@@ -30,6 +30,7 @@ import {
   UserPlus,
   Presentation,
   Shield,
+  Loader2,
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { vi as viLocale } from 'date-fns/locale';
@@ -74,6 +75,7 @@ import { useToast } from '@/hooks/use-toast';
 import { mockUsers, mockNotifications as initialNotifications, type User } from '@/lib/data';
 import { useLanguage } from '@/store/LanguageContext';
 import { RelativeTime } from '@/components/RelativeTime';
+import { useUser } from '@/hooks/useUser';
 
 const navItems = [
   { href: '/', labelKey: 'nav.dashboard', icon: LayoutDashboard },
@@ -176,26 +178,21 @@ function QuickActionsMenu() {
 
 function LayoutContent({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const { store } = useStore();
   const router = useRouter();
+  const { store } = useStore();
   const { toast } = useToast();
   const { locale, setLocale, t } = useLanguage();
   
-  const [currentUser, setCurrentUser] = React.useState<User | null>(null);
+  const { user: currentUser, isLoading } = useUser();
   const [notifications, setNotifications] = React.useState(initialNotifications);
   const [notifActiveTab, setNotifActiveTab] = React.useState('all');
-  
+
   React.useEffect(() => {
-    const userId = localStorage.getItem('loggedInUserId');
-    if (userId) {
-      const user = mockUsers.find(u => u.userId === userId);
-      setCurrentUser(user || null);
-    } else {
-      // Fallback for when no user is logged in (e.g. dev), redirect to login
+    if (!isLoading && !currentUser) {
       router.push('/login');
     }
-  }, [router]);
-
+  }, [isLoading, currentUser, router]);
+  
   const appCreator = mockUsers.find(u => u.isSuperadmin);
   const unreadCount = React.useMemo(() => notifications.filter(n => !n.isRead).length, [notifications]);
   
@@ -251,13 +248,23 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
 
 
   const handleLogout = () => {
+    localStorage.removeItem('accessToken');
     localStorage.removeItem('loggedInUserId');
+    localStorage.removeItem('associatedStoreIds');
     toast({
       title: t('login.success'),
       description: "Bạn đã đăng xuất thành công.",
     });
     router.push('/login');
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex h-screen w-full items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
 
   if (pathname === '/pos' || !currentUser) {
     return <>{children}</>;

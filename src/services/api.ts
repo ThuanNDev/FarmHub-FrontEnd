@@ -14,7 +14,8 @@ import {
   mockUsers,
   mockCategories,
 } from '@/lib/data';
-import type { Product, Category, Customer, Order, Supplier, PurchaseOrder, ReturnOrder, StockAdjustment, User, Store } from '@/types';
+import type { Product, Category, Customer, Order, Supplier, PurchaseOrder, ReturnOrder, StockAdjustment, User, ApiUser } from '@/types';
+import { UserRole } from '@/types';
 import { slugify } from '@/lib/utils';
 import { apiClient } from '@/lib/api-client';
 import { API_URLS } from '@/lib/api-config';
@@ -22,6 +23,28 @@ import { API_URLS } from '@/lib/api-config';
 
 // --- SIMULATE API LATENCY ---
 const simulateDelay = (ms: number = 50) => new Promise(resolve => setTimeout(resolve, ms));
+
+// --- AUTH API ---
+export const getMe = async (): Promise<User> => {
+    const apiUser = await apiClient<ApiUser>(API_URLS.AUTH.ME);
+    
+    // Map ApiUser to User, similar to login page
+    const userToStore: User = {
+        ...apiUser,
+        username: apiUser.email.split('@')[0], 
+        phone: apiUser.phone || '',
+        role: apiUser.role as UserRole,
+        isActive: apiUser.isActive ?? true,
+        // Mocking some fields not present in API response for compatibility with existing app types
+        lastLoginAt: new Date().toISOString(), 
+        updatedAt: new Date().toISOString(),
+        createdAt: '', 
+        passwordHash: '', 
+        passwordResetToken: null,
+        tokenExpiryAt: null,
+      };
+    return userToStore;
+};
 
 // --- PRODUCTS API (Uses mock data) ---
 export const getProducts = async (): Promise<Product[]> => {
