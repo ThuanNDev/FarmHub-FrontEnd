@@ -18,9 +18,11 @@ export default function SelectStorePage() {
     try {
       const storedIdsString = localStorage.getItem('associatedStoreIds');
       if (storedIdsString) {
-        const storeIds: string[] = JSON.parse(storedIdsString);
-        const stores = mockStores.filter(store => storeIds.includes(store.storeId));
-        setUserStores(stores);
+        const storeIds: string[] | null = JSON.parse(storedIdsString);
+        if (Array.isArray(storeIds)) {
+          const stores = mockStores.filter(store => storeIds.includes(store.storeId));
+          setUserStores(stores);
+        }
       }
     } catch (error) {
       console.error("Failed to parse store IDs from localStorage", error);
