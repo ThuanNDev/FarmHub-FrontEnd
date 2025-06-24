@@ -162,7 +162,6 @@ export const storeSchema = z.object({
     address: z.string().min(1, "Địa chỉ không được để trống."),
     phone: z.string().min(1, "Số điện thoại không được để trống."),
     email: z.string().email("Email không hợp lệ.").optional().or(z.literal('')),
-    databaseName: z.string().min(1, "Tên cơ sở dữ liệu không được để trống.").regex(/^[a-z0-9_]+$/, "Chỉ chứa ký tự thường, số và dấu gạch dưới."),
     managerId: z.string().optional(),
     openingHours: z.string().optional(),
     isActive: z.boolean().default(true),

@@ -25,25 +25,25 @@ import { API_URLS } from '@/lib/api-config';
 const simulateDelay = (ms: number = 50) => new Promise(resolve => setTimeout(resolve, ms));
 
 // --- AUTH API ---
-export const getMe = async (): Promise<User> => {
-    const apiUser = await apiClient<ApiUser>(API_URLS.AUTH.ME);
-    
-    // Map ApiUser to User, similar to login page
-    const userToStore: User = {
-        ...apiUser,
-        username: apiUser.email.split('@')[0], 
-        phone: apiUser.phone || '',
-        role: apiUser.role as UserRole,
-        isActive: apiUser.isActive ?? true,
-        // Mocking some fields not present in API response for compatibility with existing app types
-        lastLoginAt: new Date().toISOString(), 
-        updatedAt: new Date().toISOString(),
-        createdAt: '', 
-        passwordHash: '', 
-        passwordResetToken: null,
-        tokenExpiryAt: null,
-      };
-    return userToStore;
+export const getUserIdFromToken = async (): Promise<string> => {
+  const res = await apiClient<{ userId: string }>(API_URLS.AUTH.ME);
+  return res.data.userId;
+};
+
+export const getUserDetail = async (userId: string): Promise<User> => {
+  const res = await apiClient<User>(`${API_URLS.USERS}/${userId}`);
+  return res.data;
+};
+
+export const getMe = async (): Promise<User | null> => {
+  try {
+    const userId = await getUserIdFromToken();
+    const userDetail = await getUserDetail(userId);
+    return userDetail;
+  } catch (error) {
+    console.error('❌ Error fetching user detail from auth/me:', error);
+    return null;
+  }
 };
 
 // --- PRODUCTS API (Uses mock data) ---

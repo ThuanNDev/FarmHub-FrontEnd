@@ -23,9 +23,10 @@ export const mockStores: Store[] = [
     phone: '02839998888',
     email: 'contact.hcm@nongcoxanh.vn',
     databaseName: 'nongcoxanh_main_db',
-    userId: 'user-001',
+    managerId: 'user-001',
     openingHours: 'Thứ 2 - Chủ Nhật: 7:00 - 18:00',
     isActive: true,
+    isDeleted: false,
     createdAt: daysAgo(500),
     updatedAt: daysAgo(1),
     bankInfo: {
@@ -1215,6 +1216,7 @@ export const mockVouchers: Voucher[] = [
   { voucherId: 'v-004', name: 'Miễn phí vận chuyển', description: 'Hỗ trợ tối đa 50.000đ phí ship.', pointsCost: 4000, value: 50000, type: 'shipping' },
   { voucherId: 'v-005', name: 'Giảm giá 500.000đ', description: 'Cho đơn hàng từ 5.000.000đ.', pointsCost: 48000, value: 500000, type: 'fixed' }
 ];
+
 
 
 
