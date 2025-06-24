@@ -108,7 +108,7 @@ export default function LoginPage() {
       
       // Redirect based on associated stores
       if (!apiUser.associatedStoreIds || apiUser.associatedStoreIds.length === 0) {
-        router.push('/stores/create');
+        router.push('/create-store');
       } else if (apiUser.associatedStoreIds.length === 1) {
         localStorage.setItem('selectedStoreId', apiUser.associatedStoreIds[0]);
         router.push('/');

@@ -58,7 +58,6 @@ export default function CreateStorePage() {
       address: '',
       phone: '',
       email: '',
-      databaseName: '',
       managerId: '',
       openingHours: 'Thứ 2 - Chủ Nhật: 7:00 - 18:00',
       isActive: true,
@@ -87,7 +86,6 @@ export default function CreateStorePage() {
           .replace(/^_|_$/g, "");
 
       const databaseName = `store_${slugify(values.name)}_${dateStr}`;
-      console.log(databaseName)
       const payload = {
         ...values,
         databaseName,
@@ -108,7 +106,7 @@ export default function CreateStorePage() {
   };
 
   return (
-    <Card >
+    <Card>
       <CardHeader>
         <CardTitle className="font-headline flex items-center gap-2">
             <Leaf /> {t('pages.create_store.title')}
@@ -124,20 +122,20 @@ export default function CreateStorePage() {
             <h3 className="text-lg font-medium font-headline">{t('pages.create_store.section_basic')}</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <FormField control={form.control} name="name" render={({ field }) => (
-                    <FormItem><FormLabel>{t('pages.create_store.form.name')}</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                    <FormItem><FormLabel>{t('pages.create_store.form.name')}</FormLabel><FormControl><Input placeholder="Ví dụ: Nông Cơ Xanh" {...field} /></FormControl><FormMessage /></FormItem>
                 )}/>
                 <FormField control={form.control} name="phone" render={({ field }) => (
-                    <FormItem><FormLabel>{t('pages.create_store.form.phone')}</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                    <FormItem><FormLabel>{t('pages.create_store.form.phone')}</FormLabel><FormControl><Input placeholder="0901234567" {...field} /></FormControl><FormMessage /></FormItem>
                 )}/>
             </div>
             <FormField control={form.control} name="address" render={({ field }) => (
-                <FormItem><FormLabel>{t('pages.create_store.form.address')}</FormLabel><FormControl><Textarea {...field} /></FormControl><FormMessage /></FormItem>
+                <FormItem><FormLabel>{t('pages.create_store.form.address')}</FormLabel><FormControl><Textarea placeholder="123 Đường Nông Sản, Huyện Cần Giờ, TP.HCM" {...field} /></FormControl><FormMessage /></FormItem>
             )}/>
             <FormField control={form.control} name="email" render={({ field }) => (
-                <FormItem><FormLabel>{t('pages.create_store.form.email')}</FormLabel><FormControl><Input type="email" {...field} /></FormControl><FormMessage /></FormItem>
+                <FormItem><FormLabel>{t('pages.create_store.form.email')}</FormLabel><FormControl><Input type="email" placeholder="contact@nongcoxanh.vn" {...field} /></FormControl><FormMessage /></FormItem>
             )}/>
             <FormField control={form.control} name="openingHours" render={({ field }) => (
-                <FormItem><FormLabel>{t('pages.create_store.form.opening_hours')}</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                <FormItem><FormLabel>{t('pages.create_store.form.opening_hours')}</FormLabel><FormControl><Input placeholder="Thứ 2 - Chủ Nhật: 7:00 - 18:00" {...field} /></FormControl><FormMessage /></FormItem>
             )}/>
 
             <Separator />
@@ -167,10 +165,10 @@ export default function CreateStorePage() {
                     </Select><FormMessage /></FormItem>
                 )}/>
                 <FormField control={form.control} name="bankInfo.accountNo" render={({ field }) => (
-                    <FormItem><FormLabel>{t('pages.create_store.form.account_no')}</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                    <FormItem><FormLabel>{t('pages.create_store.form.account_no')}</FormLabel><FormControl><Input placeholder="Nhập số tài khoản" {...field} /></FormControl><FormMessage /></FormItem>
                 )}/>
                 <FormField control={form.control} name="bankInfo.accountName" render={({ field }) => (
-                    <FormItem className="md:col-span-2"><FormLabel>{t('pages.create_store.form.account_name')}</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                    <FormItem className="md:col-span-2"><FormLabel>{t('pages.create_store.form.account_name')}</FormLabel><FormControl><Input placeholder="Tên chủ tài khoản (viết hoa không dấu)" {...field} /></FormControl><FormMessage /></FormItem>
                 )}/>
             </div>
             
@@ -184,10 +182,10 @@ export default function CreateStorePage() {
                 </FormItem>
               )}/>
             <FormField control={form.control} name="vatRate" render={({ field }) => (
-                <FormItem><FormLabel>{t('pages.create_store.form.vat_rate')}</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>
+                <FormItem><FormLabel>{t('pages.create_store.form.vat_rate')}</FormLabel><FormControl><Input type="number" placeholder="8" {...field} /></FormControl><FormMessage /></FormItem>
             )}/>
             <FormField control={form.control} name="invoiceFooter" render={({ field }) => (
-                <FormItem><FormLabel>{t('pages.create_store.form.invoice_footer')}</FormLabel><FormControl><Textarea {...field} /></FormControl><FormMessage /></FormItem>
+                <FormItem><FormLabel>{t('pages.create_store.form.invoice_footer')}</FormLabel><FormControl><Textarea placeholder="Cảm ơn quý khách và hẹn gặp lại!" {...field} /></FormControl><FormMessage /></FormItem>
             )}/>
 
              <Separator />
