@@ -104,6 +104,9 @@ export default function LoginPage() {
       // Set logged in user ID for other parts of the app that still use it
       localStorage.setItem('loggedInUserId', apiUser.userId);
 
+      if(apiUser.associatedStoreIds == null || apiUser.associatedStoreIds.length <= 0 ){
+        router.push('/stores/create');
+      }
       toast({
           title: t('login.success'),
           description: t('login.welcome_back', { name: apiUser.fullName }),
