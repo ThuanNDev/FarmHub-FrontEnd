@@ -17,7 +17,7 @@ const monthsFromNow = (months: number) => {
 
 export const mockStores: Store[] = [
   {
-    storeId: 'store-001',
+    storeId: '245d77ab-ff2c-46cf-8f31-59f989a26f8f',
     name: 'Nông Cơ Xanh',
     address: '123 Đường Nông Sản, Huyện Cần Giờ, TP.HCM',
     phone: '02839998888',

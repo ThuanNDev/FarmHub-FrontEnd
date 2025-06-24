@@ -85,7 +85,7 @@ export default function CreateStorePage() {
           .replace(/_+/g, "_")
           .replace(/^_|_$/g, "");
 
-      const databaseName = `store_${slugify(values.name)}_${dateStr}`;
+      const databaseName = `DBstore_${slugify(values.name)}_${dateStr}`;
       const payload = {
         ...values,
         databaseName,

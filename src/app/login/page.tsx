@@ -71,10 +71,13 @@ export default function LoginPage() {
       }
 
       const { access_token, user: apiUser } = data.data as { access_token: string; user: ApiUser };
-      
+      const storeIds = Array.isArray(apiUser.associatedStoreIds)
+      ? apiUser.associatedStoreIds
+      : [apiUser.associatedStoreIds]; // biến thành mảng nếu là string
+
       // Store tokens and user info
       localStorage.setItem('accessToken', access_token);
-      localStorage.setItem('associatedStoreIds', JSON.stringify(apiUser.associatedStoreIds));
+      localStorage.setItem('associatedStoreIds', JSON.stringify(storeIds));
       localStorage.setItem('loggedInUserId', apiUser.userId);
       
       // Update mock data in memory for the session

@@ -16,16 +16,18 @@ export default function SelectStorePage() {
 
   useEffect(() => {
     try {
-      const storedIdsString = localStorage.getItem('associatedStoreIds');
-      if (storedIdsString) {
-        const storeIds: string[] | null = JSON.parse(storedIdsString);
-        if (Array.isArray(storeIds)) {
-          const stores = mockStores.filter(store => storeIds.includes(store.storeId));
-          setUserStores(stores);
-        }
+      const storedIdsString = localStorage.getItem('associatedStoreIds'); // ✅ định nghĩa đúng biến
+      console.log("storedIdsString", storedIdsString)
+      const associatedStoreIds: string[] = storedIdsString ? JSON.parse(storedIdsString) : [];
+      console.log("storedIdsString", associatedStoreIds)
+      console.log("isArray", Array.isArray(associatedStoreIds))
+      if (Array.isArray(associatedStoreIds)) {
+        const stores = mockStores.filter(store => associatedStoreIds.includes(store.storeId));
+        console.log("storedIdsString", stores)
+        setUserStores(stores);
       }
     } catch (error) {
-      console.error("Failed to parse store IDs from localStorage", error);
+      console.error("❌ Failed to parse store IDs from localStorage", error);
     }
     setIsLoading(false);
   }, []);
