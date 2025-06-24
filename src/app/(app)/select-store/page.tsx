@@ -47,7 +47,7 @@ export default function SelectStorePage() {
             <div>
                 <h1 className="text-2xl font-bold">Không tìm thấy cửa hàng</h1>
                 <p className="text-muted-foreground">Tài khoản của bạn chưa được liên kết với cửa hàng nào.</p>
-                <Button onClick={() => router.push('/stores/create')} className="mt-4">
+                <Button onClick={() => router.push('/create-store')} className="mt-4">
                     Tạo cửa hàng mới
                 </Button>
             </div>

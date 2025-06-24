@@ -67,7 +67,7 @@ export default function SuperAdminPage() {
           <CardContent>
             <p className="text-sm text-muted-foreground">Thêm, xem, sửa, và quản lý tất cả các cửa hàng trên nền tảng.</p>
             <Button asChild variant="secondary" className="mt-4 w-full">
-              <Link href="/stores/create">Tạo cửa hàng mới</Link>
+              <Link href="/create-store">Tạo cửa hàng mới</Link>
             </Button>
           </CardContent>
         </Card>
