@@ -1,3 +1,4 @@
+
 {
   "nav": {
     "dashboard": "Dashboard",
@@ -240,6 +241,44 @@
         "success_reject": "Return order has been rejected.",
         "success_refund": "Refund has been confirmed.",
         "success_restock": "{{count}} products have been restocked."
+    },
+    "create_store": {
+        "title": "Create New Store",
+        "description": "Fill in the details to set up a new store in the system.",
+        "success_message": "New store has been created successfully.",
+        "error_message": "Failed to create new store. Please try again.",
+        "submit_button": "Create Store",
+        "section_basic": "Basic Information",
+        "section_technical": "Technical Information",
+        "section_payment": "Payment Information",
+        "section_invoice": "Invoice & VAT Settings",
+        "section_other": "Other Settings",
+        "form": {
+            "name": "Store Name",
+            "phone": "Phone Number",
+            "address": "Address",
+            "email": "Email",
+            "opening_hours": "Opening Hours",
+            "database_name": "Database Name",
+            "database_name_desc": "Unique identifier for the store's database.",
+            "manager": "Store Manager",
+            "manager_placeholder": "Select a manager",
+            "bank": "Bank",
+            "bank_placeholder": "Select a bank",
+            "account_no": "Account Number",
+            "account_name": "Account Holder Name",
+            "is_vat_enabled": "Enable VAT",
+            "is_vat_enabled_desc": "Enable/disable Value Added Tax (VAT) calculation on orders.",
+            "vat_rate": "VAT Rate (%)",
+            "invoice_footer": "Invoice Footer",
+            "paper_size": "Default Paper Size",
+            "paper_k80": "Thermal K80 (80mm)",
+            "paper_a5": "A5 Paper",
+            "paper_k58": "Thermal K58 (58mm)",
+            "backup_schedule": "Backup Schedule",
+            "backup_daily": "Daily (at 02:00 AM)",
+            "backup_12h": "Every 12 hours"
+        }
     }
   },
   "login": {

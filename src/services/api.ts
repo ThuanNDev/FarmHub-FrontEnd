@@ -1,4 +1,5 @@
 
+
 import {
   mockProducts,
   mockCustomers,
@@ -13,7 +14,7 @@ import {
   mockUsers,
   mockCategories,
 } from '@/lib/data';
-import type { Product, Category, Customer, Order, Supplier, PurchaseOrder, ReturnOrder, StockAdjustment, User } from '@/types';
+import type { Product, Category, Customer, Order, Supplier, PurchaseOrder, ReturnOrder, StockAdjustment, User, Store } from '@/types';
 import { slugify } from '@/lib/utils';
 import { apiClient } from '@/lib/api-client';
 import { API_URLS } from '@/lib/api-config';
@@ -126,4 +127,12 @@ export const getOrderById = async (id: string): Promise<Order | undefined> => {
 export const getSuppliers = async (): Promise<Supplier[]> => {
   await simulateDelay();
   return mockSuppliers.filter(s => !s.isDeleted);
+};
+
+// --- STORES API ---
+export const addStore = async (data: Partial<Store>): Promise<Store> => {
+  return apiClient<Store>(API_URLS.STORES, {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
 };

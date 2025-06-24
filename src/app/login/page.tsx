@@ -65,7 +65,7 @@ export default function LoginPage() {
       });
 
       const data = await response.json();
-
+      console.log(data);
       if (!response.ok || data.status !== 'success') {
         throw new Error(data.message || 'Đăng nhập thất bại. Vui lòng thử lại.');
       }
@@ -74,6 +74,7 @@ export default function LoginPage() {
       
       // Store token
       localStorage.setItem('accessToken', access_token);
+      localStorage.setItem('associatedStoreIds', JSON.stringify(apiUser.associatedStoreIds));
       
       // Update mock data in memory for the session
       const existingUserIndex = mockUsers.findIndex(u => u.userId === apiUser.userId);
@@ -107,7 +108,7 @@ export default function LoginPage() {
           title: t('login.success'),
           description: t('login.welcome_back', { name: apiUser.fullName }),
       });
-      router.push('/');
+      router.push('/dashboard');
 
     } catch (error) {
       toast({

@@ -8,7 +8,7 @@
  * the config exports a function that takes the storeId and returns the URL.
  */
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://farmhub-5huw.onrender.com/api';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://farmhub-5huw.onrender.com';
 
 const tenantUrl = (storeId: string, path: string) => `${API_BASE_URL}/tenant/${storeId}/${path}`;
 

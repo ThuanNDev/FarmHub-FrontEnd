@@ -1,3 +1,4 @@
+
 {
   "nav": {
     "dashboard": "Bảng điều khiển",
@@ -240,6 +241,44 @@
         "success_reject": "Đơn trả hàng đã bị từ chối.",
         "success_refund": "Đã xác nhận hoàn tiền cho khách hàng.",
         "success_restock": "Đã nhập lại {{count}} sản phẩm vào kho."
+    },
+    "create_store": {
+        "title": "Tạo cửa hàng mới",
+        "description": "Điền thông tin chi tiết để thiết lập một cửa hàng mới trong hệ thống.",
+        "success_message": "Cửa hàng mới đã được tạo thành công.",
+        "error_message": "Tạo cửa hàng mới thất bại. Vui lòng thử lại.",
+        "submit_button": "Tạo cửa hàng",
+        "section_basic": "Thông tin cơ bản",
+        "section_technical": "Thông tin kỹ thuật",
+        "section_payment": "Thông tin thanh toán",
+        "section_invoice": "Cài đặt Hoá đơn & VAT",
+        "section_other": "Cài đặt khác",
+        "form": {
+            "name": "Tên cửa hàng",
+            "phone": "Số điện thoại",
+            "address": "Địa chỉ",
+            "email": "Email",
+            "opening_hours": "Giờ mở cửa",
+            "database_name": "Tên cơ sở dữ liệu",
+            "database_name_desc": "Tên định danh duy nhất cho database của cửa hàng.",
+            "manager": "Quản lý cửa hàng",
+            "manager_placeholder": "Chọn một quản lý",
+            "bank": "Ngân hàng",
+            "bank_placeholder": "Chọn một ngân hàng",
+            "account_no": "Số tài khoản",
+            "account_name": "Tên chủ tài khoản",
+            "is_vat_enabled": "Bật tính thuế VAT",
+            "is_vat_enabled_desc": "Bật/tắt tính thuế giá trị gia tăng (VAT) trên đơn hàng.",
+            "vat_rate": "Thuế suất VAT (%)",
+            "invoice_footer": "Chân trang hoá đơn",
+            "paper_size": "Khổ giấy mặc định",
+            "paper_k80": "Giấy in nhiệt K80 (80mm)",
+            "paper_a5": "Giấy A5",
+            "paper_k58": "Giấy in nhiệt K58 (58mm)",
+            "backup_schedule": "Lịch sao lưu",
+            "backup_daily": "Hàng ngày (lúc 02:00 sáng)",
+            "backup_12h": "Mỗi 12 giờ"
+        }
     }
   },
   "login": {

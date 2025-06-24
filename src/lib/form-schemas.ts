@@ -1,4 +1,5 @@
 
+
 import * as z from 'zod';
 import { UserRole } from '@/types';
 
@@ -154,4 +155,32 @@ export const paymentSchema = z.object({
   amount: z.coerce.number().positive({ message: "Số tiền phải lớn hơn 0." }),
   paymentMethod: z.enum(['Cash', 'Card', 'Transfer'], { required_error: "Vui lòng chọn phương thức thanh toán." }),
   note: z.string().optional(),
+});
+
+export const storeSchema = z.object({
+    name: z.string().min(1, "Tên cửa hàng không được để trống."),
+    address: z.string().min(1, "Địa chỉ không được để trống."),
+    phone: z.string().min(1, "Số điện thoại không được để trống."),
+    email: z.string().email("Email không hợp lệ.").optional().or(z.literal('')),
+    databaseName: z.string().min(1, "Tên cơ sở dữ liệu không được để trống.").regex(/^[a-z0-9_]+$/, "Chỉ chứa ký tự thường, số và dấu gạch dưới."),
+    managerId: z.string().optional(),
+    openingHours: z.string().optional(),
+    isActive: z.boolean().default(true),
+    bankInfo: z.object({
+      bankId: z.string().optional(),
+      accountNo: z.string().optional(),
+      accountName: z.string().optional(),
+    }).optional(),
+    isVatEnabled: z.boolean().default(false),
+    vatRate: z.coerce.number().min(0).optional(),
+    invoiceFooter: z.string().optional(),
+    printingPreferences: z.object({
+      defaultPaperSize: z.enum(['k80', 'a5', 'k58']),
+    }).optional(),
+    backupSchedule: z.string().optional(),
+    defaults: z.object({
+      unit: z.string().optional(),
+      discount: z.coerce.number().min(0).optional(),
+      shippingFee: z.coerce.number().min(0).optional(),
+    }).optional(),
 });
