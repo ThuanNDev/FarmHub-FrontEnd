@@ -20,7 +20,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       const loggedInUserId = localStorage.getItem('loggedInUserId');
       if (loggedInUserId) {
         const user = mockUsers.find(u => u.userId === loggedInUserId);
-        if (user && user.associatedStoreIds.length > 0) {
+        if (user && user.associatedStoreIds && user.associatedStoreIds.length > 0) {
           const userStoreId = user.associatedStoreIds[0];
           const userStore = mockStores.find(s => s.storeId === userStoreId);
           if (userStore) {

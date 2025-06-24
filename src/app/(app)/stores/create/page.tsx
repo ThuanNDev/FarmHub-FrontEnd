@@ -42,6 +42,7 @@ import { mockBanks, mockUsers } from '@/lib/data';
 import { useLanguage } from '@/store/LanguageContext';
 import { addStore } from '@/services/api';
 import type { Store } from '@/types';
+import '@/app/landing-page.css';
 
 type StoreFormValues = z.infer<typeof storeSchema>;
 
@@ -73,7 +74,25 @@ export default function CreateStorePage() {
 
   const onSubmit = async (values: StoreFormValues) => {
     try {
-      await addStore(values);
+      const today = new Date();
+      const dateStr = today.toISOString().slice(0, 10).replace(/-/g, ''); // YYYYMMDD
+
+      const slugify = (str: string) =>
+        str
+          .toLowerCase()
+          .normalize("NFD") // bỏ dấu tiếng Việt
+          .replace(/[\u0300-\u036f]/g, "")
+          .replace(/[^a-z0-9]/g, "_")
+          .replace(/_+/g, "_")
+          .replace(/^_|_$/g, "");
+
+      const databaseName = `store_${slugify(values.name)}_${dateStr}`;
+      console.log(databaseName)
+      const payload = {
+        ...values,
+        databaseName,
+      };
+      await addStore(payload);
       toast({
         title: t('common.success'),
         description: t('pages.create_store.success_message'),
@@ -89,7 +108,7 @@ export default function CreateStorePage() {
   };
 
   return (
-    <Card>
+    <Card >
       <CardHeader>
         <CardTitle className="font-headline flex items-center gap-2">
             <Leaf /> {t('pages.create_store.title')}
@@ -125,9 +144,6 @@ export default function CreateStorePage() {
             {/* Technical Info */}
             <h3 className="text-lg font-medium font-headline">{t('pages.create_store.section_technical')}</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <FormField control={form.control} name="databaseName" render={({ field }) => (
-                    <FormItem><FormLabel>{t('pages.create_store.form.database_name')}</FormLabel><FormControl><Input {...field} /></FormControl><FormDescription>{t('pages.create_store.form.database_name_desc')}</FormDescription><FormMessage /></FormItem>
-                )}/>
                  <FormField control={form.control} name="managerId" render={({ field }) => (
                     <FormItem><FormLabel>{t('pages.create_store.form.manager')}</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}>
                         <FormControl><SelectTrigger><SelectValue placeholder={t('pages.create_store.form.manager_placeholder')} /></SelectTrigger></FormControl>
