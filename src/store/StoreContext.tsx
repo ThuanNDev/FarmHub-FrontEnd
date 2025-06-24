@@ -17,14 +17,26 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     try {
+      // 1. Prioritize explicitly selected store
+      const selectedStoreId = localStorage.getItem('selectedStoreId');
+      if (selectedStoreId) {
+        const selectedStore = mockStores.find(s => s.storeId === selectedStoreId);
+        if (selectedStore) {
+          setStore(selectedStore);
+          return; // Exit if found
+        }
+      }
+
+      // 2. Fallback for first-time login or no selection
       const loggedInUserId = localStorage.getItem('loggedInUserId');
       if (loggedInUserId) {
         const user = mockUsers.find(u => u.userId === loggedInUserId);
         if (user && user.associatedStoreIds && user.associatedStoreIds.length > 0) {
-          const userStoreId = user.associatedStoreIds[0];
+          const userStoreId = user.associatedStoreIds[0]; // Default to the first associated store
           const userStore = mockStores.find(s => s.storeId === userStoreId);
           if (userStore) {
             setStore(userStore);
+            // Don't persist this default selection here, let the selection page handle it.
           }
         }
       }

@@ -65,27 +65,27 @@ export default function LoginPage() {
       });
 
       const data = await response.json();
-      console.log(data);
+      
       if (!response.ok || data.status !== 'success') {
         throw new Error(data.message || 'Đăng nhập thất bại. Vui lòng thử lại.');
       }
 
       const { access_token, user: apiUser } = data.data as { access_token: string; user: ApiUser };
       
-      // Store token
+      // Store tokens and user info
       localStorage.setItem('accessToken', access_token);
       localStorage.setItem('associatedStoreIds', JSON.stringify(apiUser.associatedStoreIds));
+      localStorage.setItem('loggedInUserId', apiUser.userId);
       
       // Update mock data in memory for the session
       const existingUserIndex = mockUsers.findIndex(u => u.userId === apiUser.userId);
       const now = new Date().toISOString();
       
-      // We need to construct a full User object that matches our app's type definition
       const userToStore: User = {
         ...apiUser,
-        username: apiUser.email.split('@')[0], // Create username from email as it's not in response
+        username: apiUser.email.split('@')[0],
         phone: apiUser.phone || '',
-        role: apiUser.role as UserRole, // Cast to our enum
+        role: apiUser.role as UserRole,
         isActive: apiUser.isActive ?? true,
         lastLoginAt: now,
         updatedAt: now,
@@ -101,17 +101,20 @@ export default function LoginPage() {
         mockUsers.push(userToStore);
       }
 
-      // Set logged in user ID for other parts of the app that still use it
-      localStorage.setItem('loggedInUserId', apiUser.userId);
-
-      if(apiUser.associatedStoreIds == null || apiUser.associatedStoreIds.length <= 0 ){
-        router.push('/stores/create');
-      }
       toast({
           title: t('login.success'),
           description: t('login.welcome_back', { name: apiUser.fullName }),
       });
-      router.push('/dashboard');
+      
+      // Redirect based on associated stores
+      if (!apiUser.associatedStoreIds || apiUser.associatedStoreIds.length === 0) {
+        router.push('/stores/create');
+      } else if (apiUser.associatedStoreIds.length === 1) {
+        localStorage.setItem('selectedStoreId', apiUser.associatedStoreIds[0]);
+        router.push('/');
+      } else {
+        router.push('/select-store');
+      }
 
     } catch (error) {
       toast({

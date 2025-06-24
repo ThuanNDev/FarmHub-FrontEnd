@@ -94,7 +94,7 @@ const navItems = [
   { href: '/printing', labelKey: 'nav.printing', icon: Printer },
   { href: '/users', labelKey: 'nav.users', icon: UsersRound },
   { href: '/settings', labelKey: 'nav.settings', icon: Settings },
-  { href: '/super-admin', labelKey: 'nav.super_admin', icon: Shield, superAdminOnly: true },
+  { href: '/super-admin', labelKey: 'nav.super_admin', superAdminOnly: true },
 ];
 
 function NavLink({
@@ -251,6 +251,7 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
     localStorage.removeItem('accessToken');
     localStorage.removeItem('loggedInUserId');
     localStorage.removeItem('associatedStoreIds');
+    localStorage.removeItem('selectedStoreId');
     toast({
       title: t('login.success'),
       description: "Bạn đã đăng xuất thành công.",
@@ -266,7 +267,7 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
     );
   }
 
-  if (pathname === '/pos' || !currentUser) {
+  if (pathname === '/pos' || pathname === '/select-store' || !currentUser) {
     return <>{children}</>;
   }
   
