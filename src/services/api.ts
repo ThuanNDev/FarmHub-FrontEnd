@@ -27,21 +27,25 @@ const simulateDelay = (ms: number = 50) => new Promise(resolve => setTimeout(res
 // --- AUTH API ---
 export const getUserIdFromToken = async (): Promise<string> => {
   const res = await apiClient<{ userId: string }>(API_URLS.AUTH.ME);
-  return res.data.userId;
+  // apiClient already unwraps the .data property
+  return res.userId;
 };
 
 export const getUserDetail = async (userId: string): Promise<User> => {
   const res = await apiClient<User>(`${API_URLS.USERS}/${userId}`);
-  return res.data;
+  // apiClient already unwraps the .data property
+  return res;
 };
 
 export const getMe = async (): Promise<User | null> => {
   try {
-    const userId = await getUserIdFromToken();
-    const userDetail = await getUserDetail(userId);
+    const { userId } = await apiClient<{ userId: string }>(API_URLS.AUTH.ME);
+    if (!userId) return null;
+    
+    const userDetail = await apiClient<User>(`${API_URLS.USERS}/${userId}`);
     return userDetail;
   } catch (error) {
-    console.error('❌ Error fetching user detail from auth/me:', error);
+    console.error('❌ Error fetching current user data:', error);
     return null;
   }
 };
